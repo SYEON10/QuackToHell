@@ -254,7 +254,7 @@ public class CardItemFactory : NetworkBehaviour
         cardItemModel.CardItemStatusData = cardItemStatusData;
         Debug.Log($"[CardItemFactory] 카드 아이템 생성 완료. CardID: {cardId}, CardName: {cardDef.CardNameKey}, Price: {cardItemStatusData.Price}, Cost: {cardItemStatusData.Cost}, CardItemID: {cardItemStatusData.CardItemID}");
         //카드 생성되었음을 알림
-        OnCardForSaleCreated.Invoke();
+        OnCardForSaleCreated?.Invoke();
     }
     #endregion
 
