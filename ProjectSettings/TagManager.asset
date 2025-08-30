@@ -7,6 +7,9 @@ TagManager:
   - CardForSale
   - CardInventory
   - CardShop
+  - CardForInventory
+  - CardForSaleParent
+  - CardShopRow
   layers:
   - Default
   - TransparentFX

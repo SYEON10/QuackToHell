@@ -1,4 +1,3 @@
-using UnityEngine;
 using Unity.Netcode;
 /// <summary>
 /// 상태 추상클래스

@@ -1,6 +1,5 @@
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 /// <summary>
@@ -17,38 +16,14 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class GameManager : NetworkBehaviour
 {
-
-    //싱글톤 코드
-    private static GameManager _instance;
-    public static GameManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<GameManager>();
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("GameManager");
-                    _instance = go.AddComponent<GameManager>();
-                }
-            }
-            return _instance;
-        }
-    }
+    #region 싱글톤
+    public static GameManager Instance => SingletonHelper<GameManager>.Instance;
 
     private void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if (_instance != this)
-        {
-            Destroy(gameObject);
-        }
+        SingletonHelper<GameManager>.InitializeSingleton(this);
     }
+    #endregion
 
     private void Start()
     {
@@ -67,9 +42,9 @@ public class GameManager : NetworkBehaviour
         //플레이어 골드차감
         var player = PlayerHelperManager.Instance.GetPlayerByClientId(clientId);
         var currentStatus = player.PlayerStatusData.Value;
-        currentStatus.Gold -= amount;
+        currentStatus.gold -= amount;
         player.PlayerStatusData.Value = currentStatus;
         
-        Debug.Log($"[GameManager] Player {clientId} gold deducted by {amount}. Remaining gold: {player.PlayerStatusData.Value.Gold}");
+        Debug.Log($"[GameManager] Player {clientId} gold deducted by {amount}. Remaining gold: {player.PlayerStatusData.Value.gold}");
     }
 }

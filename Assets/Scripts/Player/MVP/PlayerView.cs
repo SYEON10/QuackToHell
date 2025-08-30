@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
 using TMPro;

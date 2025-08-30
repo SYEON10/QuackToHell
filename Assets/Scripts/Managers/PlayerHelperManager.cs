@@ -1,4 +1,3 @@
-using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
@@ -13,35 +12,11 @@ using UnityEngine;
 public class PlayerHelperManager : MonoBehaviour
 {
     #region 싱글톤
-    private static PlayerHelperManager _instance;
-    public static PlayerHelperManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<PlayerHelperManager>();
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("PlayerManager");
-                    _instance = go.AddComponent<PlayerHelperManager>();
-                }
-            }
-            return _instance;
-        }
-    }
+    public static PlayerHelperManager Instance => SingletonHelper<PlayerHelperManager>.Instance;
 
     private void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if (_instance != this)
-        {
-            Destroy(gameObject);
-        }
+        SingletonHelper<PlayerHelperManager>.InitializeSingleton(this);
     }
     #endregion
 
@@ -61,7 +36,7 @@ public class PlayerHelperManager : MonoBehaviour
             if (player.NetworkObject != null && player.NetworkObject.OwnerClientId == clientId)
             {
                 // 해당 플레이어의 골드 반환
-                return player.PlayerStatusData.Value.Gold;
+                return player.PlayerStatusData.Value.gold;
             }
         }
         

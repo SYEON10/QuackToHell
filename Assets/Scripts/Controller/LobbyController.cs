@@ -2,13 +2,19 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Threading;
 
 public class LobbyController : NetworkBehaviour
 {
     #region 카드데이터 로드
 
+    [Header("Google Sheets CSV URLs")]
+    [SerializeField] string cardCsvUrl;     // Card_Table
+    [SerializeField] string stringCsvUrl;   // String_Table
+    [SerializeField] string resourceCsvUrl; // Resource_Table
+
     private bool isCardDataLoaded = false;
+    private CancellationTokenSource _cancellationTokenSource;
 
     public override async void OnNetworkSpawn()
     {
@@ -19,22 +25,35 @@ public class LobbyController : NetworkBehaviour
             return;
         }
 
-        // CardDataView가 초기화될 때까지 대기
-        while (CardDataView.Presenter == null)
+        // DeckManager가 초기화될 때까지 대기
+        while (DeckManager.Instance == null)
         {
             await Task.Yield();
         }
 
-        // 데이터 로딩 완료까지 대기
-        await CardDataView.Presenter.WhenReadyAsync();
+        _cancellationTokenSource = new CancellationTokenSource();
 
-        // 이제 안전하게 데이터 사용
-        Debug.Log($"로드된 카드 수: {CardDataView.Presenter.CardCount}");
-
-        foreach (var value in CardDataView.Presenter.Cards)
+        try
         {
-            Debug.Log($"{value.Value.CardID}의 총량: {value.Value.AmountOfCardItem}");
+            // DeckManager를 통해 직접 CSV 데이터 로드
+            await DeckManager.Instance.LoadCardDataFromCsv(cardCsvUrl, stringCsvUrl, resourceCsvUrl, _cancellationTokenSource.Token);
+            
+            // 데이터 로딩 완료까지 대기
+            await DeckManager.Instance.WhenDataReadyAsync();
+            
+            isCardDataLoaded = true;
+            Debug.Log("[LobbyController] Card data loaded successfully through DeckManager");
         }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[LobbyController] Card data loading failed: {ex.Message}");
+        }
+    }
+
+    void OnDestroy() 
+    { 
+        _cancellationTokenSource?.Cancel(); 
+        _cancellationTokenSource?.Dispose(); 
     }
  
     #endregion
@@ -62,53 +81,30 @@ public class LobbyController : NetworkBehaviour
     public void OnStartGameButton()
     {
         //호스트만 게임 시작 가능
-        if (!IsOwner)
+        if (!IsHost)
         {
-            Debug.LogError("Only the owner can start the game!");
+            Debug.LogError("Only the host can start the game!");
             return;
         }
 
         // 2명 미만이면 시작 못 함
-        if(NetworkManager.Singleton.ConnectedClientsList.Count < 2)
+        if (NetworkManager.Singleton.ConnectedClientsList.Count < 2)
         {
+            Debug.LogError("Need at least 2 players to start the game!");
             return;
         }
-
-        if (IsHost)
+        
+        if (!isCardDataLoaded)
         {
-            //호스트가 클라이언트에게 데이터 전달: 멀티캐스트
-            IReadOnlyDictionary<int, CardDef> cardData = CardDataView.Presenter.Cards;
-            //직렬화 가능 타입으로 변환
-            CardKeyValuePair[] cardKeyValuePairs = new CardKeyValuePair[cardData.Count];
-            int index = 0;
-            foreach (var card in cardData)
-            {
-                cardKeyValuePairs[index] = new CardKeyValuePair { Key = card.Key, Value = card.Value };
-                index++;
-            }
-            LoadCardDataClientRpc(cardKeyValuePairs);
+            Debug.LogError("Card data is not loaded!");
+            return;
         }
-
        
         //본인 데이터가 모두 초기화되면, 씬 이동.
         LoadVillageSceneServerRpc();
     }
 
-    [ClientRpc]
-    private void LoadCardDataClientRpc( CardKeyValuePair[] cardKeyValuePairs)
-    {
-        LoadCardData(cardKeyValuePairs);
-    }
 
-    private async void LoadCardData( CardKeyValuePair[] cardKeyValuePairs)
-    {
-        //DeckManager에게 데이터 전달
-        await DeckManager.Instance.SetTotalCardsOnGame(cardKeyValuePairs);
-        //CardItemFactory에게 데이터 전달
-        await CardItemFactory.Instance.SetCardData(cardKeyValuePairs);
-
-        isCardDataLoaded = true;
-    }
 
 
 
@@ -136,14 +132,14 @@ public class LobbyController : NetworkBehaviour
 
     private void PlayerSpawn()
     {
-        PlayerFactory playerFactory = FindObjectOfType<PlayerFactory>();
+        PlayerFactoryManager playerFactory = FindAnyObjectByType<PlayerFactoryManager>();
         if (playerFactory != null)
         {
             playerFactory.SpawnPlayerServerRpc();
         }
         else
         {
-            Debug.LogError("PlayerFactory not found in the scene.");
+            Debug.LogError("PlayerFactoryManager not found in the scene.");
         }
     }
     #endregion

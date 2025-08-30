@@ -1,8 +1,7 @@
-using UnityEngine;
 using Unity.Netcode;
 using static PlayerView;
 using System;
-using System.Diagnostics;
+
 /// <summary>
 /// view, model 간 중재자
 /// </summary>
@@ -22,14 +21,14 @@ public class PlayerPresenter : NetworkBehaviour
 
         //닉네임
         // 초기값 설정
-        playerView.UpdateNickname(playerModel.PlayerStatusData.Value.Nickname);
+        playerView.UpdateNickname(playerModel.PlayerStatusData.Value.nickname);
         // PlayerStatusData 전체의 OnValueChanged 이벤트 구독
         if (playerModel != null && playerModel.PlayerStatusData != null)
         {
             // PlayerStatusData 변경 시 닉네임 업데이트
             playerModel.PlayerStatusData.OnValueChanged += (previousValue, newValue) =>
             {
-                playerView.UpdateNickname(newValue.Nickname);
+                playerView.UpdateNickname(newValue.nickname);
             };
         }
     }

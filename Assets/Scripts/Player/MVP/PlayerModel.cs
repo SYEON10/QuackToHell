@@ -1,13 +1,7 @@
 // PlayerModel.cs
-using System;
-using System.IO;
-using System.Numerics;
+
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
-using static PlayerView;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 /// <summary>
 /// 로직 관리
@@ -16,20 +10,9 @@ public class PlayerModel : NetworkBehaviour
 {
     private void Awake()
     {
-        //플레이어 트랜스폼 가져오기
         playerRB = gameObject.GetComponent<Rigidbody2D>();
     }
 
-    private void Start()
-    {
-        //playerstate값 바뀌면 SetStateByPlayerStateEnum() 실행
-        PlayerStateData.OnValueChanged += (oldValue, newValue) =>
-        {
-            SetStateByPlayerStateEnum(newValue.AliveState, newValue.AnimationState);
-            ApplyStateChange();
-        };
-        
-    }
 
     private void Update()
     {
@@ -44,28 +27,23 @@ public class PlayerModel : NetworkBehaviour
     }
 
     #region 플레이어 움직임
-    //플레이어 위치
     private Rigidbody2D playerRB;
-    //움직임 로직 실행
 
     [Rpc(SendTo.Server)]
     public void MovePlayerServerRpc(int inputXDirection, int inputYDirection)
     {
-        //이동 : 1초당 움직임
-        //방향 벡터
-        UnityEngine.Vector2 direction = new UnityEngine.Vector2(inputXDirection, inputYDirection).normalized;
-        playerRB.linearVelocity = direction * PlayerStatusData.Value.MoveSpeed;
-        //상태전환: walk / idle
+        Vector2 direction = new Vector2(inputXDirection, inputYDirection).normalized;
+        playerRB.linearVelocity = direction * PlayerStatusData.Value.moveSpeed;
         if (inputXDirection != 0 || inputYDirection != 0)
         {
             var newStateData = PlayerStateData.Value;
-            newStateData.AnimationState = PlayerAnimationState.Walk;
+            newStateData.animationState = PlayerAnimationState.Walk;
             PlayerStateData.Value = newStateData;
         }
         else
         {
             var newStateData = PlayerStateData.Value;
-            newStateData.AnimationState = PlayerAnimationState.Idle;
+            newStateData.animationState = PlayerAnimationState.Idle;
             PlayerStateData.Value = newStateData;
         }
     }
@@ -73,7 +51,6 @@ public class PlayerModel : NetworkBehaviour
 
 
     #region 플레이어 데이터
-    //플레이어 데이터
     [SerializeField]
     [Header("*플레이어 상태 데이터 = 서버만 write 가능*")]
     private NetworkVariable<PlayerStatusData> _playerStatusData = new NetworkVariable<PlayerStatusData>(
@@ -87,8 +64,6 @@ public class PlayerModel : NetworkBehaviour
     }
 
 
-    //상태에 따라 행동
-    //상태 주입: State를 상속받은 클래스의 인스턴스를 주입받음
     private NetworkVariable<PlayerStateData> _playerStateData = new NetworkVariable<PlayerStateData>(writePerm: NetworkVariableWritePermission.Server);
     public NetworkVariable<PlayerStateData> PlayerStateData
     {
@@ -102,6 +77,12 @@ public class PlayerModel : NetworkBehaviour
 
     #region 플레이어 상태
 
+    // 상태 컴포넌트들 (미리 생성)
+    private PlayerIdleState idleStateComponent;
+    private PlayerWalkState walkStateComponent;
+    private PlayerDeadState deadStateComponent;
+    private PlayerAliveState aliveStateComponent;
+
     private State preAliveState;
     private State tempAliveState;
     private State curAliveState;
@@ -109,16 +90,35 @@ public class PlayerModel : NetworkBehaviour
     private State tempAnimationState;
     private State curAnimationState;
 
+    private void Start()
+    {
+        // 미리 부착된 컴포넌트들 참조
+        idleStateComponent = GetComponent<PlayerIdleState>();
+        walkStateComponent = GetComponent<PlayerWalkState>();
+        aliveStateComponent = GetComponent<PlayerAliveState>();
+        deadStateComponent = GetComponent<PlayerDeadState>();
+
+        // 초기 상태 설정
+        SetStateByPlayerStateEnum(PlayerStateData.Value.aliveState, PlayerStateData.Value.animationState);
+        ApplyStateChange();
+
+        // 상태 변경 이벤트 등록
+        PlayerStateData.OnValueChanged += (oldValue, newValue) =>
+        {
+            SetStateByPlayerStateEnum(newValue.aliveState, newValue.animationState);
+            ApplyStateChange();
+        };
+    }
 
     private void SetStateByPlayerStateEnum(PlayerLivingState inputPlayerAliveState = PlayerLivingState.Alive, PlayerAnimationState inputPlayerAnimationState = PlayerAnimationState.Idle)
     {
         switch (inputPlayerAliveState)
         {
             case PlayerLivingState.Alive:
-                SetAliveState(gameObject.AddComponent<PlayerAliveState>());
+                SetAliveState(aliveStateComponent);
                 break;
             case PlayerLivingState.Dead:
-                SetAliveState(gameObject.AddComponent<PlayerDeadState>());
+                SetAliveState(deadStateComponent);
                 break;
             default:
                 break;
@@ -126,10 +126,10 @@ public class PlayerModel : NetworkBehaviour
         switch (inputPlayerAnimationState)
         {
             case PlayerAnimationState.Idle:
-                SetAnimationState(gameObject.AddComponent<PlayerIdleState>());
+                SetAnimationState(idleStateComponent);
                 break;
             case PlayerAnimationState.Walk:
-                SetAnimationState(gameObject.AddComponent<PlayerWalkState>());
+                SetAnimationState(walkStateComponent);
                 break;
         }
     }
@@ -140,13 +140,16 @@ public class PlayerModel : NetworkBehaviour
         curAliveState = state;
         preAliveState = tempAliveState;
 
-        //안 쓰는 컴포넌트 삭제
-        foreach (var _state in GetComponents<State>())
+        // 이전 상태 비활성화
+        if (preAliveState != null)
         {
-            if (_state != curAliveState && _state != preAliveState)
-            {
-                Destroy(_state);
-            }
+            preAliveState.enabled = false;
+        }
+
+        // 현재 상태 활성화
+        if (curAliveState != null)
+        {
+            curAliveState.enabled = true;
         }
     }
 
@@ -156,30 +159,45 @@ public class PlayerModel : NetworkBehaviour
         curAnimationState = state;
         preAnimationState = tempAnimationState;
 
-        //안 쓰는 컴포넌트 삭제
-        foreach (var _state in GetComponents<State>())
+        // 이전 상태 비활성화
+        if (preAnimationState != null)
         {
-            if (_state != curAnimationState && _state != preAnimationState)
-            {
-                Destroy(_state);
-            }
+            preAnimationState.enabled = false;
+        }
+
+        // 현재 상태 활성화
+        if (curAnimationState != null)
+        {
+            curAnimationState.enabled = true;
         }
     }
 
 
     private void ApplyStateChange()
     {
+        // 이전 AliveState의 Exit 호출
         if (preAliveState != null)
         {
             preAliveState.OnStateExit();
         }
+
+        // 이전 AnimationState의 Exit 호출
         if (preAnimationState != null)
         {
             preAnimationState.OnStateExit();
         }
-        
-        curAliveState.OnStateEnter();
-        curAnimationState.OnStateEnter();
+
+        // 현재 AliveState의 Enter 호출
+        if (curAliveState != null)
+        {
+            curAliveState.OnStateEnter();
+        }
+
+        // 현재 AnimationState의 Enter 호출
+        if (curAnimationState != null)
+        {
+            curAnimationState.OnStateEnter();
+        }
     }
     #endregion
 

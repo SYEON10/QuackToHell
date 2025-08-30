@@ -1,7 +1,5 @@
 using UnityEngine;
 using Unity.Netcode;
-using System;
-using System.Collections.Generic;
 
 public class CardInventoryPresenter : MonoBehaviour
 {
@@ -16,33 +14,24 @@ public class CardInventoryPresenter : MonoBehaviour
 
     private void Start()
     {
-        _cardInventoryModel.OwnedCards.OnValueChanged += CardInventoryModel_OwnedCardsOnValueChanged;
+        _cardInventoryModel.OwnedCards.OnListChanged += CardInventoryModel_OwnedCardsOnListChanged;
         //초기 뷰 업데이트
-        _cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards.Value);
+        _cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards);
         //TODO: 정렬기능 추가되면, 정렬 enum에 따라 다른 정렬 함수 호출
-        switch (_cardInventoryModel.SortingOption)
+        /*switch (_cardInventoryModel.SortingOption)
         {
             case InventorySotringOption.RecentlyAcquired:
                 _cardInventoryModel.SortCardsByAcquiredTicks();
                 break;
             default:
                 break;
-        }
+        }*/
     }
 
-    private void CardInventoryModel_OwnedCardsOnValueChanged(List<InventoryCard> previousValue, List<InventoryCard> newValue)
+    private void CardInventoryModel_OwnedCardsOnListChanged(NetworkListEvent<CardItemData> changeEvent)
     {
         //view 업데이트 함수 호출
         CardInventoryView cardInventoryView = gameObject.GetComponent<CardInventoryView>();
-        cardInventoryView.UpdateInventoryView(newValue);
-        //TODO: 정렬기능 추가되면, 정렬 enum에 따라 다른 정렬 함수 호출
-        switch (_cardInventoryModel.SortingOption)
-        {
-            case InventorySotringOption.RecentlyAcquired:
-                _cardInventoryModel.SortCardsByAcquiredTicks();
-                break;
-            default:
-                break;
-        }
+        cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards);
     }
 }

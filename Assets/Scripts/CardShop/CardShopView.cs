@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using TMPro;
 using UnityEngine.UI;
 
 public interface ICardShopView
@@ -16,7 +15,7 @@ public interface ICardShopView
     void SetRefreshInteractable(bool interactable);
 }
 
-public sealed class CardShopView : MonoBehaviour
+public class CardShopView : MonoBehaviour
 {
     [Header("UI")]
 

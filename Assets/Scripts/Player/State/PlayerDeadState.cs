@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class PlayerDeadState : State
 {
     public override void OnStateEnter()
