@@ -420,6 +420,7 @@ MonoBehaviour:
       Spellpower: 100
       Gold: 25
       MoveSpeed: 10
+      ColorIndex: 0
 --- !u!114 &6604892522499941508
 MonoBehaviour:
   m_ObjectHideFlags: 0
