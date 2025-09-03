@@ -22,6 +22,27 @@ public enum PlayerJob
     None,
 }
 
+public enum EPlayerColorIndex
+{
+    Red,
+    Orange,
+    Yellow,
+    Green,
+    Blue,
+    Purple
+}
+
+[System.Serializable]
+public struct PlayerAppearanceData : INetworkSerializable
+{
+    public int ColorIndex;
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref ColorIndex);
+    }
+}
+
+
 [System.Serializable]
 public struct PlayerStatusData : INetworkSerializable
 {

@@ -14,6 +14,7 @@ using Vector3 = UnityEngine.Vector3;
 /// </summary>
 public class PlayerModel : NetworkBehaviour
 {
+
     private void Awake()
     {
         //플레이어 트랜스폼 가져오기
@@ -86,10 +87,20 @@ public class PlayerModel : NetworkBehaviour
         set { _playerStatusData = value; }
     }
 
+    //플레이어 외형 데이터
+    private NetworkVariable<PlayerAppearanceData> _playerAppearanceData = new NetworkVariable<PlayerAppearanceData>(writePerm: NetworkVariableWritePermission.Server);
+
+    public NetworkVariable<PlayerAppearanceData> PlayerAppearanceData
+    {
+        get { return _playerAppearanceData; }
+        set { _playerAppearanceData = value; }
+    }
+
 
     //상태에 따라 행동
     //상태 주입: State를 상속받은 클래스의 인스턴스를 주입받음
-    private NetworkVariable<PlayerStateData> _playerStateData = new NetworkVariable<PlayerStateData>(writePerm: NetworkVariableWritePermission.Server);
+    private NetworkVariable<PlayerStateData> _playerStateData { get; set; } = new NetworkVariable<PlayerStateData>(writePerm: NetworkVariableWritePermission.Server);
+    
     public NetworkVariable<PlayerStateData> PlayerStateData
     {
         get { return _playerStateData; }
@@ -183,6 +194,16 @@ public class PlayerModel : NetworkBehaviour
     }
     #endregion
 
+    #region 색깔 변경
 
-    
+    [ServerRpc]
+    public void ChangeColorServerRpc(Int32 colorIndex, ulong clientId)
+    {
+        var tempAppearanceData = _playerAppearanceData.Value;
+        tempAppearanceData.ColorIndex = colorIndex;
+        _playerAppearanceData.Value = tempAppearanceData;
+        Debug.Log($"Color changed to {colorIndex} for client {clientId}");
+    }
+    #endregion
+
 }

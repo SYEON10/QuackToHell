@@ -30,17 +30,20 @@ public class PlayerFactory : NetworkBehaviour
         // 서버에서만 값 세팅
         // 속성: NetworkVariable로 관리 (리플리케이트)
         // 인스펙터에서 설정한대로 초기화됨
-        ulong myClientId =  NetworkManager.Singleton.LocalClientId;
-        GameObject myPlayerObj = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(myClientId);
-        PlayerModel myPlayerModel =  myPlayerObj.GetComponent<PlayerModel>();
-        PlayerStatusData myPlayerStateData = myPlayerModel.PlayerStatusData.Value;
-        // 닉네임에 클라이언트 아이디 붙여서 구분
-        myPlayerStateData.Nickname = myPlayerStateData.Nickname + myClientId.ToString();
+        PlayerStatusData myPlayerStateData = player.GetComponent<PlayerModel>().PlayerStatusData.Value;
+        // 닉네임만 새로 설정 (기존 닉네임에서 숫자 부분 제거 후 새 클라이언트 ID 붙이기)
+        string baseNickname = myPlayerStateData.Nickname.Split('_')[0]; // "Player" 부분만 추출
+        myPlayerStateData.Nickname = $"{baseNickname}_{rpcParams.Receive.SenderClientId}";
         // 게임오브젝트의 이름을 닉네임으로 변경
-        player.name = $"{myPlayerStateData.Nickname}{rpcParams.Receive.SenderClientId}";
+        player.name = myPlayerStateData.Nickname;
         // state 데이터 주입
         player.GetComponent<PlayerModel>().PlayerStatusData.Value = myPlayerStateData;
 
+        // appearance 데이터 초기화
+        player.GetComponent<PlayerModel>().PlayerAppearanceData.Value = new PlayerAppearanceData
+        {
+            ColorIndex = 0 // 기본 색상 (Red)
+        };
 
         // 상태 주입 (모두에게 명령)
         player.GetComponent<PlayerModel>().PlayerStateData.Value = new PlayerStateData

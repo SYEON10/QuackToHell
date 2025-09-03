@@ -4,9 +4,15 @@ using Unity.Netcode;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.UI;
+using TMPro;
+using System;
 
 public class LobbyController : NetworkBehaviour
 {
+    [SerializeField]
+    private TMP_Dropdown colorDropdown;
+
     #region 카드데이터 로드
 
     private bool isCardDataLoaded = false;
@@ -14,6 +20,11 @@ public class LobbyController : NetworkBehaviour
     public override async void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+
+        //버튼 이벤트 바인딩
+        colorDropdown.onValueChanged.AddListener(OnColorDropdownButton);
+
+        
         //호스트만 데이터 로드
         if (!IsHost)
         {
@@ -36,8 +47,21 @@ public class LobbyController : NetworkBehaviour
         {
             Debug.Log($"{value.Value.CardID}의 총량: {value.Value.AmountOfCardItem}");
         }
+
+        
+        
     }
- 
+
+    #endregion
+
+    #region 색깔 선택 버튼
+
+
+    public void OnColorDropdownButton(Int32 colorIndex)
+    {
+        Debug.Log($"Input color: {colorIndex}");
+        PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).ChangeColorServerRpc(colorIndex, NetworkManager.Singleton.LocalClientId);
+    }
     #endregion
 
     #region 게임 버튼

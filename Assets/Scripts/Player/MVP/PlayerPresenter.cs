@@ -3,6 +3,7 @@ using Unity.Netcode;
 using static PlayerView;
 using System;
 using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 /// <summary>
 /// view, model 간 중재자
 /// </summary>
@@ -10,6 +11,8 @@ public class PlayerPresenter : NetworkBehaviour
 {
     private PlayerModel playerModel;
     private PlayerView playerView;
+    [SerializeField]
+    private SpriteRenderer playerSpriteRenderer;
 
     // Start에서 세팅
     private void Start()
@@ -23,6 +26,9 @@ public class PlayerPresenter : NetworkBehaviour
         //닉네임
         // 초기값 설정
         playerView.UpdateNickname(playerModel.PlayerStatusData.Value.Nickname);
+        
+        // 초기 색상 설정
+        PlayerModel_OnColorChanged(playerModel.PlayerAppearanceData.Value.ColorIndex);
         // PlayerStatusData 전체의 OnValueChanged 이벤트 구독
         if (playerModel != null && playerModel.PlayerStatusData != null)
         {
@@ -32,8 +38,19 @@ public class PlayerPresenter : NetworkBehaviour
                 playerView.UpdateNickname(newValue.Nickname);
             };
         }
-    }
 
+        // PlayerAppearanceData의 ColorIndex 변경 감지
+        if (playerModel != null && playerModel.PlayerAppearanceData != null)
+        {
+            playerModel.PlayerAppearanceData.OnValueChanged += (previousValue, newValue) =>
+            {
+                if (previousValue.ColorIndex != newValue.ColorIndex)
+                {
+                    PlayerModel_OnColorChanged(newValue.ColorIndex);
+                }
+            };
+        }
+    }
 
 
     private void PlayerView_OnMovementInput(object sender, EventArgs e)
@@ -43,5 +60,32 @@ public class PlayerPresenter : NetworkBehaviour
 
         //model에게 방향 이벤트 전달
         playerModel.MovePlayerServerRpc(onMovementInputEventArgs.XDirection, onMovementInputEventArgs.YDirection);
+    }
+    
+    private void PlayerModel_OnColorChanged(Int32 colorIndex)
+    {
+        // 모든 클라이언트에서 색상 변경 적용
+        switch (colorIndex)
+        {
+            case 0:
+                playerSpriteRenderer.color = Color.red;
+                break;
+            case 1:
+                playerSpriteRenderer.color = Color.orange;
+                break;
+            case 2:
+                playerSpriteRenderer.color = Color.yellow;
+                break;
+            case 3:
+                playerSpriteRenderer.color = Color.green;
+                break;
+            case 4:
+                playerSpriteRenderer.color = Color.blue;
+                break;
+            case 5:
+                playerSpriteRenderer.color = Color.purple;
+                break;
+        }
+        
     }
 }

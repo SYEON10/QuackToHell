@@ -408,12 +408,13 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _playerStatusData:
     m_InternalValue:
-      Nickname: Puppy
+      Nickname: Player
       Job: 0
       Credibility: 100
       Spellpower: 100
       Gold: 25
       MoveSpeed: 10
+      ColorIndex: 0
 --- !u!114 &6604892522499941508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -440,6 +441,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  playerSpriteRenderer: {fileID: 2696677760322620458}
 --- !u!114 &-8017273130754228851
 MonoBehaviour:
   m_ObjectHideFlags: 0
