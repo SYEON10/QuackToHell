@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Numerics;
+using TMPro;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,6 +15,10 @@ using Vector3 = UnityEngine.Vector3;
 /// </summary>
 public class PlayerModel : NetworkBehaviour
 {
+    private PlayerIdleState idleStateComponent;
+    private PlayerWalkState walkStateComponent;
+    private PlayerDeadState deadStateComponent;
+    private PlayerAliveState aliveStateComponent;
 
     private void Awake()
     {
@@ -23,13 +28,36 @@ public class PlayerModel : NetworkBehaviour
 
     private void Start()
     {
-        //playerstate값 바뀌면 SetStateByPlayerStateEnum() 실행
+        // 미리 부착된 컴포넌트들 참조
+        idleStateComponent = GetComponent<PlayerIdleState>();
+        walkStateComponent = GetComponent<PlayerWalkState>();
+        aliveStateComponent = GetComponent<PlayerAliveState>();
+        deadStateComponent = GetComponent<PlayerDeadState>();
+
+        // 초기 상태 설정
+        SetAnimationStateByEnum(PlayerStateData.Value.AnimationState);
+        SetAliveStateByEnum(PlayerStateData.Value.AliveState);
+        ApplyAliveStateChange();
+        ApplyAnimationStateChange();
+
+        // 상태 변경 이벤트 등록 - 개별 처리
         PlayerStateData.OnValueChanged += (oldValue, newValue) =>
         {
-            SetStateByPlayerStateEnum(newValue.AliveState, newValue.AnimationState);
-            ApplyStateChange();
+            // AliveState가 변경된 경우만 처리
+            if (oldValue.AliveState != newValue.AliveState)
+            {
+                SetAliveStateByEnum(newValue.AliveState);
+                ApplyAliveStateChange();
+            }
+
+            // AnimationState가 변경된 경우만 처리
+            if (oldValue.AnimationState != newValue.AnimationState)
+            {
+                SetAnimationStateByEnum(newValue.AnimationState);
+                ApplyAnimationStateChange();
+            }
         };
-        
+
     }
 
     private void Update()
@@ -100,7 +128,7 @@ public class PlayerModel : NetworkBehaviour
     //상태에 따라 행동
     //상태 주입: State를 상속받은 클래스의 인스턴스를 주입받음
     private NetworkVariable<PlayerStateData> _playerStateData { get; set; } = new NetworkVariable<PlayerStateData>(writePerm: NetworkVariableWritePermission.Server);
-    
+
     public NetworkVariable<PlayerStateData> PlayerStateData
     {
         get { return _playerStateData; }
@@ -113,84 +141,111 @@ public class PlayerModel : NetworkBehaviour
 
     #region 플레이어 상태
 
-    private State preAliveState;
-    private State tempAliveState;
-    private State curAliveState;
-    private State preAnimationState;
-    private State tempAnimationState;
-    private State curAnimationState;
+    private StateBase preAliveState;
+    private StateBase tempAliveState;
+    private StateBase curAliveState;
+    private StateBase preAnimationState;
+    private StateBase tempAnimationState;
+    private StateBase curAnimationState;
 
 
-    private void SetStateByPlayerStateEnum(PlayerLivingState inputPlayerAliveState = PlayerLivingState.Alive, PlayerAnimationState inputPlayerAnimationState = PlayerAnimationState.Idle)
+    // AliveState만 처리하는 메서드
+    private void SetAliveStateByEnum(PlayerLivingState aliveState)
     {
-        switch (inputPlayerAliveState)
+        switch (aliveState)
         {
             case PlayerLivingState.Alive:
-                SetAliveState(gameObject.AddComponent<PlayerAliveState>());
+                SetAliveState(aliveStateComponent);
                 break;
             case PlayerLivingState.Dead:
-                SetAliveState(gameObject.AddComponent<PlayerDeadState>());
-                break;
-            default:
-                break;
-        }
-        switch (inputPlayerAnimationState)
-        {
-            case PlayerAnimationState.Idle:
-                SetAnimationState(gameObject.AddComponent<PlayerIdleState>());
-                break;
-            case PlayerAnimationState.Walk:
-                SetAnimationState(gameObject.AddComponent<PlayerWalkState>());
+                SetAliveState(deadStateComponent);
                 break;
         }
     }
 
-    private void SetAliveState(State state)
+    // AnimationState만 처리하는 메서드
+    private void SetAnimationStateByEnum(PlayerAnimationState animationState)
+    {
+        switch (animationState)
+        {
+            case PlayerAnimationState.Idle:
+                SetAnimationState(idleStateComponent);
+                break;
+            case PlayerAnimationState.Walk:
+                SetAnimationState(walkStateComponent);
+                break;
+        }
+    }
+
+    private void SetAliveState(StateBase state)
     {
         tempAliveState = curAliveState;
         curAliveState = state;
         preAliveState = tempAliveState;
 
-        //안 쓰는 컴포넌트 삭제
-        foreach (var _state in GetComponents<State>())
+        // 이전 상태 비활성화
+        if (preAliveState != null)
         {
-            if (_state != curAliveState && _state != preAliveState)
-            {
-                Destroy(_state);
-            }
+            preAliveState.enabled = false;
+        }
+
+        // 현재 상태 활성화
+        if (curAliveState != null)
+        {
+            curAliveState.enabled = true;
         }
     }
 
-    private void SetAnimationState(State state)
+    private void SetAnimationState(StateBase state)
     {
         tempAnimationState = curAnimationState;
         curAnimationState = state;
         preAnimationState = tempAnimationState;
 
-        //안 쓰는 컴포넌트 삭제
-        foreach (var _state in GetComponents<State>())
+        // 이전 상태 비활성화
+        if (preAnimationState != null)
         {
-            if (_state != curAnimationState && _state != preAnimationState)
-            {
-                Destroy(_state);
-            }
+            preAnimationState.enabled = false;
+        }
+
+        // 현재 상태 활성화
+        if (curAnimationState != null)
+        {
+            curAnimationState.enabled = true;
         }
     }
 
 
-    private void ApplyStateChange()
+    // AliveState 변경 적용
+    private void ApplyAliveStateChange()
     {
+        // 이전 AliveState의 Exit 호출
         if (preAliveState != null)
         {
             preAliveState.OnStateExit();
         }
+
+        // 현재 AliveState의 Enter 호출
+        if (curAliveState != null)
+        {
+            curAliveState.OnStateEnter();
+        }
+    }
+
+    // AnimationState 변경 적용
+    private void ApplyAnimationStateChange()
+    {
+        // 이전 AnimationState의 Exit 호출
         if (preAnimationState != null)
         {
             preAnimationState.OnStateExit();
         }
-        
-        curAliveState.OnStateEnter();
-        curAnimationState.OnStateEnter();
+
+        // 현재 AnimationState의 Enter 호출
+        if (curAnimationState != null)
+        {
+            curAnimationState.OnStateEnter();
+        }
     }
     #endregion
 
@@ -206,4 +261,33 @@ public class PlayerModel : NetworkBehaviour
     }
     #endregion
 
+    #region Die
+    public void Die()
+    {
+        var newStateData = PlayerStateData.Value;
+        newStateData.AliveState = PlayerLivingState.Dead;
+        PlayerStateData.Value = newStateData;
+        Debug.Log($"Player{NetworkManager.Singleton.LocalClientId} Alive State is {PlayerStateData.Value.AliveState.ToString()}");
+        CorpseFactory.Instance.CreateCorpseServerRpc(this.gameObject.transform.position, this.gameObject.transform.rotation, PlayerAppearanceData.Value);
+    }
+
+    [ClientRpc]
+    public void SetPlayerVisibilityForDeadPlayersClientRpc(ulong corpseClientId)
+    {
+        //실행중인 애가 살아있는 상태일때만
+        if (PlayerStateData.Value.AliveState == PlayerLivingState.Alive)
+        {
+            GameObject deadPlayer = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(corpseClientId);
+            //스프라이트 찾아서, 투명화하기
+            SpriteRenderer[] spriteRenderers = deadPlayer.GetComponentsInChildren<SpriteRenderer>();
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                spriteRenderers[i].enabled = false;
+            }
+            //닉네임 찾아서, 투명화하기
+            TextMeshProUGUI nicknameTMP = deadPlayer.GetComponentInChildren<TextMeshProUGUI>();
+            nicknameTMP.enabled = false;
+        }
+    }
+    #endregion
 }

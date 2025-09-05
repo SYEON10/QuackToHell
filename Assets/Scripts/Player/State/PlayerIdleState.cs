@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Idle상태일 때 하는 행동 정의
 /// </summary>
-public class PlayerIdleState : State
+public class PlayerIdleState : StateBase
 {
     private Animator animator;
     

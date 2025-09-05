@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CardItemNoneState : State
+public class CardItemNoneState : StateBase
 {
     public override void OnStateEnter()
     {

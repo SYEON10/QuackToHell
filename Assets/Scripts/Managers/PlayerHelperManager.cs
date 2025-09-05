@@ -79,7 +79,9 @@ public class PlayerHelperManager : MonoBehaviour
     public PlayerModel GetPlayerModelByClientId(ulong clientId)
     {
         PlayerModel[] allPlayers = FindObjectsByType<PlayerModel>(FindObjectsSortMode.None);
-
+        //test
+        int allPlayersCount = allPlayers.Length;
+        
         foreach (PlayerModel player in allPlayers)
         {
             if (player.NetworkObject != null && player.NetworkObject.OwnerClientId == clientId)
@@ -120,5 +122,16 @@ public class PlayerHelperManager : MonoBehaviour
     public int GetPlayerCount()
     {
         return NetworkManager.Singleton.ConnectedClients.Count;
+    }
+
+    [ServerRpc]
+    public void StopAllPlayer()
+    {
+        //모든 플레이어의 움직임을 멈춤
+        PlayerView[] allPlayers = FindObjectsByType<PlayerView>(FindObjectsSortMode.None);
+        foreach (PlayerView player in allPlayers)
+        {
+            player.IgnoreMoveInput = true;
+        }
     }
 }

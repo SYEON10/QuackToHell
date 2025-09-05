@@ -23,7 +23,7 @@ public sealed class CardShopPresenter : NetworkBehaviour
     {
         base.OnNetworkSpawn();
                 
-        CardItemFactory.Instance.OnCardForSaleCreated+=CardItemFactory_OnCardForSaleCreated;
+        CardItemFactoryManager.Instance.OnCardForSaleCreated+=CardItemFactory_OnCardForSaleCreated;
         _model.CreateCardsForSale();
 
         if (_view != null)

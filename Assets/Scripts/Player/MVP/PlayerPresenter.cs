@@ -11,8 +11,13 @@ public class PlayerPresenter : NetworkBehaviour
 {
     private PlayerModel playerModel;
     private PlayerView playerView;
+    //죽일 수 있는 역할일 경우에만 할당.
+    private KillAbility killAbility;
+
     [SerializeField]
     private SpriteRenderer playerSpriteRenderer;
+
+
 
     // Start에서 세팅
     private void Start()
@@ -20,8 +25,13 @@ public class PlayerPresenter : NetworkBehaviour
         // PlayerModel, PlayerView를 컴포넌트에서 가져옴
         playerModel = GetComponent<PlayerModel>();
         playerView = GetComponent<PlayerView>();
+        //TODO: 역할에따라 Ability 컴포넌트 다르게 할당 (마피아 / 시민)
+        killAbility = GetComponent<KillAbility>();
 
+        //바인딩
         playerView.OnMovementInput += PlayerView_OnMovementInput;
+        playerView.OnKillTryInput += PlayerView_OnOnKillTryInput;
+        playerView.OnCorpseReported += PlayerView_OnCorpseReported;
 
         //닉네임
         // 초기값 설정
@@ -52,6 +62,17 @@ public class PlayerPresenter : NetworkBehaviour
         }
     }
 
+    private void PlayerView_OnCorpseReported(ulong reporterClientId)
+    {
+        //서버에게 처리해달라고 하기 (책임클래스는 TrialManager)
+        TrialManager.Instance.TryTrialServerRpc(reporterClientId);
+    }
+
+    private void PlayerView_OnOnKillTryInput()
+    {
+        //TODO: 서버rpc 호출하여 Kill시도
+        killAbility.Activate();
+    }
 
     private void PlayerView_OnMovementInput(object sender, EventArgs e)
     {
@@ -85,7 +106,7 @@ public class PlayerPresenter : NetworkBehaviour
             case 5:
                 playerSpriteRenderer.color = Color.purple;
                 break;
-        }
-        
+        }   
     }
+
 }

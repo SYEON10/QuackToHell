@@ -27,7 +27,7 @@ public class CardInventoryView : MonoBehaviour
         //2. 팩토리에서 카드 아이템 생성
         foreach (var card in ownedCards)
         {
-            CardItemFactory.Instance.CreateCardForInventory(card);
+            CardItemFactoryManager.Instance.CreateCardForInventory(card);
         }
     }
     #endregion

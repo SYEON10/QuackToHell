@@ -137,7 +137,7 @@ public class LobbyController : NetworkBehaviour
         //DeckManager에게 데이터 전달
         await DeckManager.Instance.SetTotalCardsOnGame(cardKeyValuePairs);
         //CardItemFactory에게 데이터 전달
-        await CardItemFactory.Instance.SetCardData(cardKeyValuePairs);
+        await CardItemFactoryManager.Instance.SetCardData(cardKeyValuePairs);
 
         isCardDataLoaded = true;
     }
@@ -159,16 +159,17 @@ public class LobbyController : NetworkBehaviour
 
     }
 
+    //TODO: Scene이동을 Static함수로 빼고, 씬 이름을 인자로 넣되 씬이름은 하드코딩x Utils로 관리
     [ServerRpc]
     private void LoadVillageSceneServerRpc()
     {
         // 모든 클라이언트를 VillageScene으로 이동
-        NetworkManager.Singleton.SceneManager.LoadScene("VillageScene", LoadSceneMode.Single);
+        NetworkManager.Singleton.SceneManager.LoadScene("Yujin_VillageScene", LoadSceneMode.Single);
     }
 
     private void PlayerSpawn()
     {
-        PlayerFactory playerFactory = FindObjectOfType<PlayerFactory>();
+        PlayerFactoryManager playerFactory = FindObjectOfType<PlayerFactoryManager>();
         if (playerFactory != null)
         {
             playerFactory.SpawnPlayerServerRpc();

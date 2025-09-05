@@ -179,7 +179,7 @@ public sealed class CardShopModel
             int pick = pool[rng.Next(pool.Length)];
             var pos = new Vector3(center.x + startX + i * (cardWidth + spacing), center.y, center.z);
             Debug.Log($"[CardShopModel] 카드 생성 id={pick}");
-            CardItemFactory.Instance.CreateCardForSale(pick, Vector3.zero);
+            CardItemFactoryManager.Instance.CreateCardForSale(pick, Vector3.zero);
         }
         
     }

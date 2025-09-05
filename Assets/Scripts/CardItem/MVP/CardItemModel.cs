@@ -64,9 +64,9 @@ public class CardItemModel : NetworkBehaviour
     #endregion
     #region 카드 상태
 
-    private State preState;
-    private State tempState;
-    private State curState;
+    private StateBase preState;
+    private StateBase tempState;
+    private StateBase curState;
 
 
     private void SetStateByCardItemStateEnum(CardItemState inputCardItemState = CardItemState.None)
@@ -85,14 +85,14 @@ public class CardItemModel : NetworkBehaviour
         
     }
 
-    private void SetState(State state)
+    private void SetState(StateBase state)
     {
         tempState = curState;
         curState = state;
         preState = tempState;
 
         //안 쓰는 컴포넌트 삭제
-        foreach (var _state in GetComponents<State>())
+        foreach (var _state in GetComponents<StateBase>())
         {
             if (_state != curState && _state != preState)
             {

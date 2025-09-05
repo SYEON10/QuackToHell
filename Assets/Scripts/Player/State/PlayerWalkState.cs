@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 
-public class PlayerWalkState : State
+public class PlayerWalkState : StateBase
 {
     private Animator animator;
     private SpriteRenderer head;
