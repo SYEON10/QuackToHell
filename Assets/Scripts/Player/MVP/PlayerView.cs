@@ -52,7 +52,7 @@ public class PlayerView : NetworkBehaviour
         {
             SetupLocalCamera();
         }
-        if(scene.name == "Yujin_VillageScene" && IsOwner)
+        if(scene.name == "VillageScene" && IsOwner)
         {
             SetIgnoreMoveInputServerRpc(false);
             FindAndConnectKillButton();

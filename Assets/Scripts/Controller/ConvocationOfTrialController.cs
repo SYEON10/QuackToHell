@@ -19,7 +19,7 @@ public class ConvocationOfTrialController : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
 
         // 현재 씬이 이미 로드된 상태라면 수동으로 호출
-        if (SceneManager.GetActiveScene().name.Equals("Yujin_VillageScene"))
+        if (SceneManager.GetActiveScene().name.Equals("VillageScene"))
         {
             OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
         }
@@ -27,7 +27,7 @@ public class ConvocationOfTrialController : MonoBehaviour
     
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name.Equals("Yujin_VillageScene"))
+        if (scene.name.Equals("VillageScene"))
         {
             //콜라이더 설정
             circleCollider2D = gameObject.GetComponent<CircleCollider2D>();

@@ -164,7 +164,7 @@ public class LobbyController : NetworkBehaviour
     private void LoadVillageSceneServerRpc()
     {
         // 모든 클라이언트를 VillageScene으로 이동
-        NetworkManager.Singleton.SceneManager.LoadScene("Yujin_VillageScene", LoadSceneMode.Single);
+        NetworkManager.Singleton.SceneManager.LoadScene("VillageScene", LoadSceneMode.Single);
     }
 
     private void PlayerSpawn()

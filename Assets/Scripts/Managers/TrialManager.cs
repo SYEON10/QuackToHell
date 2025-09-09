@@ -132,7 +132,7 @@ public class TrialManager : NetworkBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         //TODO: 씬 이름 하드코딩 개선 -> 상수로 관리: VillageScene이라고.
-        if (scene.name == "Yujin_VillageScene")
+        if (scene.name == "VillageScene")
         {
             convocationOfTrialCanvas = GameObject.FindWithTag("ConvocationOfTrialCanvas");
             convocationOfTrialPanel = convocationOfTrialCanvas.transform.GetChild(0).gameObject;
