@@ -1,31 +1,86 @@
 using UnityEngine;
+using Unity.Netcode;
 
-[DefaultExecutionOrder(60)]
+// Vent, Minigame 등 IInteractable 구현체에 붙여서 사용
+[DisallowMultipleComponent]
 public sealed class InteractionHighlighterPresenter : MonoBehaviour
 {
-    [SerializeField] private GameObject highlightObject; // Vent/Highlight
-    [SerializeField] private MonoBehaviour interactable;  // VentController 등 (IInteractable)
-    [SerializeField] private Transform player;
+    [Header("Refs")]
+    [SerializeField] private GameObject highlightObject;     // 하이라이트 오브젝트(자식)
+    [SerializeField] private MonoBehaviour interactable;     // (옵션) 직접 할당. 비우면 GetComponent로 찾음
 
-    IInteractable _ia;
-
-    void Reset()
-    {
-        if (!player) player = GameObject.FindGameObjectWithTag("Player")?.transform;
-    }
+    // 내부 캐시
+    private IInteractable _ia;
+    private Transform _playerTr;
 
     void Awake()
     {
+        if (interactable == null) interactable = GetComponent<MonoBehaviour>();
         _ia = interactable as IInteractable;
-        if (!player) player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (highlightObject) highlightObject.SetActive(false);
+
+        // 처음엔 비어있을 수 있음 → Update에서 재탐색
+        TryFindLocalPlayer();
+        SafeSet(false);
     }
 
     void Update()
     {
-        if (_ia == null || player == null || highlightObject == null) return;
-        // CanInteract가 true일 때만 하이라이트 ON
-        bool on = _ia.CanInteract(player.gameObject);
-        if (highlightObject.activeSelf != on) highlightObject.SetActive(on);
+        // 1) 로컬 플레이어/인터랙터가 비었으면 계속 재탐색
+        if (_playerTr == null) TryFindLocalPlayer();
+        if (_ia == null)
+        {
+            if (interactable == null) interactable = GetComponent<MonoBehaviour>();
+            _ia = interactable as IInteractable;
+        }
+
+        // 2) 조건 체크 불가면 끔
+        if (_playerTr == null || _ia == null || highlightObject == null)
+        {
+            SafeSet(false);
+            return;
+        }
+
+        // 3) CanInteract로만 on/off 결정 (거리/점유판정은 IInteractable이 처리)
+        bool on = false;
+        try
+        {
+            on = _ia.CanInteract(_playerTr.gameObject);
+        }
+        catch { on = false; }
+
+        SafeSet(on);
+    }
+
+    private void SafeSet(bool v)
+    {
+        if (highlightObject && highlightObject.activeSelf != v)
+            highlightObject.SetActive(v);
+    }
+
+    private void TryFindLocalPlayer()
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm != null && nm.IsClient)
+        {
+            var po = nm.SpawnManager?.GetLocalPlayerObject();
+            if (po != null) { _playerTr = po.transform; return; }
+
+            // Fallback: 내 소유 & "Player" 태그
+            foreach (var netObj in nm.SpawnManager.SpawnedObjectsList)
+            {
+                if (netObj != null && netObj.OwnerClientId == nm.LocalClientId && netObj.CompareTag("Player"))
+                {
+                    _playerTr = netObj.transform;
+                    return;
+                }
+            }
+        }
+
+        // 마지막 Fallback: 씬에 있는 플레이어 태그(테스트용 단독 플레이 대비)
+        if (_playerTr == null)
+        {
+            var go = GameObject.FindGameObjectWithTag("Player");
+            if (go) _playerTr = go.transform;
+        }
     }
 }

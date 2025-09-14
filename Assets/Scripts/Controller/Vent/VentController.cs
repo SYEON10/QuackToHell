@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class VentController : InteractionControllerBase
+public sealed class VentController : NetworkBehaviour, IInteractable
 {
     [Header("Identification")]
     [SerializeField] private string ventId;
@@ -13,65 +14,49 @@ public sealed class VentController : InteractionControllerBase
     [SerializeField] private Animator animator;
 
     [Header("Interaction")]
+    [SerializeField] private bool enableSpacebar = true;
     [SerializeField, Range(0.5f, 5f)] private float interactionRadius = 1f;
     [SerializeField, Range(0f, 2f)] private float cooldownSec = 0.5f;
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
-    [SerializeField] private bool alsoSpace = true;
     [SerializeField] private Vector2 exitOffset = new(0f, 0.5f);
 
     [Header("Links (Max 4)")]
-    public List<VentController> linkedVents = new();
+    [SerializeField] private List<VentController> linkedVents = new();
 
     [Header("Arrow Placement")]
     [SerializeField, Min(0.1f)] private float arrowDistanceFromSource = 1.1f; // A에서 떨어질 절대 거리
     [SerializeField, Min(0.1f)] private float keepAwayFromTarget = 0.4f;      // B로부터 최소 이격
     [SerializeField, Range(-0.5f, 0.5f)] private float arrowNormalOffset = 0.0f;
 
-    [Header("Player Handling While Inside")]
-    [Tooltip("벤트 탑승 중 비활성화할 플레이어 컴포넌트(이동/입력 스크립트 등)를 여기에 드래그하세요.")]
+    [Header("Player Handling While Inside (Optional Local Only)")]
+    [Tooltip("플레이어 이동/입력 스크립트 등 로컬에서만 비활성화하려면 VentInvisibility 대신 여기에 넣어도 됨")]
     [SerializeField] private List<Behaviour> disableWhileInside = new();
-    [Tooltip("Renderer.enabled를 꺼서 완전히 숨길지, 알파만 낮출지 선택")]
-    [SerializeField] private bool hideByDisableRenderer = true;
-    [SerializeField, Range(0f, 1f)] private float insideAlpha = 0.15f;
-    [Tooltip("Rigidbody2D가 있으면 physics를 멈춰 고정합니다.")]
     [SerializeField] private bool freezeRigidbody2D = true;
 
-    // 점유/상태
-    private bool _isOccupied;
-    private GameObject _currentPlayer;
-    private readonly Dictionary<int, float> _lastExitTimeByPlayer = new();
+    // 서버 권한 상태 
+    private readonly NetworkVariable<bool> _occupied =
+        new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    // 화살표
+    private readonly NetworkVariable<ulong> _occupantNetId =
+        new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private double _lastExitServerTime;
+
+    // 로컬 캐시/화살표
+    private Transform _tr;
     [SerializeField] private GameObject arrowPrefab; // 반드시 연결
     private readonly List<GameObject> _spawnedArrows = new();
 
-    // 캐시
-    private Transform _tr;
-    private Rigidbody2D _playerRb;
-    private bool _rbPrevSimulated;
-    private List<SpriteRenderer> _playerRenderers = new();
-    private List<bool> _rendererPrevEnabled = new();
-    private List<Color> _rendererPrevColor = new();
+    // 이동 직후 벤트 클릭을 잠깐 무시하기 위한 로컬 억제 타이머
+    private static float _localClickSuppressUntil = 0f;
 
-    // 링크 변경 감지(탑승 중 편집 반영)
-    private int _linksHash;
-
-    // 벤트 탑승 및 탈출 애니메이션
-    private void PlayEnterAnimation()
+    public override void OnNetworkSpawn()
     {
-        if (animator && enterAnimation)
-            animator.Play(enterAnimation.name);
+        base.OnNetworkSpawn();
     }
 
-    private void PlayExitAnimation()
-    {
-        if (animator && exitAnimation)
-            animator.Play(exitAnimation.name);
-    }
 
-    protected override void Awake()
+    void Awake()
     {
-        base.Awake();
         _tr = transform;
 
         // 넘버링
@@ -80,149 +65,302 @@ public sealed class VentController : InteractionControllerBase
         name = $"Vent_{ventId}";
     }
 
-    void Update()
+    public bool CanInteract(GameObject player)
     {
-        var player = cachedPlayer;
-        if (!player) return;
-
-        // 탑승 중 → 탈출 입력
-        if (_isOccupied && _currentPlayer == player)
-        {
-            if (Input.GetKeyDown(interactKey) || (alsoSpace && Input.GetKeyDown(KeyCode.Space)))
-            {
-                ExitVent(player);
-                return;
-            }
-
-            // 탑승 중에 링크 변경되면 즉시 화살표 갱신
-            int h = ComputeLinksHash();
-            if (h != _linksHash)
-            {
-                DespawnArrows();
-                SpawnArrows();
-                _linksHash = h;
-            }
-        }
-        // 비점유 상태 → 진입 입력
-        else
-        {
-            float dist = Vector3.Distance(player.transform.position, _tr.position);
-            bool inRange = dist <= interactionRadius;
-            if (inRange && CanInteract(player) &&
-                (Input.GetKeyDown(interactKey) || (alsoSpace && Input.GetKeyDown(KeyCode.Space))))
-            {
-                EnterVent(player);
-            }
-        }
-    }
-
-    public override bool CanInteract(GameObject player)
-    {
-        if (_isOccupied) return false; // 다른 플레이어가 점유 중
-        int id = player.GetInstanceID();
-        if (_lastExitTimeByPlayer.TryGetValue(id, out float last))
-            if (Time.time - last < cooldownSec) return false; // 쿨타임
+        if (_occupied.Value || player == null) return false;
         float dist = Vector3.Distance(player.transform.position, _tr.position);
         return dist <= interactionRadius;
     }
 
-    public override void Interact(GameObject player)
+    public void Interact(GameObject player)
     {
-        // 클릭 등 외부 호출 시 동일한 규칙 적용
-        if (_isOccupied && _currentPlayer == player) ExitVent(player);
-        else if (CanInteract(player)) EnterVent(player);
+        RequestToggleEnterExit();
     }
 
-    // 핵심 플로우
-
-    private void EnterVent(GameObject player)
+    // Vent 본체 클릭 → 탑승/탈출 토글 요청 (키 입력 제거)
+    void OnMouseUpAsButton()
     {
-        if (_isOccupied) return;
+        if (Time.time < _localClickSuppressUntil) return;
 
-        _isOccupied = true;
-        _currentPlayer = player;
+        var nm = NetworkManager.Singleton;
 
-        //탑승 애니메이션
-        PlayEnterAnimation();
+        var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
+        if (localPlayerObj == null)
+        {
+            // Fallback: 내 소유 Player 찾기
+            if (nm != null)
+            {
+                foreach (var no in nm.SpawnManager.SpawnedObjectsList)
+                {
+                    if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
+                    {
+                        localPlayerObj = no;
+                        break;
+                    }
+                }
+            }
+        }
+        if (localPlayerObj == null) return;
 
-        // 플레이어 고정 & 가시성 조정
-        CapturePlayerCaches(player);
-        SetPlayerInsideVisual(true);
-        SetPlayerInsideMovement(true);
+        bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
+                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
 
-        // 화살표 생성
-        SpawnArrows();
-        _linksHash = ComputeLinksHash();
+        if (!_occupied.Value)
+        {
+            // 비점유 상태 → 진입 시도
+            RequestToggleEnterExit();
+        }
+        else if (iAmOccupant)
+        {
+            // 점유 상태 & 내가 탄 상태 → 탈출 시도
+            RequestToggleEnterExit();
+        }
+    }
+    void Update()
+    {
+        if (!IsClient || !enableSpacebar) return;
+
+        // 네트워크 준비 전엔 아무 것도 안 함
+        var nm = Unity.Netcode.NetworkManager.Singleton;
+        if (nm == null || !nm.IsClient) return;
+
+        // 로컬 플레이어 오브젝트 안전하게 얻기
+        var localPlayerObj = nm.SpawnManager?.GetLocalPlayerObject();
+        if (localPlayerObj == null)
+        {
+            foreach (var no in nm.SpawnManager.SpawnedObjectsList)
+            {
+                if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
+                            {
+                    localPlayerObj = no;
+                                break;
+                            }
+            }
+            if (localPlayerObj == null) return;
+        }
+
+        bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
+                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
+
+        if (!_occupied.Value)
+        {
+            float dist = Vector3.Distance(localPlayerObj.transform.position, _tr.position);
+            if (dist <= interactionRadius && Input.GetKeyDown(KeyCode.Space))
+            {
+                RequestToggleEnterExit();
+            }
+        }
+        else
+        {
+            if (iAmOccupant && Input.GetKeyDown(KeyCode.Space))
+            {
+                RequestToggleEnterExit();
+            }
+        }
     }
 
-    private void ExitVent(GameObject player)
+    void LateUpdate()
     {
-        if (!_isOccupied || _currentPlayer != player) return;
+        if (!IsClient) return;
 
-        // 탈출 애니메이션
-        PlayExitAnimation();
+        var nm = NetworkManager.Singleton;
+        var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
+        if (localPlayerObj == null)
+        {
+            if (nm != null)
+            {
+                foreach (var no in nm.SpawnManager.SpawnedObjectsList)
+                {
+                    if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
+                    {
+                        localPlayerObj = no;
+                        break;
+                    }
+                }
+            }
+        }
+        if (localPlayerObj == null) return;
 
-        // 플레이어를 벤트 출구 위치로 이동
-        player.transform.position = _tr.position + (Vector3)exitOffset;
+        bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
+                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
 
-        // 가시성/이동 원복
-        SetPlayerInsideMovement(false);
-        SetPlayerInsideVisual(false);
-        ClearPlayerCaches();
+        if (_occupied.Value && iAmOccupant)
+        {
+            localPlayerObj.transform.position = _tr.position;
+        }
+    }
 
-        // 쿨타임 기록
-        _lastExitTimeByPlayer[player.GetInstanceID()] = Time.time;
+    public void RequestToggleEnterExit()
+    {
+        if (!IsClient) return;
+        if (!IsSpawned) { Debug.LogWarning($"[Vent/{name}] Not spawned yet"); return; }
+        ToggleEnterExitServerRpc();
+    }
 
-        // 상태 정리
-        _isOccupied = false;
-        _currentPlayer = null;
+    [ServerRpc(RequireOwnership = false)]
+    private void ToggleEnterExitServerRpc(ServerRpcParams rpc = default)
+    {
 
-        // 화살표 제거
-        DespawnArrows();
+        Debug.Log($"[Server] ToggleEnterExit from {rpc.Receive.SenderClientId}");
+
+        var sender = rpc.Receive.SenderClientId;
+        var playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
+        if (playerObj == null)
+        {
+            foreach (var no in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
+            {
+                if (no != null && no.OwnerClientId == sender && no.gameObject.CompareTag("Player"))
+                            {
+                    playerObj = no;
+                                break;
+                            }
+                    }
+                if (playerObj == null)
+                    {
+                Debug.LogWarning($"[Server] No PlayerObject for client {sender}");
+                        return;
+            }
+        }
+
+        if (!_occupied.Value)
+        {
+            if (NetworkManager.Singleton.ServerTime.Time - _lastExitServerTime < cooldownSec) return;
+            if (Vector3.Distance(playerObj.transform.position, _tr.position) > interactionRadius) return;
+
+            _occupied.Value = true;
+            _occupantNetId.Value = playerObj.NetworkObjectId;
+
+            TeleportPlayerServer(playerObj, _tr.position);
+            SetPlayerHiddenClientRpc(_occupantNetId.Value, true);
+
+            // 탑승자 본인에게만 화살표 표시
+            SpawnArrowsClientRpc(NetworkObjectId, BuildTargetIds(), TargetClient(sender));
+
+            PlayEnterAnimation();
+        }
+        else
+        {
+            // 점유자만 탈출 가능
+            if (_occupantNetId.Value != playerObj.NetworkObjectId) return;
+
+            _occupied.Value = false;
+            _lastExitServerTime = NetworkManager.Singleton.ServerTime.Time;
+
+            SetPlayerHiddenClientRpc(_occupantNetId.Value, false);
+            DespawnArrowsClientRpc(TargetClient(sender));
+
+            // 탈출 오프셋 위치로
+            playerObj.transform.position = _tr.position + (Vector3)exitOffset;
+
+            PlayExitAnimation();
+        }
     }
 
     public void RequestMoveTo(VentController target)
     {
-        if (!_isOccupied || _currentPlayer == null) return;
-        if (!target) return;
+        if (!IsClient || target == null) return;
+        _localClickSuppressUntil = Mathf.Max(_localClickSuppressUntil, Time.time + 0.2f);
 
-        // A의 화살표 제거
-        DespawnArrows();
+        MoveToVentServerRpc(target.NetworkObjectId);
+    }
 
-        // "플레이어 위치"를 바로 B의 위치로 옮긴다 (여전히 투명/고정 상태 유지)
-        _currentPlayer.transform.position = target.transform.position;
+    [ServerRpc(RequireOwnership = false)]
+    private void MoveToVentServerRpc(ulong targetVentNetId, ServerRpcParams rpc = default)
+    {
+        var sender = rpc.Receive.SenderClientId;
 
-        // 플레이어 상태 캐시를 B에게 전달
-        TransferPlayerCachesTo(target);
+        // 1) PlayerObject 확보 (fallback 포함)
+        var playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
+        if (playerObj == null)
+        {
+            foreach (var netObj in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
+            {
+                if (netObj != null && netObj.OwnerClientId == sender && netObj.gameObject.CompareTag("Player"))
+                {
+                    playerObj = netObj;
+                    break;
+                }
+            }
+            if (playerObj == null)
+            {
+                Debug.LogWarning($"[Server] MoveTo: No PlayerObject for client {sender}");
+                return;
+            }
+        }
 
-        // 점유 이전
-        target._isOccupied = true;
-        target._currentPlayer = _currentPlayer;
+        // 2) 현재 벤트의 점유자만 이동 가능
+        if (_occupantNetId.Value != playerObj.NetworkObjectId)
+        {
+            Debug.Log($"[Server] MoveTo: not occupant (occ={_occupantNetId.Value}, me={playerObj.NetworkObjectId})");
+            return;
+        }
 
-        // B에서 화살표 재생성
-        target.SpawnArrows();
-        target._linksHash = target.ComputeLinksHash();
+        // 3) 타겟 벤트 조회 (out 변수도 다른 이름 사용)
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetVentNetId, out var targetNetObj)) return;
+        var targetVent = targetNetObj.GetComponent<VentController>();
+        if (targetVent == null) return;
 
-        // A 초기화
-        _isOccupied = false;
-        _currentPlayer = null;
+        // 4) 점유 상태 A→B 이전
+        _occupied.Value = false;
+        targetVent._occupied.Value = true;
+        targetVent._occupantNetId.Value = playerObj.NetworkObjectId;
+
+        // 5) 플레이어 위치를 B로 이동
+        TeleportPlayerServer(playerObj, targetVent.transform.position);
+
+        // 6) 탑승자 본인에게만: A의 화살표 제거 → B의 화살표 생성
+        var onlySender = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } };
+        DespawnArrowsClientRpc(onlySender);
+        targetVent.SpawnArrowsClientRpc(targetVent.NetworkObjectId, targetVent.BuildTargetIds(), onlySender);
+
+        Debug.Log($"[Server] MoveTo: {name} -> {targetVent.name} by client {sender}");
+    }
+
+    // 서버 권위 이동 (NetworkTransform 사용 권장)
+    private void TeleportPlayerServer(NetworkObject playerObj, Vector3 pos)
+    {
+        playerObj.transform.position = pos;
+    }
+
+    // 가시성 브로드캐스트
+    [ClientRpc]
+    private void SetPlayerHiddenClientRpc(ulong playerNetId, bool hidden)
+    {
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetId, out var no)) return;
+
+        foreach (var r in no.GetComponentsInChildren<Renderer>(true)) r.enabled = !hidden;
+        foreach (var c in no.GetComponentsInChildren<Collider2D>(true)) c.enabled = !hidden;
     }
 
     // 화살표
-
-    private void SpawnArrows()
+    [ClientRpc]
+    private void SpawnArrowsClientRpc(ulong ventNetId, ulong[] linkedVentIds, ClientRpcParams target = default)
     {
-        if (arrowPrefab == null) return;
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ventNetId, out var no)) return;
+        var vent = no.GetComponent<VentController>();
+        if (!vent) return;
 
-        DespawnArrows();
+        vent.LocalSpawnArrowsByNetworkIds(linkedVentIds);
+    }
 
-        int count = Mathf.Min(4, linkedVents?.Count ?? 0);
-        for (int i = 0; i < count; i++)
+    [ClientRpc]
+    private void DespawnArrowsClientRpc(ClientRpcParams target = default)
+    {
+        LocalDespawnArrows();
+    }
+
+    private void LocalSpawnArrowsByNetworkIds(ulong[] linkedIds)
+    {
+        LocalDespawnArrows();
+        if (arrowPrefab == null || linkedIds == null) return;
+
+        foreach (var id in linkedIds)
         {
-            var target = linkedVents[i];
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(id, out var no)) continue;
+            var target = no.GetComponent<VentController>();
             if (!target) continue;
 
-            var go = Instantiate(arrowPrefab, transform.parent); // 같은 레이어에 생성
+            var go = Instantiate(arrowPrefab, transform.parent);
             var arrow = go.GetComponent<VentArrowController>();
 
             Vector3 a = _tr.position;
@@ -234,146 +372,51 @@ public sealed class VentController : InteractionControllerBase
             Vector3 dir = ab / d;
             Vector3 perp = new(-dir.y, dir.x, 0f);
 
-            // A에서 떨어진 거리, B와의 최소 이격 보정
             float place = Mathf.Clamp(arrowDistanceFromSource, 0.05f, Mathf.Max(0.05f, d - keepAwayFromTarget));
-
-            // 위치 계산
             Vector3 pos = a + dir * place + perp * arrowNormalOffset;
-            go.transform.position = pos;
 
-            // 회전 (B 쪽을 향하게)
-            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            go.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            go.transform.position = pos;
+            go.transform.rotation =
+                Quaternion.AngleAxis(Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg, Vector3.forward);
 
             arrow.Setup(this, target);
             _spawnedArrows.Add(go);
         }
     }
 
-    private void DespawnArrows()
+    private void LocalDespawnArrows()
     {
         for (int i = 0; i < _spawnedArrows.Count; i++)
             if (_spawnedArrows[i]) Destroy(_spawnedArrows[i]);
         _spawnedArrows.Clear();
     }
 
-    // 플레이어 가시성/고정
-
-    private void CapturePlayerCaches(GameObject player)
+    private ulong[] BuildTargetIds()
     {
-        _playerRenderers.Clear();
-        _rendererPrevEnabled.Clear();
-        _rendererPrevColor.Clear();
-
-        player.GetComponentsInChildren<SpriteRenderer>(true, _playerRenderers);
-
-        for (int i = 0; i < _playerRenderers.Count; i++)
-        {
-            var r = _playerRenderers[i];
-            _rendererPrevEnabled.Add(r.enabled);
-            _rendererPrevColor.Add(r.color);
-        }
-
-        _playerRb = player.GetComponent<Rigidbody2D>();
-        if (_playerRb) _rbPrevSimulated = _playerRb.simulated;
+        var ids = new List<ulong>(linkedVents.Count);
+        foreach (var v in linkedVents) if (v && v.NetworkObject) ids.Add(v.NetworkObjectId);
+        return ids.ToArray();
     }
 
-    private void TransferPlayerCachesTo(VentController target)
+    private ClientRpcParams TargetClient(ulong clientId) => new ClientRpcParams
     {
-        if (target == null) return;
+        Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } }
+    };
 
-        // 렌더러/색/활성화 상태
-        target._playerRenderers.Clear();
-        target._rendererPrevEnabled.Clear();
-        target._rendererPrevColor.Clear();
-
-        // 같은 리스트를 복사(참조만 옮겨도 되지만 안전하게 복제)
-        target._playerRenderers.AddRange(_playerRenderers);
-        target._rendererPrevEnabled.AddRange(_rendererPrevEnabled);
-        target._rendererPrevColor.AddRange(_rendererPrevColor);
-
-        // 물리 캐시
-        target._playerRb = _playerRb;
-        target._rbPrevSimulated = _rbPrevSimulated;
+    // 애니메이션
+    private void PlayEnterAnimation()
+    {
+        if (animator && enterAnimation) animator.Play(enterAnimation.name);
+    }
+    private void PlayExitAnimation()
+    {
+        if (animator && exitAnimation) animator.Play(exitAnimation.name);
     }
 
-    private void ClearPlayerCaches()
-    {
-        _playerRenderers.Clear();
-        _rendererPrevEnabled.Clear();
-        _rendererPrevColor.Clear();
-        _playerRb = null;
-    }
-
-    private void SetPlayerInsideVisual(bool inside)
-    {
-        for (int i = 0; i < _playerRenderers.Count; i++)
-        {
-            var r = _playerRenderers[i];
-            if (!r) continue;
-
-            if (inside)
-            {
-                if (hideByDisableRenderer) r.enabled = false;
-                else
-                {
-                    var c = r.color;
-                    c.a = insideAlpha;
-                    r.color = c;
-                }
-            }
-            else
-            {
-                if (hideByDisableRenderer) r.enabled = _rendererPrevEnabled.Count > i ? _rendererPrevEnabled[i] : true;
-                else
-                {
-                    r.color = _rendererPrevColor.Count > i ? _rendererPrevColor[i] : new Color(1, 1, 1, 1);
-                }
-            }
-        }
-    }
-
-    private void SetPlayerInsideMovement(bool inside)
-    {
-        // 이동/입력 스크립트 비활성화
-        for (int i = 0; i < disableWhileInside.Count; i++)
-        {
-            var b = disableWhileInside[i];
-            if (!b) continue;
-            b.enabled = !inside;
-        }
-
-        // 물리 중지
-        if (_playerRb && freezeRigidbody2D)
-            _playerRb.simulated = !inside;
-    }
-
-    // 링크 변경 감지 해시
-
-    private int ComputeLinksHash()
-    {
-        int h = 17;
-        if (linkedVents != null)
-        {
-            for (int i = 0; i < linkedVents.Count; i++)
-            {
-                var v = linkedVents[i];
-                h = h * 31 + (v ? v.GetInstanceID() : 0);
-            }
-        }
-        return h;
-    }
-
+#if UNITY_EDITOR
     void OnValidate()
     {
         if (linkedVents.Count > 4) linkedVents.RemoveRange(4, linkedVents.Count - 4);
-
-        if (Application.isPlaying && _isOccupied)
-        {
-            DespawnArrows();
-            SpawnArrows();
-            _linksHash = ComputeLinksHash();
-        }
     }
 
     void OnDrawGizmosSelected()
@@ -381,7 +424,6 @@ public sealed class VentController : InteractionControllerBase
         Gizmos.color = new Color(0f, 1f, 1f, 0.35f);
         Gizmos.DrawWireSphere(transform.position, interactionRadius);
 
-#if UNITY_EDITOR
         UnityEditor.Handles.color = Color.cyan;
         UnityEditor.Handles.Label(transform.position + Vector3.up * 0.6f, $"Vent_{ventId}");
         Gizmos.color = new Color(1f, 1f, 0f, 0.8f);
@@ -390,6 +432,6 @@ public sealed class VentController : InteractionControllerBase
             if (!v) continue;
             Gizmos.DrawLine(transform.position, v.transform.position);
         }
-#endif
     }
+#endif
 }

@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4070802317202258681}
+  - component: {fileID: 3629300066327700832}
   - component: {fileID: 3182733577556017755}
   - component: {fileID: 4319908724657465645}
   - component: {fileID: 1528668449902005948}
@@ -38,6 +39,31 @@ Transform:
   - {fileID: 8953038241945550666}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3629300066327700832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5605374587913941141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3039639338
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!212 &3182733577556017755
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -153,8 +179,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b1386af0b54de44cab82927309aaf66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceTable: {fileID: 11400000, guid: ed8359e26b7bd8c4885dfc94a8d800ef, type: 2}
-  resourcePathKey: 
+  resourcePathKey: Vent_Sprite_Idle
+  resourceCsvUrl: https://docs.google.com/spreadsheets/d/e/2PACX-1vTD0Ax8qLCqNXtM4XtX0GPVHJw9H2YwTH_KYY8wdZfco3hQDh45_ZI0mvBEwxGhtu5GH8SnAKUV00Z2/pub?output=csv
+  loadCsvOnEnable: 1
   passThrough: 1
   renderRule: 0
   orderOffset: 0
@@ -176,22 +203,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a632bc7ce1b82bf40ad42058a91b0365, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   ventId: 
   enterAnimation: {fileID: 0}
   exitAnimation: {fileID: 0}
   animator: {fileID: 0}
+  enableSpacebar: 1
   interactionRadius: 1
   cooldownSec: 0.5
-  interactKey: 101
-  alsoSpace: 1
   exitOffset: {x: 0, y: 0.5}
   linkedVents: []
   arrowDistanceFromSource: 1.1
   keepAwayFromTarget: 0.4
   arrowNormalOffset: 0
   disableWhileInside: []
-  hideByDisableRenderer: 1
-  insideAlpha: 0.153
   freezeRigidbody2D: 1
   arrowPrefab: {fileID: 2116766531400907591, guid: de685615eaba1cd418d490fb3a047a46, type: 3}
 --- !u!114 &3377290141252231197
