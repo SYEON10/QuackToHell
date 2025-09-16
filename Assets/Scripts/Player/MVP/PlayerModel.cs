@@ -4,11 +4,7 @@ using System.IO;
 using System.Numerics;
 using TMPro;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
-using static PlayerView;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 /// <summary>
 /// 로직 관리
@@ -22,7 +18,6 @@ public class PlayerModel : NetworkBehaviour
 
     private void Awake()
     {
-        //플레이어 트랜스폼 가져오기
         playerRB = gameObject.GetComponent<Rigidbody2D>();
     }
 
@@ -57,7 +52,6 @@ public class PlayerModel : NetworkBehaviour
                 ApplyAnimationStateChange();
             }
         };
-
     }
 
     private void Update()
@@ -73,28 +67,23 @@ public class PlayerModel : NetworkBehaviour
     }
 
     #region 플레이어 움직임
-    //플레이어 위치
     private Rigidbody2D playerRB;
-    //움직임 로직 실행
 
     [Rpc(SendTo.Server)]
     public void MovePlayerServerRpc(int inputXDirection, int inputYDirection)
     {
-        //이동 : 1초당 움직임
-        //방향 벡터
         UnityEngine.Vector2 direction = new UnityEngine.Vector2(inputXDirection, inputYDirection).normalized;
-        playerRB.linearVelocity = direction * PlayerStatusData.Value.MoveSpeed;
-        //상태전환: walk / idle
+        playerRB.linearVelocity = direction * PlayerStatusData.Value.moveSpeed;
         if (inputXDirection != 0 || inputYDirection != 0)
         {
             var newStateData = PlayerStateData.Value;
-            newStateData.AnimationState = PlayerAnimationState.Walk;
+            newStateData.animationState = PlayerAnimationState.Walk;
             PlayerStateData.Value = newStateData;
         }
         else
         {
             var newStateData = PlayerStateData.Value;
-            newStateData.AnimationState = PlayerAnimationState.Idle;
+            newStateData.animationState = PlayerAnimationState.Idle;
             PlayerStateData.Value = newStateData;
         }
     }
@@ -102,7 +91,6 @@ public class PlayerModel : NetworkBehaviour
 
 
     #region 플레이어 데이터
-    //플레이어 데이터
     [SerializeField]
     [Header("*플레이어 상태 데이터 = 서버만 write 가능*")]
     private NetworkVariable<PlayerStatusData> _playerStatusData = new NetworkVariable<PlayerStatusData>(
@@ -147,7 +135,6 @@ public class PlayerModel : NetworkBehaviour
     private StateBase preAnimationState;
     private StateBase tempAnimationState;
     private StateBase curAnimationState;
-
 
     // AliveState만 처리하는 메서드
     private void SetAliveStateByEnum(PlayerLivingState aliveState)

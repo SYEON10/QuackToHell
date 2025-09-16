@@ -986,7 +986,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+<<<<<<< HEAD
 --- !u!1 &686180855
+=======
+--- !u!1 &512251107
+>>>>>>> Card_Refactory
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -994,24 +998,41 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+<<<<<<< HEAD
   - component: {fileID: 686180856}
   m_Layer: 0
   m_Name: "\u3161\u3161\u3161\uC62E\uAE30\uAE30\uC6A9\u3161\u3161\u3161"
+=======
+  - component: {fileID: 512251108}
+  m_Layer: 0
+  m_Name: CardForSaleParent
+>>>>>>> Card_Refactory
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!4 &686180856
+=======
+--- !u!4 &512251108
+>>>>>>> Card_Refactory
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< HEAD
   m_GameObject: {fileID: 686180855}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1008.86176, y: 474.43744, z: 0}
+=======
+  m_GameObject: {fileID: 512251107}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+>>>>>>> Card_Refactory
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3205,12 +3226,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+<<<<<<< HEAD
 --- !u!58 &94776867985074568
 CircleCollider2D:
+=======
+--- !u!224 &179065385033836022
+RectTransform:
+>>>>>>> Card_Refactory
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+<<<<<<< HEAD
   m_GameObject: {fileID: 5769403115105260945}
   m_Enabled: 1
   serializedVersion: 3
@@ -3247,6 +3274,8 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+=======
+>>>>>>> Card_Refactory
   m_GameObject: {fileID: 3349059703014310548}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -3260,6 +3289,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+<<<<<<< HEAD
 --- !u!224 &286395180805867973
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3279,6 +3309,8 @@ RectTransform:
   m_AnchoredPosition: {x: 414, y: -129}
   m_SizeDelta: {x: 900, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
+=======
+>>>>>>> Card_Refactory
 --- !u!95 &455774600592808270
 Animator:
   serializedVersion: 7
@@ -3377,6 +3409,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5244996080416554610}
   m_CullTransparentMesh: 1
+<<<<<<< HEAD
 --- !u!222 &882325405223009084
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3385,6 +3418,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2353843567030545828}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &901327500107282430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3415,6 +3450,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+<<<<<<< HEAD
 --- !u!224 &903239666975756142
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3435,6 +3471,8 @@ RectTransform:
   m_AnchoredPosition: {x: 674, y: -756}
   m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 1}
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &1000407913827593016
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3459,6 +3497,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -49.999996}
   m_SizeDelta: {x: 1200, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
+<<<<<<< HEAD
 --- !u!1 &1093509943956500158
 GameObject:
   m_ObjectHideFlags: 0
@@ -3569,6 +3608,8 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+=======
+>>>>>>> Card_Refactory
 --- !u!320 &1420494434325602932
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -3606,6 +3647,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+<<<<<<< HEAD
 --- !u!114 &1668305160529422427
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3636,6 +3678,8 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!222 &1710914092602867220
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3644,6 +3688,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6253519505128455261}
   m_CullTransparentMesh: 1
+<<<<<<< HEAD
 --- !u!114 &1758272692265403138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3688,6 +3733,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &1819358656079163224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3718,6 +3765,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+<<<<<<< HEAD
 --- !u!222 &2035256382259834195
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3761,6 +3809,8 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &2380119959020106665
 GameObject:
   m_ObjectHideFlags: 0
@@ -3803,6 +3853,7 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 21
   m_TargetDisplay: 0
+<<<<<<< HEAD
 --- !u!224 &2615240206534521887
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3822,6 +3873,8 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 900, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &2654813210722570751
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3909,6 +3962,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!114 &3021258876351134391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3939,6 +3993,8 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &3027351426267958741
 GameObject:
   m_ObjectHideFlags: 0
@@ -3974,6 +4030,7 @@ RectTransform:
   m_AnchoredPosition: {x: 1040, y: -150}
   m_SizeDelta: {x: 200, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
+<<<<<<< HEAD
 --- !u!114 &3227415717697771898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4085,6 +4142,8 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 1}
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &3349059703014310548
 GameObject:
   m_ObjectHideFlags: 0
@@ -4103,6 +4162,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!222 &3389449574133417503
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4111,6 +4171,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6864232052827362777}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &3445413444148022017
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4170,6 +4232,7 @@ RectTransform:
   m_AnchoredPosition: {x: 646, y: -50}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
+<<<<<<< HEAD
 --- !u!114 &3604192439727707529
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4193,6 +4256,8 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 0
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &3616106329950846407
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4278,6 +4343,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+<<<<<<< HEAD
 --- !u!114 &4157120652638141187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4322,6 +4388,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &4214350242516867232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4367,6 +4435,10 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   viewBehaviour: {fileID: 4007026971284020342}
   rerollCooldown: 0.2
+<<<<<<< HEAD
+=======
+  CardForSaleParent: {fileID: 512251107}
+>>>>>>> Card_Refactory
 --- !u!222 &4311450260969554897
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4451,6 +4523,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8461601383418835727}
   m_CullTransparentMesh: 1
+<<<<<<< HEAD
 --- !u!224 &4586804258399972278
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4473,6 +4546,8 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -200, y: -600}
   m_Pivot: {x: 0.5, y: 0.5}
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &4719705731129322958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4522,6 +4597,7 @@ RectTransform:
   m_AnchoredPosition: {x: 636, y: 36.000008}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
+<<<<<<< HEAD
 --- !u!1 &4805357220821167368
 GameObject:
   m_ObjectHideFlags: 0
@@ -4579,6 +4655,8 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &5012272541559662077
 GameObject:
   m_ObjectHideFlags: 0
@@ -4598,6 +4676,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!222 &5216358047804717194
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4606,6 +4685,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4805357220821167368}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &5244996080416554610
 GameObject:
   m_ObjectHideFlags: 0
@@ -4644,6 +4725,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!222 &5518300201726719231
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4652,6 +4734,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6491082821809303342}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &5530035761125260683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4682,6 +4766,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+<<<<<<< HEAD
 --- !u!222 &5553374281644993575
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4690,6 +4775,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5000449840073053354}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &5602306843864941991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4754,6 +4841,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2380119959020106665}
   m_CullTransparentMesh: 1
+<<<<<<< HEAD
 --- !u!224 &5759879420620444454
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4822,6 +4910,8 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &6253519505128455261
 GameObject:
   m_ObjectHideFlags: 0
@@ -4841,6 +4931,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!222 &6262913266028266320
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4849,6 +4940,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7723173883199570176}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!222 &6397357172151698341
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4880,6 +4973,7 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 0
+<<<<<<< HEAD
 --- !u!1 &6491082821809303342
 GameObject:
   m_ObjectHideFlags: 0
@@ -4906,6 +5000,8 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8202172702540152899}
   m_CullTransparentMesh: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &6623752850759257715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4918,7 +5014,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
   GlobalObjectIdHash: 1729383289
+=======
+  GlobalObjectIdHash: 4128524543
+>>>>>>> Card_Refactory
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -4951,6 +5051,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+<<<<<<< HEAD
 --- !u!1 &6864232052827362777
 GameObject:
   m_ObjectHideFlags: 0
@@ -4969,6 +5070,8 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &6965370614131561435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4999,6 +5102,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+<<<<<<< HEAD
 --- !u!1 &7150084428568586092
 GameObject:
   m_ObjectHideFlags: 0
@@ -5018,6 +5122,8 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!222 &7179815147015120758
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5026,6 +5132,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5012272541559662077}
   m_CullTransparentMesh: 1
+<<<<<<< HEAD
 --- !u!212 &7200263020197530944
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -5081,6 +5188,8 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &7313548595481338827
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5128,6 +5237,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+<<<<<<< HEAD
 --- !u!1 &7723173883199570176
 GameObject:
   m_ObjectHideFlags: 0
@@ -5165,6 +5275,8 @@ RectTransform:
   m_AnchoredPosition: {x: 150, y: -100}
   m_SizeDelta: {x: 400, y: 400}
   m_Pivot: {x: 0, y: 0.5}
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &7899182520784407080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5265,6 +5377,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+<<<<<<< HEAD
 --- !u!224 &7968978117380411312
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5284,6 +5397,8 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+=======
+>>>>>>> Card_Refactory
 --- !u!114 &8065860178600930596
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5334,6 +5449,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+<<<<<<< HEAD
 --- !u!1 &8202172702540152899
 GameObject:
   m_ObjectHideFlags: 0
@@ -5352,6 +5468,8 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &8247411122210032629
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5373,6 +5491,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+<<<<<<< HEAD
 --- !u!4 &8318320758253320731
 Transform:
   m_ObjectHideFlags: 0
@@ -5411,6 +5530,8 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+=======
+>>>>>>> Card_Refactory
 --- !u!224 &8400346109149326722
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5452,6 +5573,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+<<<<<<< HEAD
 --- !u!114 &8626878466059379375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5467,6 +5589,8 @@ MonoBehaviour:
   circleCollider2D: {fileID: 94776867985074568}
   detectionRadius: 1
   convocationKey: 114
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &8713247794566217982
 GameObject:
   m_ObjectHideFlags: 0
@@ -5484,6 +5608,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+<<<<<<< HEAD
 --- !u!114 &8761078083946071320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5696,6 +5821,8 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+=======
+>>>>>>> Card_Refactory
 --- !u!1 &9042392518239286221
 GameObject:
   m_ObjectHideFlags: 0
@@ -5743,6 +5870,7 @@ SceneRoots:
   - {fileID: 350448155}
   - {fileID: 507874994}
   - {fileID: 8247411122210032629}
+<<<<<<< HEAD
   - {fileID: 1480720821}
   - {fileID: 8318320758253320731}
   - {fileID: 4991222906249960535}
@@ -5753,3 +5881,6 @@ SceneRoots:
   - {fileID: 1997896941}
   - {fileID: 2043720578}
   - {fileID: 686180856}
+=======
+  - {fileID: 512251108}
+>>>>>>> Card_Refactory

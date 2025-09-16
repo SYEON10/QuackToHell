@@ -2,11 +2,13 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
-public sealed class CardShopPresenter : NetworkBehaviour
+public class CardShopPresenter : NetworkBehaviour
 {
     [SerializeField] private CardShopView viewBehaviour;
     [SerializeField] private float rerollCooldown = 0.2f;
+
 
     private CardShopView _view;
     private CardShopModel _model;
@@ -22,9 +24,9 @@ public sealed class CardShopPresenter : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-                
-        CardItemFactoryManager.Instance.OnCardForSaleCreated+=CardItemFactory_OnCardForSaleCreated;
-        _model.CreateCardsForSale();
+        var activeScene = SceneManager.GetActiveScene().name;
+        _model.Initiate();
+        _model.DisplayCardForSale();
 
         if (_view != null)
         {
@@ -51,7 +53,7 @@ public sealed class CardShopPresenter : NetworkBehaviour
             s_serverByClient.Remove(OwnerClientId);
     }
 
-    public void TryPurchaseCard(InventoryCard card, ulong inputClientId)
+    public void TryPurchaseCard(CardItemData card, ulong inputClientId)
     {
         Debug.Log("[CardShopPresenter] TryPurchaseCard 실행됨");
         var clientId = inputClientId == 0UL ? OwnerClientId : inputClientId;
@@ -76,8 +78,16 @@ public sealed class CardShopPresenter : NetworkBehaviour
 
         StartCoroutine(RerollCooldown());
 
-        // 리롤 실행
-        var ok = _model.TryReRoll();
+        // 서버에게 진열 요청 (중복 진열 방지)
+        DeckManager.Instance.RequestDisplayCardsServerRpc(NetworkManager.Singleton.LocalClientId);
+    }
+
+    /// <summary>
+    /// 서버에서 진열 결과를 받아서 UI 업데이트
+    /// </summary>
+    public void OnDisplayCardsResult(CardItemData[] displayedCards)
+    {
+        _model.UpdateDisplayFromServer(displayedCards);
     }
 
     private IEnumerator RerollCooldown()
@@ -99,11 +109,6 @@ public sealed class CardShopPresenter : NetworkBehaviour
         }
     }
 
-    #region 카드생성 콜백
-    public void CardItemFactory_OnCardForSaleCreated()
-    {
-        _model.MoveCardsForSaleToRowObject();
-    }
-    #endregion
+ 
 
 }

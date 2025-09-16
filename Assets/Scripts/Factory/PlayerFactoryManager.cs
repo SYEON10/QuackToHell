@@ -1,22 +1,23 @@
 using UnityEngine;
 using Unity.Netcode;
-using System.Collections.Generic;
-using UnityEngine.Playables;
-using System;
+
 /// <summary>
 /// 플레이어 생성 담당
 /// </summary>
 
 public class PlayerFactoryManager : NetworkBehaviour
 {
-    //플레이어스폰
     public GameObject playerPrefab;
     
-    private Transform playerSpawnPoint;
+    // 상수 정의
+    private const int DEFAULT_GOLD = 100000;
+    private const float DEFAULT_MOVE_SPEED = 10f;
+    
+    private Transform _playerSpawnPoint;
     private void Start()
     {
         transform.position = new Vector3(0, 0, 0);
-        playerSpawnPoint = transform;
+        _playerSpawnPoint = transform;
     }
 
 
@@ -24,7 +25,7 @@ public class PlayerFactoryManager : NetworkBehaviour
     public void SpawnPlayerServerRpc(ServerRpcParams rpcParams = default)
     {
         // 스폰 (리플리케이트)
-        var player = Instantiate(playerPrefab, playerSpawnPoint);
+        var player = Instantiate(playerPrefab, _playerSpawnPoint);
         PlayerModel playerModel= player.GetComponent<PlayerModel>();
         player.GetComponent<NetworkObject>().SpawnWithOwnership(rpcParams.Receive.SenderClientId);
 
@@ -49,48 +50,23 @@ public class PlayerFactoryManager : NetworkBehaviour
         // 상태 주입 (모두에게 명령)
         playerModel.PlayerStateData.Value = new PlayerStateData
         {
-            AliveState = PlayerLivingState.Alive,
-            AnimationState = PlayerAnimationState.Idle
+            aliveState = PlayerLivingState.Alive,
+            animationState = PlayerAnimationState.Idle
         };
 
-        //싱글톤 처리 - 플레이어
         DontDestroyOnLoad(player);
     }
 
 
 
 
-    //싱글톤로직
-    private static PlayerFactoryManager _instance;
-    public static PlayerFactoryManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<PlayerFactoryManager>();
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("PlayerFactory");
-                    _instance = go.AddComponent<PlayerFactoryManager>();
-                }
-            }
-            return _instance;
-        }
-    }
-
+    #region 싱글톤
+    public static PlayerFactoryManager Instance => SingletonHelper<PlayerFactoryManager>.Instance;
 
     private void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if (_instance != this)
-        {
-            Destroy(gameObject);
-        }
+        SingletonHelper<PlayerFactoryManager>.InitializeSingleton(this);
     }
+    #endregion
 
 }

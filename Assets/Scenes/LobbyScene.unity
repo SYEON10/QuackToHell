@@ -2030,6 +2030,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  cardCsvUrl: https://docs.google.com/spreadsheets/d/e/2PACX-1vSgwnbjYDcZWcgXBBo1DjYeQMkLdZb2XMxyqWqoSY1-uEYOcByb86fWiMv1QHf2VPp5S9pelS_Ioz5D/pub?gid=0&single=true&output=csv
+  stringCsvUrl: https://docs.google.com/spreadsheets/d/e/2PACX-1vS5_GjFBmzcqQxa8Z2_WCjxvO_uFnCUo5KEqB2DxqsWlBQsArP0t9GOpPmFVjJ0nLOGEG9iOb4sa-Wy/pub?gid=0&single=true&output=csv
+  resourceCsvUrl: https://docs.google.com/spreadsheets/d/e/2PACX-1vTD0Ax8qLCqNXtM4XtX0GPVHJw9H2YwTH_KYY8wdZfco3hQDh45_ZI0mvBEwxGhtu5GH8SnAKUV00Z2/pub?gid=0&single=true&output=csv
   colorDropdown: {fileID: 641171083}
 --- !u!114 &1390765178
 MonoBehaviour:

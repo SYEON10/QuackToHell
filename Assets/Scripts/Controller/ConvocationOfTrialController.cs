@@ -24,9 +24,23 @@ public class ConvocationOfTrialController : MonoBehaviour
             OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
         }
     }
+
+    private void OnDestroy()
+    {
+        // 오브젝트가 파괴될 때 이벤트 구독 해제
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
     
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // 오브젝트가 파괴되었는지 확인
+        if (this == null || gameObject == null)
+        {
+            // 이벤트 구독 해제
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            return;
+        }
+
         if (scene.name.Equals("VillageScene"))
         {
             //콜라이더 설정
@@ -34,6 +48,7 @@ public class ConvocationOfTrialController : MonoBehaviour
             if(circleCollider2D == null)
             {
                 Debug.LogError("[convocationController] CircleCollider2D component not found on ConvocationOfTrialController GameObject.");
+                return;
             }
             circleCollider2D.isTrigger = true;
             circleCollider2D.radius = detectionRadius;
@@ -59,7 +74,7 @@ public class ConvocationOfTrialController : MonoBehaviour
 
     private void Update()
     {
-        if (reporter==null)
+        if (reporter == null)
         {
             return;
         }
@@ -70,8 +85,17 @@ public class ConvocationOfTrialController : MonoBehaviour
         if (Input.GetKeyDown(convocationKey))
         {
             Debug.Log("Key Pressed!");
-            //리포터의 view에서 OnReportCorpseTriggered 호출
-            reporter.GetComponent<PlayerView>().OnReportCorpseTriggered();
+            
+            // 안전한 컴포넌트 접근
+            var playerView = reporter.GetComponent<PlayerView>();
+            if (playerView != null)
+            {
+                playerView.OnReportCorpseTriggered();
+            }
+            else
+            {
+                Debug.LogWarning("[ConvocationOfTrialController] PlayerView component not found on reporter.");
+            }
         }
     }
 }

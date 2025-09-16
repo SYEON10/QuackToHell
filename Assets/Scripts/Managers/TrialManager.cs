@@ -135,11 +135,20 @@ public class TrialManager : NetworkBehaviour
         if (scene.name == "VillageScene")
         {
             convocationOfTrialCanvas = GameObject.FindWithTag("ConvocationOfTrialCanvas");
-            convocationOfTrialPanel = convocationOfTrialCanvas.transform.GetChild(0).gameObject;
             
-            //TODO: 하드코딩 개선
-            reporterImage = convocationOfTrialPanel.transform.GetChild(0).GetComponent<Image>();
-            corpseTextObject = convocationOfTrialPanel.transform.GetChild(1).gameObject;
+            // Null 체크 추가
+            if (convocationOfTrialCanvas != null)
+            {
+                convocationOfTrialPanel = convocationOfTrialCanvas.transform.GetChild(0).gameObject;
+                
+                //TODO: 하드코딩 개선
+                reporterImage = convocationOfTrialPanel.transform.GetChild(0).GetComponent<Image>();
+                corpseTextObject = convocationOfTrialPanel.transform.GetChild(1).gameObject;
+            }
+            else
+            {
+                Debug.LogWarning("ConvocationOfTrialCanvas not found in VillageScene!");
+            }
         }
     }
 }

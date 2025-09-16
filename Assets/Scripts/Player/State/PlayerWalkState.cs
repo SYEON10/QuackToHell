@@ -1,5 +1,5 @@
-using UnityEngine;
 using Unity.Netcode;
+using UnityEngine;
 
 public class PlayerWalkState : StateBase
 {
@@ -7,10 +7,7 @@ public class PlayerWalkState : StateBase
     private SpriteRenderer head;
     
     
-    private NetworkVariable<bool> headFlipX = new NetworkVariable<bool>(
-        false, 
-        writePerm: NetworkVariableWritePermission.Server
-    );
+    private NetworkVariable<bool> headFlipX = new NetworkVariable<bool>();
     
     private void Start()
     {

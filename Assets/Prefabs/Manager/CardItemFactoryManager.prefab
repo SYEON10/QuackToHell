@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7000916672767109378}
-  - component: {fileID: 3931663409976248832}
+  - component: {fileID: 2803788521827610200}
   - component: {fileID: 2711181432998233429}
   m_Layer: 0
   m_Name: CardItemFactoryManager
@@ -33,7 +33,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3931663409976248832
+--- !u!114 &2803788521827610200
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3738766848
+  GlobalObjectIdHash: 4264761836
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -71,5 +71,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  cardItemForSalePrefab: {fileID: 3226483900878045010, guid: d4294cbcc488d1c48a0dc64b2fd8f62d, type: 3}
-  cardItemForInventoryPrefab: {fileID: 2882950834005421922, guid: 779af19041c2f42d781d45c0d87c8afd, type: 3}
+  cardItemPrefab: {fileID: 2882950834005421922, guid: 779af19041c2f42d781d45c0d87c8afd, type: 3}

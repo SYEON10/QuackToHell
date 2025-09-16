@@ -1,366 +1,1110 @@
-using UnityEngine;
-using Unity.Netcode;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Unity.Netcode;
+using UnityEngine;
+using System.Threading;
+using UnityEngine.Networking;
+using System.Text;
+using System.Linq;
+using CardItem.MVP;
+using Unity.Collections;
+using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
-public struct TotalCardsOnGameData : INetworkSerializable, IEquatable<TotalCardsOnGameData>
+#region Data Structs (기획서 타입 반영)
+public enum TierEnum { None = 0, Common = 1, Rare = 2, Special = 3 }
+public enum TypeEnum { None = 0, Attack = 1, Defense = 2, Special = 3 }
+
+// 딕셔너리의 Key와 Value 한 쌍을 담을 컨테이너 struct
+public struct DictionaryCardIdCardDef : INetworkSerializable, IEquatable<DictionaryCardIdCardDef>
 {
-    public int cardId;
-    public int cardTotalCount;
-    
+    public int key;
+    public CardDef value;
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        serializer.SerializeValue(ref cardId);
-        serializer.SerializeValue(ref cardTotalCount);
+        serializer.SerializeValue(ref key);
+        serializer.SerializeValue(ref value);
     }
 
-    public bool Equals(TotalCardsOnGameData other)
+    public bool Equals(DictionaryCardIdCardDef other)
     {
-        return cardId == other.cardId && cardTotalCount == other.cardTotalCount;
+        return key == other.key && value.Equals(other.value);
     }
-    
+
     public override bool Equals(object obj)
     {
-        return obj is TotalCardsOnGameData other && Equals(other);
+        return obj is DictionaryCardIdCardDef pair && Equals(pair);
     }
-    
+
     public override int GetHashCode()
     {
-        return HashCode.Combine(cardId, cardTotalCount);
+        return HashCode.Combine(key, value);
     }
 }
 
 /// <summary>
-/// CardId와 해당 CardId의 다음 CardItemId를 저장하는 구조체
+/// 카드 아이템 데이터 (CardDef + CardItemStatusData)
 /// </summary>
-public struct CardItemIdData : INetworkSerializable, IEquatable<CardItemIdData>
+public struct CardItemData : INetworkSerializable, IEquatable<CardItemData>, IEquatable<CardDef>, IEquatable<CardStatusData>
 {
-    public int CardId;
-    public int NextCardItemId;
-    
+    public int cardIdKey;
+    public CardDef cardDef;
+    public CardStatusData cardItemStatusData;
+    public long acquiredTicks; // 카드 획득 시점
+    public ulong displayingClientId; // 진열 중인 클라이언트 ID (0이면 진열되지 않음) 
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        serializer.SerializeValue(ref CardId);
-        serializer.SerializeValue(ref NextCardItemId);
+        serializer.SerializeValue(ref cardIdKey);
+        serializer.SerializeValue(ref cardDef);
+        serializer.SerializeValue(ref cardItemStatusData);
+        serializer.SerializeValue(ref acquiredTicks);
+        serializer.SerializeValue(ref displayingClientId);
     }
 
-    public bool Equals(CardItemIdData other)
+    public bool Equals(CardItemData other)
     {
-        return CardId == other.CardId && NextCardItemId == other.NextCardItemId;
+        return cardIdKey == other.cardIdKey && 
+               cardDef.Equals(other.cardDef) && 
+               cardItemStatusData.Equals(other.cardItemStatusData) && 
+               acquiredTicks == other.acquiredTicks &&
+               displayingClientId == other.displayingClientId;
     }
-    
+
+    public bool Equals(CardDef other)
+    {
+        return cardDef.Equals(other);
+    }
+
+    public bool Equals(CardStatusData other)
+    {
+        return cardItemStatusData.Equals(other);
+    }
+
     public override bool Equals(object obj)
     {
-        return obj is CardItemIdData other && Equals(other);
+        if (obj is CardItemData cardItemData)
+            return Equals(cardItemData);
+        if (obj is CardDef cardDef)
+            return Equals(cardDef);
+        if (obj is CardStatusData statusData)
+            return Equals(statusData);
+        return false;
     }
-    
+
     public override int GetHashCode()
     {
-        return HashCode.Combine(CardId, NextCardItemId);
+        return HashCode.Combine(cardIdKey, cardDef, cardItemStatusData, acquiredTicks, displayingClientId);
     }
 }
 
+/// <summary>
+/// Inspector에서 카드 상태를 쉽게 보기 위한 요약 구조체
+/// </summary>
+[System.Serializable]
+public struct CardStatusSummary
+{
+    [Header("🆔 카드 정보")]
+    public int cardIdKey;
+    public int cardItemId;
+    public string cardName;
+    
+    [Header("📊 상태 정보")]
+    public CardItemState state;
+    public ulong displayingClientId;
+    public string acquiredTime;
+    
+    [Header("💰 가격 정보")]
+    public int price;
+    public int cost;
+    
+    [Header("🎯 기타")]
+    public TierEnum tier;
+    public TypeEnum type;
+    public string statusDescription;
+}
+
+public struct CardDef : INetworkSerializable, IEquatable<CardDef>
+{
+    public int cardID;
+    public FixedString64Bytes cardNameKey;
+    public TierEnum tier;      // enum
+    public TypeEnum type;      // enum
+    public int subType;        // 사용 안 하면 0
+    public bool isUniqueCard;
+    public bool isSellableCard;
+    public int usableClass;      // 3bit
+    public int mapRestriction;  // 2bit
+    public int basePrice;
+    public int baseCost;
+    public FixedString64Bytes descriptionKey;
+    public FixedString64Bytes imagePathKey;
+    public int amountOfCardItem;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref cardID);
+        serializer.SerializeValue(ref cardNameKey);
+        serializer.SerializeValue(ref tier);
+        serializer.SerializeValue(ref type);
+        serializer.SerializeValue(ref subType);
+        serializer.SerializeValue(ref isUniqueCard);
+        serializer.SerializeValue(ref isSellableCard);
+        serializer.SerializeValue(ref usableClass);
+        serializer.SerializeValue(ref mapRestriction);
+        serializer.SerializeValue(ref basePrice);
+        serializer.SerializeValue(ref baseCost);
+        serializer.SerializeValue(ref descriptionKey);
+        serializer.SerializeValue(ref imagePathKey);
+        serializer.SerializeValue(ref amountOfCardItem);
+    }
+
+    public bool Equals(CardDef other)
+    {
+        return cardID == other.cardID && 
+               cardNameKey.Equals(other.cardNameKey) && 
+               tier == other.tier && 
+               type == other.type && 
+               subType == other.subType && 
+               isUniqueCard == other.isUniqueCard && 
+               isSellableCard == other.isSellableCard && 
+               usableClass == other.usableClass && 
+               mapRestriction == other.mapRestriction && 
+               basePrice == other.basePrice && 
+               baseCost == other.baseCost && 
+               descriptionKey.Equals(other.descriptionKey) && 
+               imagePathKey.Equals(other.imagePathKey) && 
+               amountOfCardItem == other.amountOfCardItem;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is CardDef def && Equals(def);
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(cardID);
+        hash.Add(cardNameKey);
+        hash.Add(tier);
+        hash.Add(type);
+        hash.Add(subType);
+        hash.Add(isUniqueCard);
+        hash.Add(isSellableCard);
+        hash.Add(usableClass);
+        hash.Add(mapRestriction);
+        hash.Add(basePrice);
+        hash.Add(baseCost);
+        hash.Add(descriptionKey);
+        hash.Add(imagePathKey);
+        hash.Add(amountOfCardItem);
+        return hash.ToHashCode();
+    }
+}
+
+public enum CardItemState
+{
+    None,
+    Solding,
+    Sold,
+}
+
+public struct CardStatusData : INetworkSerializable, IEquatable<CardStatusData>
+{
+    public int cardItemID;
+    public int cardID;
+    public int price;
+    public int cost;
+    public CardItemState state;
+    
+    // Property to access state (for compatibility with existing code)
+    public CardItemState State => state;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref cardItemID);
+        serializer.SerializeValue(ref cardID);
+        serializer.SerializeValue(ref price);
+        serializer.SerializeValue(ref cost);
+        serializer.SerializeValue(ref state);
+    }
+
+    public bool Equals(CardStatusData other)
+    {
+        return cardItemID == other.cardItemID && cardID == other.cardID && price == other.price && cost == other.cost && state == other.state;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is CardStatusData data && Equals(data);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(cardItemID, cardID, price, cost, state);
+    }   
+}
+
+[Serializable] public struct StringRow { [FormerlySerializedAs("Key")] public string key; [FormerlySerializedAs("KR")] public string kr; [FormerlySerializedAs("EN")] public string en; }
+[Serializable] public struct ResourceRow { [FormerlySerializedAs("Key")] public string key; [FormerlySerializedAs("Path")] public string path; }
+
+[Serializable]
+public struct CardDisplay
+{
+    [FormerlySerializedAs("CardID")] public int cardID;
+    [FormerlySerializedAs("Name")] public string name;
+    [FormerlySerializedAs("Description")] public string description;
+    [FormerlySerializedAs("ImagePath")] public string imagePath;
+    [FormerlySerializedAs("Tier")] public TierEnum tier;
+    [FormerlySerializedAs("Type")] public TypeEnum type;
+    [FormerlySerializedAs("BasePrice")] public int basePrice;
+    [FormerlySerializedAs("BaseCost")] public int baseCost;
+}
+#endregion
 
 /// <summary>
-/// 덱 매니저: 게임 내 전체 카드 매물을 관리하는 매니저
-/// 
-/// 책임:
-/// - 게임 내 전체 카드 매물 관리 (수량, 가격, 재고)
-/// - 카드 구매/판매 처리 및 검증
-/// - 게임 내 존재하는 카드 데이터 조회 및 제공
-/// 
-/// 주의: 
-/// - 골드 차감은 GameManager에 위임
-/// - 실제 카드 데이터는 TotalCardsOnGame에서 카드 키 조회하여 가져와 사용하기
+/// 책임: 게임 내 전체 카드 정보 관리 (권위적 데이터 소스)
 /// </summary>
 public class DeckManager : NetworkBehaviour
 {
-    #region 싱글톤 코드
-    //싱글톤 코드
-    private static DeckManager _instance;
-    public static DeckManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<DeckManager>();
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("DeckManager");
-                    _instance = go.AddComponent<DeckManager>();
-                }
-            }
-            return _instance;
-        }
-    }
+    #region 싱글톤
+    public static DeckManager Instance => SingletonHelper<DeckManager>.Instance;
 
     private void Awake()
     {
-        if (_instance == null)
+        SingletonHelper<DeckManager>.InitializeSingleton(this);
+        
+        // NetworkList 변경 이벤트 바인딩
+        _allCardsOnGameData.OnListChanged += OnAllCardsOnGameDataChanged;
+    }
+
+    private void OnDestroy()
+    {
+        // 이벤트 언바인딩
+        if (_allCardsOnGameData != null)
         {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else if (_instance != this)
-        {
-            Destroy(gameObject);
+            _allCardsOnGameData.OnListChanged -= OnAllCardsOnGameDataChanged;
         }
     }
+
+    private void OnAllCardsOnGameDataChanged(NetworkListEvent<CardItemData> changeEvent)
+    {
+        // 서버에서만 디버그 정보 업데이트
+        if (IsServer)
+        {
+            UpdateCardCounts();
+        }
+    }
+
     #endregion
 
-    #region 게임 내 전체 카드 매물 관리(덱 관리)
-    private NetworkList<TotalCardsOnGameData> _totalCardsOnGame = new NetworkList<TotalCardsOnGameData>();
-    public NetworkList<TotalCardsOnGameData> TotalCardsOnGame => _totalCardsOnGame;
-
-    /// <summary>
-    /// 첫번째 값: cardId, 두번째 값: 해당 cardId의 다음 cardItemId
-    /// </summary>
-    private readonly NetworkList<CardItemIdData> _cardItemId = new NetworkList<CardItemIdData>();
-    public NetworkList<CardItemIdData> CardItemId
+    #region 데이터
+    public Action onAllCardsOnGameDataChanged;
+    [Header("확인용 변수 열어두기")]
+    [SerializeField]
+    private NetworkList<CardItemData> _allCardsOnGameData = new NetworkList<CardItemData>();
+    
+    [Header("디버그용 - 카드 상태별 개수 (서버 권위적)")]
+    [SerializeField] private int _totalCardCount;
+    [SerializeField] private int _soldCardCount;
+    [SerializeField] private int _soldingCardCount;
+    [SerializeField] private int _noneCardCount;
+    
+    [Header("디버그용 - 클라이언트별 진열 상태")]
+    [SerializeField] private Dictionary<ulong, int> _clientDisplayCounts = new Dictionary<ulong, int>();
+    
+    [Header("디버그용 - 개별 카드 상태 (Inspector용)")]
+    [SerializeField] private List<CardItemData> _debugCardList = new List<CardItemData>();
+    
+    [Header("📋 모든 카드 상태 요약 (펼쳐서 보기)")]
+    [Tooltip("모든 카드의 상태를 한 눈에 볼 수 있습니다. 리스트를 펼쳐서 각 카드의 상세 정보를 확인하세요.")]
+    [SerializeField] private List<CardStatusSummary> _cardStatusSummaries = new List<CardStatusSummary>();
+    
+    
+    public NetworkList<CardItemData> AllCardsOnGameData
     {
         get
         {
-            return _cardItemId;
+            return _allCardsOnGameData;
+        }
+        set
+        {
+            _allCardsOnGameData = value;
+            //invoke하기
+            onAllCardsOnGameDataChanged?.Invoke();
         }
     }
 
-    /// <summary>
-    /// 특정 CardId에 대해 다음 CardItemId를 가져오고 증가시킵니다.
-    /// </summary>
-    /// <param name="cardId">카드 ID</param>
-    /// <param name="requestId">요청 ID (클라이언트에서 응답을 구분하기 위함)</param>
-    [ServerRpc(RequireOwnership = false)]
-    public void GetNextCardItemIdServerRpc(int cardId, int requestId)
+    // CSV 파싱을 위한 내부 데이터 저장소 (CardDataPresenter에서 이동)
+    private Dictionary<int, CardDef> _cardDefinitions = new();
+    private Dictionary<string, StringRow> _strings = new();
+    private Dictionary<string, ResourceRow> _resources = new();
+    private Task _dataLoadTask;
+    private CancellationTokenSource _cancellationTokenSource;
+
+    // Public APIs for clients (CardDataPresenter에서 이동)
+    public bool TryGetCardDefinition(int cardId, out CardDef def) => _cardDefinitions.TryGetValue(cardId, out def);
+    
+    public bool TryGetCardDisplay(int cardId, string locale, out CardDisplay disp)
     {
-        //CardId찾기
-        int currentIndex = -1;
-        for (int i = 0; i < _cardItemId.Count; i++)
+        disp = default;
+        if (!_cardDefinitions.TryGetValue(cardId, out var d)) return false;
+        disp = new CardDisplay
         {
-            if (_cardItemId[i].CardId == cardId)
+            cardID = d.cardID,
+            name = Localize(d.cardNameKey.ToString(), locale),
+            description = Localize(d.descriptionKey.ToString(), locale),
+            imagePath = ResolvePath(d.imagePathKey.ToString()),
+            tier = d.tier,
+            type = d.type,
+            basePrice = d.basePrice,
+            baseCost = d.baseCost
+        };
+        return true;
+    }
+
+    public IReadOnlyDictionary<int, CardDef> CardDefinitions => _cardDefinitions;
+    public int CardDefinitionCount => _cardDefinitions.Count;
+
+    // 로컬라이제이션 및 리소스 해결 (CardDataModel에서 이동)
+    private string Localize(string key, string locale)
+    {
+        if (!_strings.TryGetValue(key, out var row)) return key;
+        return locale switch { "ko" => row.kr ?? key, "en" => row.en ?? key, _ => row.kr ?? row.en ?? key };
+    }
+    
+    private string ResolvePath(string key) => _resources.TryGetValue(key, out var r) ? r.path : key;
+
+    /// <summary>
+    /// 카드 ID로 표시 이름을 가져오는 헬퍼 메서드
+    /// </summary>
+    private string GetCardDisplayName(int cardId)
+    {
+        if (TryGetCardDisplay(cardId, "ko", out var display))
+        {
+            return display.name;
+        }
+        return $"Card_{cardId}";
+    }
+
+    /// <summary>
+    /// 카드 상태에 대한 설명을 생성하는 헬퍼 메서드
+    /// </summary>
+    private string GetStatusDescription(CardItemState state, ulong displayingClientId)
+    {
+        return state switch
+        {
+            CardItemState.None => "🟢 사용 가능",
+            CardItemState.Solding => $"🟡 진열 중 (클라이언트 {displayingClientId})",
+            CardItemState.Sold => "🔴 판매됨",
+            _ => "❓ 알 수 없음"
+        };
+    }
+
+    /// <summary>
+    /// 디버그용 카드 상태별 개수 업데이트 (서버에서만)
+    /// </summary>
+    private void UpdateCardCounts()
+    {
+        if (!IsServer) return;
+
+        _totalCardCount = _allCardsOnGameData.Count;
+        _soldCardCount = 0;
+        _soldingCardCount = 0;
+        _noneCardCount = 0;
+
+        // 디버그용 리스트도 업데이트
+        _debugCardList.Clear();
+        _cardStatusSummaries.Clear();
+        
+        foreach (var card in _allCardsOnGameData)
+        {
+            _debugCardList.Add(card);
+            
+            // 카드 상태 요약 생성
+            var summary = new CardStatusSummary
             {
-                currentIndex = i;
-                break;
+                cardIdKey = card.cardIdKey,
+                cardItemId = card.cardItemStatusData.cardItemID,
+                cardName = GetCardDisplayName(card.cardDef.cardID),
+                state = card.cardItemStatusData.state,
+                displayingClientId = card.displayingClientId,
+                acquiredTime = card.acquiredTicks > 0 ? new DateTime(card.acquiredTicks).ToString("HH:mm:ss") : "N/A",
+                price = card.cardItemStatusData.price,
+                cost = card.cardItemStatusData.cost,
+                tier = card.cardDef.tier,
+                type = card.cardDef.type,
+                statusDescription = GetStatusDescription(card.cardItemStatusData.state, card.displayingClientId)
+            };
+            _cardStatusSummaries.Add(summary);
+            
+            switch (card.cardItemStatusData.state)
+            {
+                case CardItemState.Sold:
+                    _soldCardCount++;
+                    break;
+                case CardItemState.Solding:
+                    _soldingCardCount++;
+                    break;
+                case CardItemState.None:
+                    _noneCardCount++;
+                    break;
             }
         }
 
-        int nextCardItemId;
+        // 모든 클라이언트에게 디버그 정보 동기화
+        SyncDebugInfoToAllClientsClientRpc(_totalCardCount, _soldCardCount, _soldingCardCount, _noneCardCount);
+    }
 
-        if (currentIndex == -1)
+    /// <summary>
+    /// 모든 클라이언트에게 디버그 정보 동기화
+    /// </summary>
+    [ClientRpc]
+    private void SyncDebugInfoToAllClientsClientRpc(int totalCount, int soldCount, int soldingCount, int noneCount)
+    {
+        _totalCardCount = totalCount;
+        _soldCardCount = soldCount;
+        _soldingCardCount = soldingCount;
+        _noneCardCount = noneCount;
+    }
+
+    // CSV 데이터 로딩 (CardDataPresenter에서 이동)
+    public Task LoadCardDataFromCsv(string cardCsvUrl, string stringCsvUrl, string resourceCsvUrl, CancellationToken ct = default)
+    {
+        if (_dataLoadTask != null) return _dataLoadTask;
+        _dataLoadTask = LoadCardDataImplAsync(cardCsvUrl, stringCsvUrl, resourceCsvUrl, ct);
+        return _dataLoadTask;
+    }
+
+    public Task WhenDataReadyAsync() => _dataLoadTask ?? Task.CompletedTask;
+
+    private async Task LoadCardDataImplAsync(string cardUrl, string strUrl, string resUrl, CancellationToken ct)
+    {
+        // 세 시트를 병렬 다운로드
+        var cardT = GetTextAsync(cardUrl, ct);
+        var strT = GetTextAsync(strUrl, ct);
+        var resT = GetTextAsync(resUrl, ct);
+
+        var cardCsv = await cardT; 
+        var strCsv = await strT; 
+        var resCsv = await resT;
+
+        // 데이터 파싱 및 로드
+        LoadCardDefinitions(ParseCardTable(cardCsv));
+        LoadStrings(ParseStringTable(strCsv));
+        LoadResources(ParseResourceTable(resCsv));
+
+        // 게임 내 카드 데이터 생성
+        await SetTotalCardsOnGame(_cardDefinitions.Select(kvp => new DictionaryCardIdCardDef { key = kvp.Key, value = kvp.Value }).ToArray());
+
+        Debug.Log($"[DeckManager] Data loaded: Cards={_cardDefinitions.Count}, Strings={_strings.Count}, Resources={_resources.Count}");
+    }
+
+    private void LoadCardDefinitions(IEnumerable<CardDef> rows) 
+    { 
+        _cardDefinitions.Clear(); 
+        foreach (var r in rows) _cardDefinitions[r.cardID] = r; 
+    }
+    
+    private void LoadStrings(IEnumerable<StringRow> rows) 
+    { 
+        _strings.Clear(); 
+        foreach (var r in rows) if (!string.IsNullOrEmpty(r.key)) _strings[r.key] = r; 
+    }
+    
+    private void LoadResources(IEnumerable<ResourceRow> r) 
+    { 
+        _resources.Clear(); 
+        foreach (var x in r) if (!string.IsNullOrEmpty(x.key)) _resources[x.key] = x; 
+    }
+
+    public async Task SetTotalCardsOnGame(DictionaryCardIdCardDef[] cardDefKeyValuePairs)
+    {
+        foreach (var card in cardDefKeyValuePairs)
         {
-            // 새로운 CardId인 경우 초기화
-            nextCardItemId = cardId;
-            _cardItemId.Add(new CardItemIdData { CardId = cardId, NextCardItemId = nextCardItemId + 1 });
+            for (int i = 1; i <= card.value.amountOfCardItem; i++)
+            {
+                var cardItemData = new CardItemData
+                {
+                    cardIdKey = card.key,
+                    cardDef = card.value,
+                    cardItemStatusData = new CardStatusData
+                    {
+                        cardID = card.key,
+                        cardItemID = card.key + i,
+                        price = card.value.basePrice,
+                        cost = card.value.baseCost,
+                        state = CardItemState.None
+                    }
+                };
+
+                _allCardsOnGameData.Add(cardItemData);
+            }
+        }
+        await Task.CompletedTask;
+    }
+    public CardItemData? GetPurchaseableCardItemDataByCardIdKey(int cardIdKey)
+    {
+        if (_allCardsOnGameData.Count == 0)
+        {
+            Debug.LogError("[DeckManager] GetCardItemDataByCardIdKey: 게임 내 카드 데이터가 없습니다.");
+            return null;
+        }
+
+        // 서버에서는 권위적 데이터 확인, 클라이언트에서는 읽기 전용 데이터 확인
+        if (IsServer)
+        {
+            return GetAvailableCardForPurchase(cardIdKey);
         }
         else
         {
-            // 기존 CardId인 경우 현재 값 사용 후 증가
-            nextCardItemId = _cardItemId[currentIndex].NextCardItemId;
-            var updatedEntry = new CardItemIdData { CardId = cardId, NextCardItemId = nextCardItemId + 1 };
-            _cardItemId[currentIndex] = updatedEntry;
+            return GetAvailableCardForPurchaseClient(cardIdKey);
         }
-
-        Debug.Log($"[DeckManager] CardId {cardId}에 대해 CardItemId {nextCardItemId} 할당 완료");
-
-        // 모든 클라이언트에게 결과 전달
-        GetNextCardItemIdResultClientRpc(cardId, nextCardItemId, requestId);
     }
-
-    /// <summary>
-    /// CardItemId 할당 결과를 클라이언트에게 전달합니다.
-    /// </summary>
-    [ClientRpc]
-    private void GetNextCardItemIdResultClientRpc(int cardId, int cardItemId, int requestId)
+    public bool IsValidCardIdKey(int cardIdKey)
     {
-        // CardItemFactory에서 결과를 받아 처리할 수 있도록 이벤트 발생
-        OnCardItemIdAssigned?.Invoke(cardId, cardItemId, requestId);
-    }
-
-    /// <summary>
-    /// CardItemId가 할당되었을 때 발생하는 이벤트
-    /// </summary>
-    public static event System.Action<int, int, int> OnCardItemIdAssigned;
-
-    /// <summary>
-    /// CardItemId 목록을 초기화합니다.
-    /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void InitializeCardItemIdsServerRpc()
-    {
-        if (!IsHost) return;
-
-        _cardItemId.Clear();
-        Debug.Log("[DeckManager] CardItemId 목록 초기화 완료");
-    }
-
-
-    public async Task SetTotalCardsOnGame(CardKeyValuePair[] cardKeyValuePairs)
-    {
-        if (!IsHost)
+        foreach (var card in _allCardsOnGameData)
         {
-            return;
-        }
-
-        if (cardKeyValuePairs == null)
-        {
-            Debug.LogError("[CardItemFactory] 전달받은 카드 데이터가 null입니다.");
-            return;
-        }
-
-        _totalCardsOnGame.Clear();
-        _cardItemId.Clear(); // CardItemId도 초기화
-
-        foreach (var card in cardKeyValuePairs)
-        {
-            var cardData = new TotalCardsOnGameData
+            if (card.cardIdKey == cardIdKey)
             {
-                cardId = card.Key,
-                cardTotalCount = card.Value.AmountOfCardItem
-            };
-            _totalCardsOnGame.Add(cardData);
-
-            // 각 CardId에 대해 초기 CardItemId 설정 (CardId + 0)
-            _cardItemId.Add(new CardItemIdData { CardId = card.Key, NextCardItemId = card.Key });
+                return true;
+            }
         }
-
-        Debug.Log($"[DeckManager] {_totalCardsOnGame.Count}개 카드 데이터 설정 완료");
-        foreach (var card in _totalCardsOnGame)
+        return false;
+    }
+    public bool IsValidCardItemIdKey(int cardItemIdKey)
+    {
+        foreach (var card in _allCardsOnGameData)
         {
-            Debug.Log($"[DeckManager] CardID: {card.cardId}, Amount: {card.cardTotalCount}");
+            if (card.cardItemStatusData.cardItemID == cardItemIdKey)
+            {
+                return true;
+            }
         }
-
-        Debug.Log($"[DeckManager] {_cardItemId.Count}개 CardItemId 초기화 완료");
-        foreach (var cardItemId in _cardItemId)
-        {
-            Debug.Log($"[DeckManager] CardID: {cardItemId.CardId}, NextCardItemID: {cardItemId.NextCardItemId}");
-        }
+        return false;
     }
 
-    #endregion
+    /// <summary>
+    /// 특정 카드 ID의 구매 가능한 물량이 있는지 확인
+    /// </summary>
+    public bool IsCardAvailableForPurchase(int cardIdKey)
+    {
+        // 서버에서만 권위적 데이터 확인
+        if (!IsServer)
+        {
+            Debug.LogWarning("[DeckManager] IsCardAvailableForPurchase: 클라이언트에서 호출됨. 서버 권위성을 위해 서버 RPC를 사용하세요.");
+            return false;
+        }
 
+        // 해당 카드 ID의 총 물량 확인
+        int totalAmount = 0;
+        int soldAmount = 0;
+        
+        foreach (var card in _allCardsOnGameData)
+        {
+            if (card.cardIdKey == cardIdKey)
+            {
+                totalAmount++;
+                if (card.cardItemStatusData.state == CardItemState.Sold)
+                {
+                    soldAmount++;
+                }
+            }
+        }
+        
+        // 구매 가능한 물량이 있는지 확인
+        return soldAmount < totalAmount;
+    }
+
+    /// <summary>
+    /// 특정 카드 ID의 구매 가능한 카드 아이템 데이터 반환
+    /// </summary>
+    public CardItemData? GetAvailableCardForPurchase(int cardIdKey)
+    {
+        // 서버에서만 권위적 데이터 확인
+        if (!IsServer)
+        {
+            Debug.LogWarning("[DeckManager] GetAvailableCardForPurchase: 클라이언트에서 호출됨. 서버 권위성을 위해 서버 RPC를 사용하세요.");
+            return null;
+        }
+
+        if (!IsCardAvailableForPurchase(cardIdKey))
+        {
+            return null;
+        }
+
+        // 구매 가능한 카드 찾기 (Sold, Solding 상태가 아닌 것)
+        foreach (var card in _allCardsOnGameData)
+        {
+            if (card.cardIdKey == cardIdKey && 
+                card.cardItemStatusData.state != CardItemState.Sold && 
+                card.cardItemStatusData.state != CardItemState.Solding)
+            {
+                return card;
+            }
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// 클라이언트에서 안전하게 카드 데이터를 읽기 위한 메서드 (읽기 전용)
+    /// </summary>
+    public bool IsCardAvailableForPurchaseClient(int cardIdKey)
+    {
+        // 클라이언트에서는 로컬 데이터를 읽기만 함 (서버 동기화된 데이터)
+        int totalAmount = 0;
+        int soldAmount = 0;
+        
+        foreach (var card in _allCardsOnGameData)
+        {
+            if (card.cardIdKey == cardIdKey)
+            {
+                totalAmount++;
+                if (card.cardItemStatusData.state == CardItemState.Sold)
+                {
+                    soldAmount++;
+                }
+            }
+        }
+        
+        // 구매 가능한 물량이 있는지 확인 (읽기 전용)
+        return soldAmount < totalAmount;
+    }
+
+    /// <summary>
+    /// 클라이언트에서 안전하게 구매 가능한 카드 데이터를 읽기 위한 메서드 (읽기 전용)
+    /// </summary>
+    public CardItemData? GetAvailableCardForPurchaseClient(int cardIdKey)
+    {
+        if (!IsCardAvailableForPurchaseClient(cardIdKey))
+        {
+            return null;
+        }
+
+        // 구매 가능한 카드 찾기 (Sold, Solding 상태가 아닌 것)
+        foreach (var card in _allCardsOnGameData)
+        {
+            if (card.cardIdKey == cardIdKey && 
+                card.cardItemStatusData.state != CardItemState.Sold && 
+                card.cardItemStatusData.state != CardItemState.Solding)
+            {
+                return card;
+            }
+        }
+        
+        return null;
+    }
+    #endregion
 
     #region 카드 구매 처리
 
+    /// <summary>
+    /// 살 수 있는지 검증하는 함수
+    /// </summary>
     [ServerRpc(RequireOwnership = false)]
-    public void TryPurchaseCardServerRpc(InventoryCard card, ulong clientId)
+    public void TryPurchaseCardServerRpc(CardItemData card, ulong clientId)
     {
         CardShopPresenter cardShopPresenter;
-        cardShopPresenter = GameObject.FindObjectOfType<CardShopPresenter>();
+        cardShopPresenter = GameObject.FindAnyObjectByType<CardShopPresenter>();
 
         ClientRpcParams clientRpcParams = new ClientRpcParams
         {
             Send = new ClientRpcSendParams
             {
-                TargetClientIds = new ulong[] { clientId }
+                TargetClientIds = new[] { clientId }
             }
         };
 
         // 해당 카드가 존재하는지 확인
-        TotalCardsOnGameData cardData = default;
-        bool found = false;
-
-        for (int i = 0; i < _totalCardsOnGame.Count; i++)
+        int cardItemIdKey = card.cardItemStatusData.cardItemID;
+        if (!IsValidCardItemIdKey(cardItemIdKey))
         {
-            if (_totalCardsOnGame[i].cardId == card.CardID)
-            {
-                cardData = _totalCardsOnGame[i];
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            Debug.LogError($"[DeckManager] CardID {card.CardID}가 TotalCardsOnGame에 존재하지 않습니다.");
-            cardShopPresenter.PurchaseCardResultClientRpc(false, clientRpcParams);
+            Debug.Log("[DeckManager] TryPurchaseCardServerRpc: 유효하지 않은 카드 ID 키입니다.");
+            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
         }
 
-
-
-        //만약 물량 없으면 리턴 
-        if (cardData.cardTotalCount <= 0)
+        // 물량 초과 체크
+        if (!IsCardAvailableForPurchase(card.cardIdKey))
         {
-            Debug.Log($"[DeckManager] CardID {card.CardID}의 물량이 없습니다. 구매 실패");
-            //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
+            Debug.Log($"[DeckManager] TryPurchaseCardServerRpc: 카드 {card.cardIdKey}의 물량이 부족합니다.");
             cardShopPresenter.PurchaseCardResultClientRpc(false, clientRpcParams);
-            //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, InventoryCard값 보내기)
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
-
             return;
         }
 
         // 플레이어 골드 확인
         int playerGold = PlayerHelperManager.Instance.GetPlayerGoldByClientId(clientId);
-        if (playerGold < card.Status.Price)
+        if (playerGold < card.cardItemStatusData.price)
         {
             //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
             cardShopPresenter.PurchaseCardResultClientRpc(false, clientRpcParams);
-            //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, InventoryCard값 보내기)
+            //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
         }
 
-        // 물량 감소 (NetworkList 동기화)
-        var index = _totalCardsOnGame.IndexOf(cardData);
-        var newCardData = new TotalCardsOnGameData
-        {
-            cardId = cardData.cardId,
-            cardTotalCount = cardData.cardTotalCount - 1
-        };
-        _totalCardsOnGame[index] = newCardData;
-
-        // GameManager에게 해당 클라이언트의 골드 차감 요청 (책임 분리)
-        GameManager.Instance.DeductPlayerGoldServerRpc(clientId, card.Status.Price);
-
-        Debug.Log($"[DeckManager] Player {clientId} purchased card {card.CardID} for {card.Status.Price} gold");
 
         //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
         cardShopPresenter.PurchaseCardResultClientRpc(true, clientRpcParams);
-        //구매 성공 여부를 클라이언트에게 전달. (ClientRPC, InventoryCard값 보내기)
+        //구매 성공 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
         PurchaseCardResultClientRpc(true, card, clientId, clientRpcParams);
-
 
     }
 
     [ClientRpc]
-    private void PurchaseCardResultClientRpc(bool success, InventoryCard card, ulong clientId, ClientRpcParams sendParams = default)
+    private void PurchaseCardResultClientRpc(bool success, CardItemData card, ulong clientId, ClientRpcParams sendParams = default)
     {
         if (!success)
         {
             Debug.Log("[DeckManager] 카드 구매 실패");
             return;
         }
-        
-        // 카드 상태 주입 (Sold) - 기존 cardItemId 그대로 사용
-        var updatedCard = card;
-        updatedCard.Status.State = CardItemState.Sold;
-        updatedCard.Status.CardItemID = card.CardItemId;
 
-        //카드 획득 시간 주입
-        updatedCard.AcquiredTicks = DateTime.Now.Ticks;
+        // GameManager에게 해당 클라이언트의 골드 차감 요청 (책임 분리)
+        GameManager.Instance.DeductPlayerGoldServerRpc(clientId, card.cardItemStatusData.price);
 
-        // 해당 플레이어 인벤토리에 카드 추가
-        PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(clientId)?.GetComponent<CardInventoryModel>().AddOwnedCardServerRpc(updatedCard);
+        // 서버에게 카드 상태 업데이트 요청 (권위적 데이터 수정)
+        RequestUpdateCardStateServerRpc(card.cardItemStatusData.cardItemID, CardItemState.Sold, clientId);
+    }
 
-        //해당 carditemid에 대한 CardForSale 프리팹에 대해서 sold상태로 전환
-        string findCardForSaleString = $"CardForSale_{card.CardItemId}";
-        GameObject cardForSale = GameObject.Find(findCardForSaleString);
-        if (cardForSale != null)
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestUpdateCardStateServerRpc(int cardItemId, CardItemState newState, ulong clientId)
+    {
+        // allCardsOnGameData에서 해당 카드 찾아서 상태 업데이트
+        for (int i = 0; i < _allCardsOnGameData.Count; i++)
         {
-            CardItemModel cardItemModel = cardForSale.GetComponentInChildren<CardItemModel>();
-            if (cardItemModel != null)
+            var card = _allCardsOnGameData[i];
+            if (card.cardItemStatusData.cardItemID == cardItemId)
             {
-                // 새로운 CardItemStatusData 인스턴스를 생성하여 Sold 상태로 설정
-                var newStatusData = cardItemModel.CardItemStatusData;
-                newStatusData.State = CardItemState.Sold;
-                cardItemModel.CardItemStatusData = newStatusData;
+                var updatedCard = card;
+                updatedCard.cardItemStatusData.state = newState;
+                
+                // Sold 상태일 때만 AcquiredTicks 설정 및 인벤토리에 추가
+                if (newState == CardItemState.Sold)
+                {
+                    updatedCard.acquiredTicks = DateTime.Now.Ticks;
+                    AddCardToPlayerInventoryClientRpc(updatedCard, clientId);
+                }
+                
+                _allCardsOnGameData[i] = updatedCard;
+                
+                // 모든 클라이언트에게 카드 상태 동기화
+                SyncCardStateToAllClientsClientRpc(cardItemId, newState, updatedCard.acquiredTicks, updatedCard.displayingClientId);
+                break;
+            }
+        }
+    }
+
+    [ClientRpc]
+    private void AddCardToPlayerInventoryClientRpc(CardItemData card, ulong clientId)
+    {
+        // 해당 플레이어의 인벤토리에 카드 추가
+        GameObject player = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(clientId);
+        CardInventoryModel cardInventoryModel = player?.GetComponent<CardInventoryModel>();
+        cardInventoryModel?.AddOwnedCardServerRpc(card);
+    }
+
+    [ClientRpc]
+    private void SyncCardStateToAllClientsClientRpc(int cardItemId, CardItemState newState, long acquiredTicks, ulong displayingClientId)
+    {
+        // 모든 클라이언트의 CardItemModel에서 해당 카드 상태 업데이트
+        var cardItemModels = FindObjectsOfType<CardItemModel>();
+        foreach (var model in cardItemModels)
+        {
+            if (model.CardItemData.Value.cardItemStatusData.cardItemID == cardItemId)
+            {
+                var updatedData = model.CardItemData.Value;
+                updatedData.cardItemStatusData.state = newState;
+                updatedData.acquiredTicks = acquiredTicks;
+                updatedData.displayingClientId = displayingClientId;
+                model.UpdateCardStateFromServer(updatedData);
+                break;
+            }
+        }
+    }
+
+    [ClientRpc]
+    public void SyncCardDataToAllClientsClientRpc(int cardItemId, CardItemData cardData)
+    {
+        // 모든 클라이언트의 CardItemModel에서 해당 카드 데이터 동기화
+        var cardItemModels = FindObjectsOfType<CardItemModel>();
+        foreach (var model in cardItemModels)
+        {
+            if (model.CardItemData.Value.cardItemStatusData.cardItemID == cardItemId)
+            {
+                model.UpdateCardStateFromServer(cardData);
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 서버에서 카드 진열 요청 처리 (클라이언트별 독립적 진열)
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestDisplayCardsServerRpc(ulong clientId)
+    {
+        // 해당 클라이언트의 기존 진열 카드들을 None으로 변경
+        ClearClientDisplayCards(clientId);
+
+        // 구매 가능한 카드들 수집 (Sold 상태가 아니고 다른 클라이언트가 진열하지 않은 것)
+        List<CardItemData> availableCards = new List<CardItemData>();
+        foreach (var card in _allCardsOnGameData)
+        {
+            if (card.cardItemStatusData.state != CardItemState.Sold && 
+                card.displayingClientId == 0)
+            {
+                availableCards.Add(card);
+            }
+        }
+
+        // 진열할 카드 수 결정 (최대 5개)
+        int displayCount = Mathf.Min(availableCards.Count, 5);
+        
+        // 랜덤하게 카드 선택하여 Solding 상태로 변경
+        List<CardItemData> selectedCards = new List<CardItemData>();
+        for (int i = 0; i < displayCount; i++)
+        {
+            int randomIndex = Random.Range(0, availableCards.Count);
+            var selectedCard = availableCards[randomIndex];
+            
+            // Solding 상태로 변경하고 displayingClientId 설정
+            for (int j = 0; j < _allCardsOnGameData.Count; j++)
+            {
+                var card = _allCardsOnGameData[j];
+                if (card.cardItemStatusData.cardItemID == selectedCard.cardItemStatusData.cardItemID)
+                {
+                    var updatedCard = card;
+                    updatedCard.cardItemStatusData.state = CardItemState.Solding;
+                    updatedCard.displayingClientId = clientId;
+                    _allCardsOnGameData[j] = updatedCard;
+                    
+                    selectedCards.Add(updatedCard);
+                    
+                    // 모든 클라이언트에게 상태 동기화
+                    SyncCardStateToAllClientsClientRpc(card.cardItemStatusData.cardItemID, CardItemState.Solding, updatedCard.acquiredTicks, clientId);
+                    break;
+                }
+            }
+            
+            availableCards.RemoveAt(randomIndex);
+        }
+
+        // 클라이언트별 진열 개수 업데이트
+        _clientDisplayCounts[clientId] = selectedCards.Count;
+
+        // 진열된 카드 정보를 요청한 클라이언트에게 전달
+        DisplayCardsResultClientRpc(selectedCards.ToArray(), clientId);
+    }
+
+    /// <summary>
+    /// 특정 클라이언트의 진열 카드들을 None으로 변경
+    /// </summary>
+    private void ClearClientDisplayCards(ulong clientId)
+    {
+        // 해당 클라이언트가 진열한 카드들만 None으로 변경
+        for (int i = 0; i < _allCardsOnGameData.Count; i++)
+        {
+            var card = _allCardsOnGameData[i];
+            if (card.cardItemStatusData.state == CardItemState.Solding && 
+                card.displayingClientId == clientId)
+            {
+                var updatedCard = card;
+                updatedCard.cardItemStatusData.state = CardItemState.None;
+                updatedCard.displayingClientId = 0;
+                _allCardsOnGameData[i] = updatedCard;
+                
+                // 모든 클라이언트에게 상태 동기화
+                SyncCardStateToAllClientsClientRpc(card.cardItemStatusData.cardItemID, CardItemState.None, updatedCard.acquiredTicks, 0);
+            }
+        }
+    }
+
+    [ClientRpc]
+    private void DisplayCardsResultClientRpc(CardItemData[] displayedCards, ulong targetClientId)
+    {
+        // 요청한 클라이언트에게만 진열 결과 전달
+        if (NetworkManager.Singleton.LocalClientId == targetClientId)
+        {
+            // CardShopModel에게 진열 결과 전달
+            var cardShopPresenter = FindObjectOfType<CardShopPresenter>();
+            if (cardShopPresenter != null)
+            {
+                cardShopPresenter.OnDisplayCardsResult(displayedCards);
             }
         }
     }
 
 
+
+    // 이 메서드는 권위성 위반으로 제거됨
+    // 클라이언트가 서버 데이터를 직접 수정 요청하는 것은 금지
+    // 대신 RequestUpdateCardStateServerRpc를 사용해야 함
+
+    #endregion
+
+    #region CSV 파싱 메서드들 (CardDataPresenter에서 이동)
+    private static IEnumerable<CardDef> ParseCardTable(string csv)
+    {
+        var rows = SplitRows(csv);
+        var list = new List<CardDef>(); 
+        if (rows.Count == 0) return list;
+
+        var h = SplitCols(rows[0]);
+        int Idx(string name) { for (int i = 0; i < h.Count; i++) if (h[i].Trim().Equals(name, StringComparison.OrdinalIgnoreCase)) return i; return -1; }
+
+        int iID = Idx("CardID"), iName = Idx("CardNameKey"), iTier = Idx("Tier"), iType = Idx("Type"),
+            iSub = (Idx("SubType") >= 0 ? Idx("SubType") : Idx("SubType (사용X)")),
+            iUni = Idx("IsUniqueCard"), iSell = Idx("IsSellableCard"),
+            iClass = Idx("UsableClass"), iMap = Idx("Map_Restriction"),
+            iPrice = Idx("BasePrice"), iCost = Idx("BaseCost"),
+            iDesc = Idx("DescriptionKey"), iImg = Idx("ImagePathKey"),
+            iAmount = Idx("AmountOfCardItem");
+
+        for (int r = 1; r < rows.Count; r++)
+        {
+            var c = SplitCols(rows[r]);
+            if (c.Count == 0) continue;
+            if (!int.TryParse((iID >= 0 && iID < c.Count ? c[iID].Trim() : ""), out _)) continue;
+
+            list.Add(new CardDef
+            {
+                cardID = ToInt(S(c, iID)),
+                cardNameKey = S(c, iName),
+                tier = ToTier(S(c, iTier)),
+                type = ToType(S(c, iType)),
+                subType = ToInt(S(c, iSub)),
+                isUniqueCard = ToBool(S(c, iUni)),
+                isSellableCard = ToBool(S(c, iSell)),
+                usableClass = ToInt(S(c, iClass)),
+                mapRestriction = ToInt(S(c, iMap)),
+                basePrice = ToInt(S(c, iPrice)),
+                baseCost = ToInt(S(c, iCost)),
+                descriptionKey = S(c, iDesc),
+                imagePathKey = S(c, iImg),
+                amountOfCardItem = ToInt(S(c, iAmount)),
+            });
+        }
+        return list;
+        static string S(List<string> c, int i) => (i >= 0 && i < c.Count) ? (c[i]?.Trim() ?? "") : "";
+    }
+
+    private static IEnumerable<StringRow> ParseStringTable(string csv)
+    {
+        var rows = SplitRows(csv);
+        var list = new List<StringRow>(); 
+        if (rows.Count == 0) return list;
+        var h = SplitCols(rows[0]);
+
+        int Idx(params string[] names)
+        {
+            for (int i = 0; i < h.Count; i++)
+                foreach (var n in names)
+                    if (h[i].Trim().Equals(n, StringComparison.OrdinalIgnoreCase)) return i;
+            return -1;
+        }
+        int iKey = Idx("Key", "StrID", "StringID"), iKr = Idx("KR", "KO", "Korean"), iEn = Idx("EN", "English");
+
+        for (int r = 1; r < rows.Count; r++)
+        {
+            var c = SplitCols(rows[r]);
+            var key = (iKey >= 0 && iKey < c.Count) ? c[iKey].Trim() : "";
+            if (string.IsNullOrEmpty(key)) continue;
+            list.Add(new StringRow { key = key, kr = (iKr >= 0 && iKr < c.Count ? c[iKr].Trim() : ""), en = (iEn >= 0 && iEn < c.Count ? c[iEn].Trim() : "") });
+        }
+        return list;
+    }
+
+    private static IEnumerable<ResourceRow> ParseResourceTable(string csv)
+    {
+        var rows = SplitRows(csv);
+        var list = new List<ResourceRow>(); 
+        if (rows.Count == 0) return list;
+        var h = SplitCols(rows[0]);
+
+        int Idx(params string[] names)
+        {
+            for (int i = 0; i < h.Count; i++)
+                foreach (var n in names)
+                    if (h[i].Trim().Equals(n, StringComparison.OrdinalIgnoreCase)) return i;
+            return -1;
+        }
+        int iKey = Idx("Key", "ResID", "ImagePathKey"), iPath = Idx("Path", "ResourcePath", "SpritePath");
+
+        for (int r = 1; r < rows.Count; r++)
+        {
+            var c = SplitCols(rows[r]);
+            var key = (iKey >= 0 && iKey < c.Count) ? c[iKey].Trim() : "";
+            if (string.IsNullOrEmpty(key)) continue;
+            list.Add(new ResourceRow { key = key, path = (iPath >= 0 && iPath < c.Count ? c[iPath].Trim() : "") });
+        }
+        return list;
+    }
+
+    // HTTP 요청 및 CSV 파싱 유틸리티 (CardDataPresenter에서 이동)
+    private static async Task<string> GetTextAsync(string url, CancellationToken ct)
+    {
+        using var req = UnityWebRequest.Get(url);
+        var op = req.SendWebRequest();
+        while (!op.isDone) { if (ct.IsCancellationRequested) { req.Abort(); break; } await Task.Yield(); }
+        if (req.result != UnityWebRequest.Result.Success) throw new Exception($"GET {url} -> {req.responseCode} {req.error}");
+        return req.downloadHandler?.text ?? "";
+    }
+
+    // CSV 파싱 유틸리티 (CardDataModel에서 이동)
+    private static List<string> SplitRows(string csv)
+    {
+        var t = (csv ?? "").Replace("\r\n", "\n").Replace("\r", "\n"); 
+        return new List<string>(t.Split('\n'));
+    }
+    
+    private static List<string> SplitCols(string line)
+    {
+        var res = new List<string>(); 
+        if (line == null) { res.Add(""); return res; }
+        bool q = false; 
+        var sb = new StringBuilder();
+        for (int i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+            if (c == '\"') { if (q && i + 1 < line.Length && line[i + 1] == '\"') { sb.Append('\"'); i++; } else q = !q; }
+            else if (c == ',' && !q) { res.Add(sb.ToString()); sb.Length = 0; }
+            else sb.Append(c);
+        }
+        res.Add(sb.ToString()); 
+        return res;
+    }
+    
+    private static int ToInt(string s) 
+    { 
+        s = (s ?? "").Trim(); 
+        if (s == "" || s == "-") return 0; 
+        return int.Parse(s, System.Globalization.CultureInfo.InvariantCulture); 
+    }
+    
+    private static bool ToBool(string s) 
+    { 
+        s = (s ?? "").Trim().ToLowerInvariant(); 
+        return s == "true" || s == "1" || s == "y"; 
+    }
+    
+    private static TierEnum ToTier(string s)
+    {
+        if (int.TryParse(s, out var n)) return (TierEnum)n; 
+        s = (s ?? "").Trim().ToLowerInvariant();
+        return s switch { "common" => TierEnum.Common, "rare" => TierEnum.Rare, "special" => TierEnum.Special, _ => TierEnum.None };
+    }
+    
+    private static TypeEnum ToType(string s)
+    {
+        if (int.TryParse(s, out var n)) return (TypeEnum)n; 
+        s = (s ?? "").Trim().ToLowerInvariant();
+        return s switch { "attack" => TypeEnum.Attack, "defense" => TypeEnum.Defense, "special" => TypeEnum.Special, _ => TypeEnum.None };
+    }
     #endregion
 }

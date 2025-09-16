@@ -1,5 +1,5 @@
-using UnityEngine;
 using Unity.Netcode;
+using UnityEngine;
 using static PlayerView;
 using System;
 using System.Diagnostics;
@@ -45,7 +45,7 @@ public class PlayerPresenter : NetworkBehaviour
             // PlayerStatusData 변경 시 닉네임 업데이트
             playerModel.PlayerStatusData.OnValueChanged += (previousValue, newValue) =>
             {
-                playerView.UpdateNickname(newValue.Nickname);
+                playerView.UpdateNickname(newValue.nickname);
             };
         }
 

@@ -1,24 +1,34 @@
-using Unity.Netcode;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI.Table;
 using System.Collections.Generic;
+using CardItem.MVP;
 
-public interface ICardShopModel
-{
-    void RequestPurchase(InventoryCard card, ulong clientId);
-
-    bool IsLocked { get; set; }
-    bool TryReRoll();
-    void DisplayCardsForSale();
-}
-
-public sealed class CardShopModel 
+public class CardShopModel
 {
     public bool IsLocked { get; set; }
 
     private enum Rarity { Common, Rare }
 
-    public void RequestPurchase(InventoryCard card, ulong clientId)
+    private GameObject cardForSaleParent;
+    private Transform rowObjectTransform;
+    private Transform cardForSaleParentTransform;
+    const int maximumDisplayCount = 5;
+    private int totalCardCountOnMap = 0;
+
+    public void Initiate()
+    {
+
+        cardForSaleParent = GameObject.FindWithTag("CardForSaleParent");
+        cardForSaleParentTransform = cardForSaleParent.transform;
+        GameObject cardShopCanvasObject = GameObject.FindWithTag("CardShop");
+        GameObject cardShopPanelObject = cardShopCanvasObject.transform.GetChild(1).gameObject;
+        cardShopPanelObject.SetActive(true);
+        rowObjectTransform = cardShopPanelObject.transform.GetChild(1).transform;
+        cardShopPanelObject.SetActive(false);
+        CardItemFactoryManager.Instance.CreateTotalCardForSale(cardForSaleParent);
+        totalCardCountOnMap = cardForSaleParent.transform.childCount;
+    }
+
+    public void RequestPurchase(CardItemData card, ulong clientId)
     {
         if (DeckManager.Instance == null)
         {
@@ -28,34 +38,34 @@ public sealed class CardShopModel
         Debug.Log("[CardShopModel] RequestPurchase 실행됨");
         DeckManager.Instance.TryPurchaseCardServerRpc(card, clientId);
 
-       /* if (IsInventoryFull(clientId, out var invMsg))
-        {
-            Debug.LogWarning($"[Shop] 구매 실패(인벤토리 초과): {invMsg}");
-            CardShopPresenter.ServerSendResultTo(clientId, false);
-            return;
-        }
+        /* if (IsInventoryFull(clientId, out var invMsg))
+         {
+             Debug.LogWarning($"[Shop] 구매 실패(인벤토리 초과): {invMsg}");
+             CardShopPresenter.ServerSendResultTo(clientId, false);
+             return;
+         }
 
-        if (IsDuplicateRestrictedAndOwned(card, clientId, out var dupMsg))
-        {
-            Debug.LogWarning($"[Shop] 구매 실패(중복 제한): {dupMsg}");
-            CardShopPresenter.ServerSendResultTo(clientId, false);
-            return;
-        }*/
+         if (IsDuplicateRestrictedAndOwned(card, clientId, out var dupMsg))
+         {
+             Debug.LogWarning($"[Shop] 구매 실패(중복 제한): {dupMsg}");
+             CardShopPresenter.ServerSendResultTo(clientId, false);
+             return;
+         }*/
     }
 
-   /* private bool IsInventoryFull(ulong clientId, out string msg)
-    {
-        // TODO: 실제 인벤토리 조회로 교체
-        msg = string.Empty;
-        return false; 
-    }
+    /* private bool IsInventoryFull(ulong clientId, out string msg)
+     {
+         // TODO: 실제 인벤토리 조회로 교체
+         msg = string.Empty;
+         return false; 
+     }
 
-    private bool IsDuplicateRestrictedAndOwned(InventoryCard card, ulong clientId, out string msg)
-    {
-        // TODO: 카드 메타데이터에 중복 제한 플래그가 있다면 확인
-        msg = string.Empty;
-        return false; 
-    }*/
+     private bool IsDuplicateRestrictedAndOwned(CardItemData card, ulong clientId, out string msg)
+     {
+         // TODO: 카드 메타데이터에 중복 제한 플래그가 있다면 확인
+         msg = string.Empty;
+         return false; 
+     }*/
 
     #region 카드 생성 확률 로직
     /*private const float BaseCommon = 0.8f;
@@ -116,88 +126,74 @@ public sealed class CardShopModel
         if (IsLocked) return false;
 
         // 새로 뿌리기
-        CreateCardsForSale();
+        DisplayCardForSale();
 
         return true;
     }
 
-    private Transform _row;
-    private Transform GetRow()
+
+    public void DisplayCardForSale()
     {
-        Debug.Log($"[CardShopModel] GetRow 실행됨");
-        if (_row == null)
+        // 초기화 시에만 로컬에서 실행 (서버 동기화 대기)
+        // 실제 진열은 서버 RPC를 통해 처리됨
+        ClearCurrentDisplay();
+    }
+
+    /// <summary>
+    /// 서버에서 진열 결과를 받아서 UI 업데이트
+    /// </summary>
+    public void UpdateDisplayFromServer(CardItemData[] displayedCards)
+    {
+        // 기존 진열된 카드들 정리
+        ClearCurrentDisplay();
+
+        // 서버에서 선택된 카드들을 진열
+        foreach (var cardData in displayedCards)
         {
-            GameObject rowParent = GameObject.FindWithTag("CardShop");
-            if (rowParent != null)
+            // 해당 카드 오브젝트 찾기
+            Transform cardObject = FindCardObjectByCardItemId(cardData.cardItemStatusData.cardItemID);
+            if (cardObject != null)
             {
-                // 모든 자손에서 CardShopRow 찾기 (비활성화된 것도 포함)
-                Transform[] allChildren = rowParent.GetComponentsInChildren<Transform>(true);
-                foreach (Transform child in allChildren)
-                {
-                    if (child.name == "CardShopRow")
-                    {
-                        _row = child;
-                        break;
-                    }
-                }
+                // Row로 이동하여 진열
+                cardObject.SetParent(rowObjectTransform, false);
+                cardObject.gameObject.SetActive(true);
             }
         }
-        return _row;
     }
-    public void CreateCardsForSale()
-    {
-        Debug.Log($"[CardShopModel] 카드 진열함수 들어옴");
-        if (IsLocked)
-        {
-            Debug.Log("[CardShopModel] Locked: skip DisplayCardsForSale");
-            return;
-        }
 
-        var row = GetRow();
-        if (row == null) return;
-
-        // 기존 카드 다 지우기
-        for (int i = row.childCount - 1; i >= 0; i--)
-        {
-            Object.Destroy(row.GetChild(i).gameObject);
-        }
-
-        Vector3 center = row.position;
-        if (row is RectTransform rt) center = rt.TransformPoint(rt.rect.center);
-
-        const int count = 5;
-        float cardWidth = 200f;   // UI에 맞게 조정
-        float spacing = 50f;
-        float startX = -(count - 1) * (cardWidth + spacing) * 0.5f;
-
-        // 5개 생성
-        int[] pool = { 10000, 20000, 30000, 10100, 20200, 30200 };
-        var rng = new System.Random();
-
-        for (int i = 0; i < count; i++)
-        {
-            int pick = pool[rng.Next(pool.Length)];
-            var pos = new Vector3(center.x + startX + i * (cardWidth + spacing), center.y, center.z);
-            Debug.Log($"[CardShopModel] 카드 생성 id={pick}");
-            CardItemFactoryManager.Instance.CreateCardForSale(pick, Vector3.zero);
-        }
-        
-    }
     /// <summary>
-    /// 카드들을 Row 오브젝트 밑으로 이동시킵니다.
+    /// 현재 진열된 카드들을 정리
     /// </summary>
-    public void MoveCardsForSaleToRowObject()
+    private void ClearCurrentDisplay()
     {
-        var row = GetRow();
-        if (row == null) return;
-
-        // 스폰된 카드들을 전부 Row 밑으로 이동
-        var spawned = GameObject.FindGameObjectsWithTag("CardForSale");
-        foreach (var go in spawned)
+        if (rowObjectTransform.childCount > 0)
         {
-            Debug.Log($"[CardShopModel] 카드 진열함수: 카드의 부모오브젝트 세팅");
-            go.transform.SetParent(row, false);
+            int childCount = rowObjectTransform.childCount;
+            for (int i = 0; i < childCount; i++)
+            {
+                Transform child = rowObjectTransform.GetChild(0);
+                child.SetParent(cardForSaleParentTransform, false);
+                child.gameObject.SetActive(false);
+            }
         }
+    }
+
+    /// <summary>
+    /// CardItemID로 카드 오브젝트 찾기
+    /// </summary>
+    private Transform FindCardObjectByCardItemId(int cardItemId)
+    {
+        for (int i = 0; i < cardForSaleParentTransform.childCount; i++)
+        {
+            Transform card = cardForSaleParentTransform.GetChild(i);
+            CardItemModel cardItemModel = card.GetComponent<CardItemModel>();
+            if (cardItemModel != null && 
+                cardItemModel.CardItemData.Value.cardItemStatusData.cardItemID == cardItemId)
+            {
+                return card;
+            }
+        }
+        return null;
     }
     #endregion
 }
