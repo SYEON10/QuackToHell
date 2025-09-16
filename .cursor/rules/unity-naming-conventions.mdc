@@ -1,0 +1,174 @@
+---
+globs: *.cs
+description: Unity project naming conventions and class structure guidelines
+---
+
+# Unity 네이밍 컨벤션
+
+Unity 프로젝트의 일관된 네이밍과 구조를 위한 규칙입니다.
+
+## 🏗️ 클래스 네이밍
+
+### 싱글톤 클래스
+
+- **Manager** 접미사 사용
+- 예시: `GameManager`, `DeckManager`, `CardItemFactoryManager`
+
+```csharp
+public class GameManager : NetworkBehaviour
+{
+    private static GameManager _instance;
+    public static GameManager Instance { get; }
+
+    private void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (_instance != this)
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+### 씬 특화 클래스
+
+- **Controller** 접미사 사용 (한 씬 내에서만 국한)
+- 예시: `ActiveController`, `VentController`
+
+```csharp
+public class ActiveController : MonoBehaviour
+{
+    // 특정 씬에서만 사용되는 로직
+}
+```
+
+## 🎯 변수 및 프로퍼티 네이밍
+
+### 일반 변수
+
+- 로컬 변수 및 함수 파라미터: **camelCase**
+- 예시: `myCar`, `playerData`, `cardItemId`
+
+### 프로퍼티와 Backing Field
+
+- 프로퍼티: **PascalCase**
+- Backing field: **\_camelCase** (언더스코어 접두사)
+
+```csharp
+public class PlayerModel
+{
+    private string _nickname;  // backing field
+
+    public string Nickname     // property
+    {
+        get => _nickname;
+        set => _nickname = value;
+    }
+}
+```
+
+### 단독 필드
+
+- Private/Protected 변수에는 `_`를 붙이지 않음
+- 예시: `playerModel`, `cardData`
+
+```csharp
+public class PlayerPresenter : NetworkBehaviour
+{
+    private PlayerModel playerModel;  // 단독 필드 (언더스코어 없음)
+    private PlayerView playerView;
+}
+```
+
+## 📁 에셋 네이밍
+
+### 태그 및 레이어
+
+- **PascalCase** 사용
+- 예시: `Player`, `CardInventory`, `Interactable`
+
+### 하이어라키 오브젝트
+
+- **PascalCase** 사용
+- 구분자로 언더스코어 사용
+- 예시: `UI_SpeechBubble`, `Mat_Red`, `Player_Idle`
+
+### 폴더 내 파일명
+
+- **PascalCase** + 폴더명 접두사
+- 예시:
+  - `Sprites/Player/` → `Sprite_Player.png`
+  - `Anim/Player/` → `Anim_PlayerIdle.anim`
+
+## 🎨 MVP 패턴 네이밍
+
+### Model 클래스
+
+```csharp
+public class CardDataModel
+{
+    // 데이터 관리 로직
+}
+```
+
+### View 클래스
+
+```csharp
+public class PlayerView : MonoBehaviour
+{
+    // UI 및 입력 처리
+}
+```
+
+### Presenter 클래스
+
+```csharp
+public class PlayerPresenter : NetworkBehaviour
+{
+    // Model과 View 간 중재
+    private PlayerModel playerModel;
+    private PlayerView playerView;
+}
+```
+
+## 🔧 Unity 특화 네이밍
+
+### NetworkBehaviour RPC
+
+- ServerRpc 접미사 사용
+- ClientRpc 접미사 사용
+
+```csharp
+[ServerRpc]
+public void MovePlayerServerRpc(float x, float y)
+{
+    // 서버 RPC 로직
+}
+
+[ClientRpc]
+public void UpdatePlayerPositionClientRpc(Vector3 position)
+{
+    // 클라이언트 RPC 로직
+}
+```
+
+### 이벤트 네이밍
+
+- On 접두사 사용
+- EventArgs 접미사 사용 (이벤트 인자 클래스)
+
+```csharp
+public event Action<int> OnCardItemIdAssigned;
+public class OnMovementInputEventArgs : EventArgs
+{
+    public float XDirection;
+    public float YDirection;
+}
+```
+
+이 네이밍 컨벤션을 따라 코드의 가독성과 일관성을 유지하세요.

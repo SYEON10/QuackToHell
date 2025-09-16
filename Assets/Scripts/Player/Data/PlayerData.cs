@@ -20,6 +20,8 @@ public enum PlayerAnimationState
 public enum PlayerJob
 {
     None,
+    Farmer, 
+    Animal
 }
 
 public enum EPlayerColorIndex
