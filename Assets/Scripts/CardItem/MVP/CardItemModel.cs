@@ -7,19 +7,16 @@ namespace CardItem.MVP
     {
         /*   private void Start()
        {
-           //carditemdefdata값 바뀌면 OnCardDefDataChanged 실행
            OnCardDefDataChanged += (newValue) =>
            {
                CardDefData = newValue;
            };
 
-           //carditemstate값 바뀌면 SetStateByCardItemStateEnum() 실행
            OnCardItemStatusDataChanged += (newValue) =>
            {
                SetStateByCardItemStateEnum(newValue.State);
                ApplyStateChange();
            };
-           //초기화 실행
            SetStateByCardItemStateEnum(CardItemStatusData.State);
            ApplyStateChange();
 
@@ -37,22 +34,19 @@ namespace CardItem.MVP
 
 
         #region 데이터
-        //데이터 - 읽기 전용으로만 사용
         private readonly NetworkVariable<CardItemData> _cardItemData = new NetworkVariable<CardItemData>();
         public NetworkVariable<CardItemData> CardItemData => _cardItemData;
 
-        // 서버에서만 데이터 업데이트
         [ServerRpc]
         public void UpdateCardDataServerRpc(CardItemData newData)
         {
             _cardItemData.Value = newData;
         }
 
-        // 서버에서 카드 상태 업데이트 (DeckManager의 ClientRpc에서 호출)
         public void UpdateCardStateFromServer(CardItemData newData)
         {
             // 이전 값을 저장
-            var previousValue = _cardItemData.Value;
+            CardItemData previousValue = _cardItemData.Value;
             
             // 서버에서 직접 수정하거나, 클라이언트에서 서버 동기화 받기
             _cardItemData.Value = newData;
@@ -94,23 +88,19 @@ namespace CardItem.MVP
 
         private void OnCardItemDataChanged(CardItemData previousValue, CardItemData newValue)
         {
-            Debug.Log($"[CardItemModel] OnCardItemDataChanged - 이전: {previousValue.cardItemStatusData.State}, 새: {newValue.cardItemStatusData.State}");
             
             // 상태가 변경되었을 때만 상태 업데이트
             if (previousValue.cardItemStatusData.State != newValue.cardItemStatusData.State)
             {
-                Debug.Log($"[CardItemModel] 상태 변경 감지! {previousValue.cardItemStatusData.State} -> {newValue.cardItemStatusData.State}");
                 SetStateByCardItemStateEnum(newValue.cardItemStatusData.State);
             }
             else
             {
-                Debug.Log("[CardItemModel] 상태 변경 없음");
             }
         }
 
         private void SetStateByCardItemStateEnum(CardItemState inputCardItemState = CardItemState.None)
         {
-            Debug.Log($"[CardItemModel] 상태 변경: {inputCardItemState}");
             switch (inputCardItemState)
             {
                 case CardItemState.None:
@@ -151,7 +141,8 @@ namespace CardItem.MVP
 
         private void ApplyStateChange()
         {
-            Debug.Log($"[CardItemModel] ApplyStateChange - 이전: {preState?.GetType().Name}, 현재: {curState?.GetType().Name}");
+            string preStateName = preState?.GetType().Name ?? "null";
+            string curStateName = curState?.GetType().Name ?? "null";
             
             if (preState != null)
             {

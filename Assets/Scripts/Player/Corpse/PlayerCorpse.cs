@@ -29,31 +29,31 @@ private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVaria
     {
         //색깔
         SpriteRenderer[] spriteRenderers = gameObject.GetComponentsInChildren<SpriteRenderer>();
-        foreach (var sr in spriteRenderers)
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
         {
-            if (sr.gameObject.name.Contains("Body"))
+            if (spriteRenderer.gameObject.name.Contains("Body"))
             {
                 int colorIndex = AppearanceData.Value.ColorIndex;
                 // 모든 클라이언트에서 색상 변경 적용
                 switch (colorIndex)
                 {
                     case 0:
-                        sr.color = Color.red;
+                        _spriteRenderer.color = Color.red;
                         break;
                     case 1:
-                        sr.color = Color.orange;
+                        _spriteRenderer.color = Color.orange;
                         break;
                     case 2:
-                        sr.color = Color.yellow;
+                        _spriteRenderer.color = Color.yellow;
                         break;
                     case 3:
-                        sr.color = Color.green;
+                        _spriteRenderer.color = Color.green;
                         break;
                     case 4:
-                        sr.color = Color.blue;
+                        _spriteRenderer.color = Color.blue;
                         break;
                     case 5:
-                        sr.color = Color.purple;
+                        _spriteRenderer.color = Color.purple;
                         break;
                 }
 

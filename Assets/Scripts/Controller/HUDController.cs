@@ -10,7 +10,7 @@ public class HUDController : MonoBehaviour
     public void InventoryButton_OnClick()
     {
         // 비활성화된 오브젝트도 포함해서 찾기
-        CardInventoryView[] existingInventories = FindObjectsOfType<CardInventoryView>(true);
+        CardInventoryView[] existingInventories = FindObjectsByType<CardInventoryView>(FindObjectsSortMode.None);
     
         //인벤토리 오브젝트가 없을 때만 생성
         if (existingInventories.Length > 0)

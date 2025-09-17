@@ -348,7 +348,7 @@ GameObject:
   - component: {fileID: 5020916991026981847}
   m_Layer: 5
   m_Name: CardInventory
-  m_TagString: CardInventory
+  m_TagString: UI_CardInventory
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -459,7 +459,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00003579433}
+  m_AnchoredPosition: {x: 0, y: 0.000062506326}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7995220654925194300
@@ -1052,7 +1052,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1957264036069822312}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999184
+  m_Size: 0.9999229
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

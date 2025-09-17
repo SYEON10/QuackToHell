@@ -5,12 +5,11 @@ using UnityEngine;
 /// </summary>
 public class PlayerIdleState : StateBase
 {
-    private Animator animator;
-    
-    private void Start()
-    {
-        animator = gameObject.transform.Find("Body").gameObject.GetComponent<Animator>();
-    }
+    private static readonly int IsWalking = Animator.StringToHash("IsWalking");
+
+    [Header("References")]
+    [SerializeField] private Animator animator;
+
     
     public override void OnStateEnter()
     {
@@ -20,19 +19,13 @@ public class PlayerIdleState : StateBase
     // 트리거 방식으로 애니메이션 제어
     public void TriggerIdleAnimation()
     {
-        if (animator == null)
-        {
-            // animator가 null이면 다시 찾기
-            animator = gameObject.transform.Find("Body").gameObject.GetComponent<Animator>();
-        }
-        
         if (animator != null)
         {
-            animator.SetBool("IsWalking", false);
+            animator.SetBool(IsWalking, false);
         }
         else
         {
-            Debug.LogError("PlayerIdleState: Animator not found!");
+            Debug.LogError("PlayerIdleState: Animator not found! Please assign in Inspector.");
         }
     }
 

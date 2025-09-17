@@ -5,16 +5,18 @@ TagManager:
   serializedVersion: 3
   tags:
   - CardForSale
-  - CardInventory
-  - CardShop
   - CardForInventory
-  - CardForSaleParent
-  - CardShopRow
-  - KillButton
   - PlayerCorpse
   - PlayerGhost
-  - ReportCorpseButton
-  - ConvocationOfTrialCanvas
+  - CardForSaleParent
+  - Slot
+  - Door
+  - Interactable
+  - UI_ConvocationOfTrialCanvas
+  - UI_CardInventory
+  - UI_CardShopRow
+  - UI_CardShopPanel
+  - UI_CardShopCanvas
   layers:
   - Default
   - TransparentFX

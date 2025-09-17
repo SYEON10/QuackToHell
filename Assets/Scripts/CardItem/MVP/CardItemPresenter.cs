@@ -4,6 +4,21 @@ namespace CardItem.MVP
 {
     public class CardItemPresenter : MonoBehaviour
     {
+        [Header("Components")]
+        private CardItemModel cardItemModel;
+        private CardItemView cardItemView;
+        
+        [Header("References")]
+        [SerializeField] private CardShopPresenter cardShopPresenter;
+
+        private void Awake()
+        {
+            cardItemModel = GetComponent<CardItemModel>();
+            cardItemView = GetComponent<CardItemView>();
+                
+            DebugUtils.AssertComponent(cardItemModel, "CardItemModel", this);
+            DebugUtils.AssertComponent(cardItemView, "CardItemView", this);
+        }
 
         private void Start()
         {
@@ -26,16 +41,6 @@ namespace CardItem.MVP
             cardItemView.SetCardItemIdAppearence(cardStatusData.cardItemID);
         }
 
-        #region 모델, 뷰 참조
-        private CardItemModel cardItemModel;
-        private CardItemView cardItemView;
-        private void Awake()
-        {
-            cardItemModel = GetComponent<CardItemModel>();
-            cardItemView = GetComponent<CardItemView>();
-        }
-        #endregion
-
         #region 외향
 
 
@@ -48,7 +53,7 @@ namespace CardItem.MVP
             // DeckManager가 준비되었고 데이터가 로드되었는지 확인
             if (DeckManager.Instance != null && DeckManager.Instance.CardDefinitionCount > 0)
             {
-                if (DeckManager.Instance.TryGetCardDisplay(cardDefData.cardID, "ko", out var display))
+                if (DeckManager.Instance.TryGetCardDisplay(cardDefData.cardID, "ko", out CardDisplay display))
                 {
                     localizedName = display.name;
                     localizedDescription = display.description;
@@ -70,14 +75,14 @@ namespace CardItem.MVP
         #endregion
 
         #region 구매 클릭 입력 이벤트 전달
-        private CardShopPresenter cardShopPresenter;
         private void CardItemView_OnPurchaseClicked(ulong inputClientId)
         {
             CardItemData myCardItemData = cardItemModel.CardItemData.Value;
-            Debug.Log("[CardItemPresenter] cardShopPresenter.TryPurchaseCard 호출");
-            // TODO:CardShop에게 카드 구매 요청 : 카드 아이디, 플레이어 아이디, 카드 가격 보내주기
-            cardShopPresenter = GameObject.FindAnyObjectByType<CardShopPresenter>();
-            cardShopPresenter.TryPurchaseCard(myCardItemData, inputClientId);
+            // CardShop에게 카드 구매 요청
+            if (DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
+            {
+                cardShopPresenter.TryPurchaseCard(myCardItemData, inputClientId);
+            }
         }
 
         /// <summary>
@@ -91,6 +96,54 @@ namespace CardItem.MVP
                 CardItemStatusData_OnValueChanged(newValue.cardItemStatusData, newValue.cardDef.type, newValue.cardDef.mapRestriction);
             }
         }
+        #endregion
+
+        #region 외부 인터페이스 (메시지 기반)
+        
+        /// <summary>
+        /// 카드 구매 요청
+        /// </summary>
+        public void RequestPurchase(ulong clientId = 0)
+        {
+            CardItemView_OnPurchaseClicked(clientId);
+        }
+        
+        /// <summary>
+        /// 카드 데이터 업데이트 요청
+        /// </summary>
+        public void RequestUpdateCardData(CardItemData newData)
+        {
+            if (cardItemModel != null)
+            {
+                cardItemModel.CardItemData.Value = newData;
+            }
+        }
+        
+        /// <summary>
+        /// 카드 상태 조회
+        /// </summary>
+        public CardItemData GetCardData()
+        {
+            return cardItemModel?.CardItemData.Value ?? default(CardItemData);
+        }
+        
+        /// <summary>
+        /// 카드 가격 조회
+        /// </summary>
+        public int GetCardPrice()
+        {
+            return cardItemModel?.CardItemData.Value.cardItemStatusData.price ?? 0;
+        }
+        
+        /// <summary>
+        /// 카드 구매 가능 여부 조회
+        /// </summary>
+        public bool IsPurchasable()
+        {
+            CardItemData cardData = GetCardData();
+            return cardData.cardItemStatusData.state == CardItemState.None;
+        }
+        
         #endregion
     }
 }

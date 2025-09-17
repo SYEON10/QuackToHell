@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public sealed class TrialSummonController : InteractionControllerBase
@@ -24,12 +25,16 @@ public sealed class TrialSummonController : InteractionControllerBase
 
     void Update()
     {
-        var player = cachedPlayer;
+        GameObject player = cachedPlayer;
         if (!player) return;
 
         if (!CanInteract(player)) return;
 
-        if (Input.GetKeyDown(interactKey) || (alsoSpace && Input.GetKeyDown(KeyCode.Space)))
+        // Input System을 사용하여 키 감지
+        bool eKeyPressed = Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame;
+        bool spaceKeyPressed = alsoSpace && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+        
+        if (eKeyPressed || spaceKeyPressed)
         {
             Interact(player);
         }

@@ -1,5 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections.Generic;
+
 /// <summary>
 /// 플레이어 관련 헬퍼메서드 제공하는 매니저
 /// 
@@ -20,45 +22,45 @@ public class PlayerHelperManager : MonoBehaviour
     }
     #endregion
 
+    // 캐시된 플레이어 리스트 (성능 최적화)
+    private List<PlayerModel> _cachedPlayers = new List<PlayerModel>();
+    private bool _isCacheValid = false;
+
     /// <summary>
-    /// 클라이언트 ID로 플레이어를 찾아서 골드를 반환
+    /// 플레이어 캐시 업데이트
     /// </summary>
-    /// <param name="clientId">찾을 플레이어의 클라이언트 ID</param>
-    /// <returns>플레이어의 골드, 플레이어를 찾지 못하면 0</returns>
-    public int GetPlayerGoldByClientId(ulong clientId)
+    private void UpdatePlayerCache()
     {
-        // 씬에서 모든 플레이어를 찾기
-        PlayerModel[] allPlayers = FindObjectsOfType<PlayerModel>();
-        
-        foreach (PlayerModel player in allPlayers)
+        if (!_isCacheValid)
         {
-            // NetworkObject의 OwnerClientId와 비교
-            if (player.NetworkObject != null && player.NetworkObject.OwnerClientId == clientId)
-            {
-                // 해당 플레이어의 골드 반환
-                return player.PlayerStatusData.Value.gold;
-            }
+            _cachedPlayers.Clear();
+            PlayerModel[] allPlayers = FindObjectsByType<PlayerModel>(FindObjectsSortMode.None);
+            _cachedPlayers.AddRange(allPlayers);
+            _isCacheValid = true;
         }
-        
-        // 플레이어를 찾지 못한 경우
-        Debug.LogWarning($"Player with ClientId {clientId} not found in scene");
-        return 0;
     }
 
     /// <summary>
-    /// 클라이언트 ID로 플레이어를 찾아서 PlayerModel 반환
+    /// 캐시 무효화 (플레이어가 추가/제거될 때 호출)
+    /// </summary>
+    public void InvalidateCache()
+    {
+        _isCacheValid = false;
+    }
+
+    /// <summary>
+    /// 클라이언트 ID로 플레이어를 찾아서 PlayerModel 반환 (핵심 메서드)
     /// </summary>
     /// <param name="clientId">찾을 플레이어의 클라이언트 ID</param>
     /// <returns>플레이어의 PlayerModel, 찾지 못하면 null</returns>
     public PlayerModel GetPlayerModelByClientId(ulong clientId)
     {
-        PlayerModel[] allPlayers = FindObjectsByType<PlayerModel>(FindObjectsSortMode.None);
-        //test
-        int allPlayersCount = allPlayers.Length;
+        UpdatePlayerCache();
         
-        foreach (PlayerModel player in allPlayers)
+        foreach (PlayerModel player in _cachedPlayers)
         {
-            if (player.NetworkObject != null && player.NetworkObject.OwnerClientId == clientId)
+            if (DebugUtils.AssertNotNull(player.NetworkObject, "Player NetworkObject", this) && 
+                player.NetworkObject.OwnerClientId == clientId)
             {
                 return player;
             }
@@ -69,23 +71,32 @@ public class PlayerHelperManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 클라이언트 ID로 플레이어를 찾아서 골드를 반환
+    /// </summary>
+    /// <param name="clientId">찾을 플레이어의 클라이언트 ID</param>
+    /// <returns>플레이어의 골드, 플레이어를 찾지 못하면 0</returns>
+    public int GetPlayerGoldByClientId(ulong clientId)
+    {
+        PlayerModel player = GetPlayerModelByClientId(clientId);
+        if (DebugUtils.AssertNotNull(player, "Player", this))
+        {
+            return player.PlayerStatusData.Value.gold;
+        }
+        return 0;
+    }
+
+    /// <summary>
     /// 클라이언트 ID로 플레이어를 찾아서 플레이어 게임 오브젝트 반환
     /// </summary>
     /// <param name="clientId">찾을 플레이어의 클라이언트 ID</param>
-    /// <returns>플레이어의 PlayerModel, 찾지 못하면 null</returns>
+    /// <returns>플레이어의 GameObject, 찾지 못하면 null</returns>
     public GameObject GetPlayerGameObjectByClientId(ulong clientId)
     {
-        PlayerModel[] allPlayers = FindObjectsByType<PlayerModel>(FindObjectsSortMode.None);
-        
-        foreach (PlayerModel player in allPlayers)
+        PlayerModel player = GetPlayerModelByClientId(clientId);
+        if (DebugUtils.AssertNotNull(player, "Player", this))
         {
-            if (player.NetworkObject != null && player.NetworkObject.OwnerClientId == clientId)
-            {
-                return player.gameObject;
-            }
+            return player.gameObject;
         }
-        
-        Debug.LogWarning($"Player with ClientId {clientId} not found in scene");
         return null;
     }
 
@@ -98,14 +109,19 @@ public class PlayerHelperManager : MonoBehaviour
         return NetworkManager.Singleton.ConnectedClients.Count;
     }
 
+    /// <summary>
+    /// 모든 플레이어의 움직임을 멈추는 서버 RPC
+    /// </summary>
     [ServerRpc]
-    public void StopAllPlayer()
+    public void StopAllPlayerServerRpc()
     {
-        //모든 플레이어의 움직임을 멈춤
         PlayerView[] allPlayers = FindObjectsByType<PlayerView>(FindObjectsSortMode.None);
         foreach (PlayerView player in allPlayers)
         {
-            player.IgnoreMoveInput = true;
+            if (DebugUtils.AssertNotNull(player, "PlayerView", this))
+            {
+                player.IgnoreMoveInput = true;
+            }
         }
     }
 }

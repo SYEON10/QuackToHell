@@ -19,8 +19,9 @@ public enum PlayerAnimationState
 public enum PlayerJob
 {
     None,
-    Farmer, 
-    Animal
+    Farmer,     // 농장주
+    Animal,     // 동물
+    Ghost       // 유령 (사망한 플레이어)
 }
 
 public enum EPlayerColorIndex
@@ -98,6 +99,8 @@ public struct PlayerStateData : INetworkSerializable
         get => animationState; 
         set => animationState = value; 
     }
+    
+    public bool IsDead => aliveState == PlayerLivingState.Dead;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {

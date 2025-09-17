@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// 키보드 키로 재판 소집하는 controller
@@ -10,16 +11,15 @@ public class ConvocationOfTrialController : MonoBehaviour
     private CircleCollider2D circleCollider2D;
     [SerializeField]
     private float detectionRadius = 1.0f;
-    [SerializeField]
-    private KeyCode convocationKey = KeyCode.R;
     private bool activateKey = false;
     private GameObject reporter;
+    
     private void Start()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
 
         // 현재 씬이 이미 로드된 상태라면 수동으로 호출
-        if (SceneManager.GetActiveScene().name.Equals("VillageScene"))
+        if (SceneManager.GetActiveScene().name.Equals(GameScenes.Village))
         {
             OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
         }
@@ -41,17 +41,14 @@ public class ConvocationOfTrialController : MonoBehaviour
             return;
         }
 
-        if (scene.name.Equals("VillageScene"))
+        if (scene.name.Equals(GameScenes.Village))
         {
             //콜라이더 설정
             circleCollider2D = gameObject.GetComponent<CircleCollider2D>();
-            if(circleCollider2D == null)
-            {
-                Debug.LogError("[convocationController] CircleCollider2D component not found on ConvocationOfTrialController GameObject.");
+            if (!DebugUtils.AssertNotNull(circleCollider2D, "CircleCollider2D", this))
                 return;
-            }
             circleCollider2D.isTrigger = true;
-            circleCollider2D.radius = detectionRadius;
+            circleCollider2D.radius = GameConstants.UI.DetectionRadius;
             //키 활성화
             activateKey = true;
         }
@@ -59,43 +56,19 @@ public class ConvocationOfTrialController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
+        if (collision.CompareTag(GameTags.Player))
         {
             reporter = collision.gameObject;
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
+        if (collision.CompareTag(GameTags.Player))
         {
             reporter = null;
         }
     }
 
-    private void Update()
-    {
-        if (reporter == null)
-        {
-            return;
-        }
-        if (!activateKey)
-        {
-            return;
-        }
-        if (Input.GetKeyDown(convocationKey))
-        {
-            Debug.Log("Key Pressed!");
-            
-            // 안전한 컴포넌트 접근
-            var playerView = reporter.GetComponent<PlayerView>();
-            if (playerView != null)
-            {
-                playerView.OnReportCorpseTriggered();
-            }
-            else
-            {
-                Debug.LogWarning("[ConvocationOfTrialController] PlayerView component not found on reporter.");
-            }
-        }
-    }
+    // R키 처리 제거 - 이제 PlayerView에서 Q키로만 처리
+    // private void Update() - 전체 메서드 제거
 }

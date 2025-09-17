@@ -53,7 +53,7 @@ public class CorpseFactory : MonoBehaviour
         GameObject corpseInstance = Instantiate(_corpsePrefab, position, rotation);
 
         // 2. 네트워크에 스폰
-        var corpseNetworkObject = corpseInstance.GetComponent<NetworkObject>();
+        NetworkObject corpseNetworkObject = corpseInstance.GetComponent<NetworkObject>();
         corpseNetworkObject.Spawn(true);
 
         // 3. 데이터 초기화

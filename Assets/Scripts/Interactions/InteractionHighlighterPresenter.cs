@@ -8,6 +8,7 @@ public sealed class InteractionHighlighterPresenter : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private GameObject highlightObject;     // 하이라이트 오브젝트(자식)
     [SerializeField] private MonoBehaviour interactable;     // (옵션) 직접 할당. 비우면 GetComponent로 찾음
+    [SerializeField] private Transform playerTransform;     // 플레이어 Transform 참조
 
     // 내부 캐시
     private IInteractable _ia;
@@ -59,28 +60,27 @@ public sealed class InteractionHighlighterPresenter : MonoBehaviour
 
     private void TryFindLocalPlayer()
     {
-        var nm = NetworkManager.Singleton;
+        NetworkManager nm = NetworkManager.Singleton;
         if (nm != null && nm.IsClient)
         {
-            var po = nm.SpawnManager?.GetLocalPlayerObject();
-            if (po != null) { _playerTr = po.transform; return; }
+            NetworkObject playerObject = nm.SpawnManager?.GetLocalPlayerObject();
+            if (playerObject != null) { _playerTr = playerObject.transform; return; }
 
             // Fallback: 내 소유 & "Player" 태그
-            foreach (var netObj in nm.SpawnManager.SpawnedObjectsList)
+            foreach (NetworkObject networkObject in nm.SpawnManager.SpawnedObjectsList)
             {
-                if (netObj != null && netObj.OwnerClientId == nm.LocalClientId && netObj.CompareTag("Player"))
+                if (networkObject != null && networkObject.OwnerClientId == nm.LocalClientId && networkObject.CompareTag("Player"))
                 {
-                    _playerTr = netObj.transform;
+                    _playerTr = networkObject.transform;
                     return;
                 }
             }
         }
 
-        // 마지막 Fallback: 씬에 있는 플레이어 태그(테스트용 단독 플레이 대비)
-        if (_playerTr == null)
+        // 마지막 Fallback: SerializeField로 할당된 플레이어 Transform 사용
+        if (_playerTr == null && playerTransform != null)
         {
-            var go = GameObject.FindGameObjectWithTag("Player");
-            if (go) _playerTr = go.transform;
+            _playerTr = playerTransform;
         }
     }
 }

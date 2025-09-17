@@ -1,7 +1,6 @@
 using UnityEngine;
 using CardItem.MVP;
 using Unity.Netcode;
-using Utilities;
 
 /// <summary>
 /// 카드 아이템 생성 팩토리
@@ -22,11 +21,14 @@ public class CardItemFactoryManager : NetworkBehaviour
     #region 카드 아이템 생성
     [Header ("Card 프리팹을 넣어주세요.")]
     public GameObject cardItemPrefab;
+    
+    [Header("UI References")]
+    [SerializeField] private GameObject cardForSaleParent;
+    [SerializeField] private GameObject cardForInventoryParent;
 
     public GameObject CreateCardForInventory(CardItemData cardItemData)
     {
         #region 유효한 요청인지 확인
-        //카드 ID가 존재하는지 확인
         int requestedCardIdKey = cardItemData.cardIdKey;
         if (!DeckManager.Instance.IsValidCardIdKey(requestedCardIdKey))
         {
@@ -35,20 +37,25 @@ public class CardItemFactoryManager : NetworkBehaviour
         }
         #endregion
 
-        #region 카드 생성
-        //프리팹 생성 
+        #region 카드 생성 
+        if (!DebugUtils.AssertNotNull(cardItemPrefab, "cardItemPrefab", this))
+            return null;
+            
         GameObject cardItemForInventory = Instantiate(cardItemPrefab, Vector3.zero, Quaternion.identity);
 
         //데이터 주입 (읽기 전용으로 서버 데이터 사용)
         CardItemModel cardItemModel = cardItemForInventory.GetComponent<CardItemModel>();
-        cardItemModel.UpdateCardStateFromServer(cardItemData);
+        if (DebugUtils.AssertNotNull(cardItemModel, "CardItemModel", this))
+        {
+            cardItemModel.UpdateCardStateFromServer(cardItemData);
+        }
 
         //태그 부여
-        cardItemForInventory.tag = QETag.CardForInventory.ToString();
+        cardItemForInventory.tag = GameTags.CardForInventory;
         
         //크기 조정
         RectTransform cardItemForSaleRectTransform = cardItemForInventory.GetComponent<RectTransform>();
-        Vector2 newSize = new Vector2(200, 300);
+        Vector2 newSize = new Vector2(GameConstants.Card.InventoryCardWidth, GameConstants.Card.InventoryCardHeight);
         cardItemForSaleRectTransform.sizeDelta = newSize;
 
         //Transform 설정
@@ -68,11 +75,10 @@ public class CardItemFactoryManager : NetworkBehaviour
             // 서버의 권위적 데이터에서 읽기 (수정하지 않음)
             CardItemData cardItemData = DeckManager.Instance.AllCardsOnGameData[i];
 
-            //프리팹 생성
             GameObject cardItemForSale = Instantiate(cardItemPrefab, Vector3.zero, Quaternion.identity);
 
-            //찾기
-            cardForSaleParent = GameObject.FindWithTag("CardForSaleParent");
+            if (!DebugUtils.AssertNotNull(cardForSaleParent, "CardForSaleParent", this))
+                continue;
 
             cardItemForSale.transform.SetParent(cardForSaleParent.transform);
 
@@ -81,14 +87,17 @@ public class CardItemFactoryManager : NetworkBehaviour
 
             // 데이터 주입 (읽기 전용으로 서버 데이터 사용)
             CardItemModel cardItemModel = cardItemForSale.GetComponent<CardItemModel>();
-            cardItemModel.UpdateCardStateFromServer(cardItemData);
+            if (DebugUtils.AssertNotNull(cardItemModel, "CardItemModel", this))
+            {
+                cardItemModel.UpdateCardStateFromServer(cardItemData);
+            }
 
             //태그 부여
-            cardItemForSale.tag = QETag.CardForSale.ToString();
+            cardItemForSale.tag = GameTags.CardForSale;
 
             //크기 조정
             RectTransform cardItemForSaleRectTransform = cardItemForSale.GetComponent<RectTransform>();
-            Vector2 newSize = new Vector2(200, 350);
+            Vector2 newSize = new Vector2(GameConstants.Card.SaleCardWidth, GameConstants.Card.SaleCardHeight);
             cardItemForSaleRectTransform.sizeDelta = newSize;
 
             // CardForSale 오브젝트의 이름을 CardItemId와 함께 설정

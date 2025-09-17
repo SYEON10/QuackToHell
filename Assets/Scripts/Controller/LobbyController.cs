@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using TMPro;
 using System;
@@ -11,7 +10,7 @@ public class LobbyController : NetworkBehaviour
 {
     [SerializeField]
     private TMP_Dropdown colorDropdown;
-
+    
     #region 카드데이터 로드
 
     [Header("Google Sheets CSV URLs")]
@@ -27,7 +26,10 @@ public class LobbyController : NetworkBehaviour
         base.OnNetworkSpawn();
 
         //버튼 이벤트 바인딩
-        colorDropdown.onValueChanged.AddListener(OnColorDropdownButton);
+        if (DebugUtils.AssertNotNull(colorDropdown, "colorDropdown", this))
+        {
+            colorDropdown.onValueChanged.AddListener(OnColorDropdownButton);
+        }
 
         
         //호스트만 데이터 로드
@@ -37,7 +39,7 @@ public class LobbyController : NetworkBehaviour
         }
 
         // DeckManager가 초기화될 때까지 대기
-        while (DeckManager.Instance == null)
+        while (!DebugUtils.AssertNotNull(DeckManager.Instance, "DeckManager.Instance", this))
         {
             await Task.Yield();
         }
@@ -53,7 +55,6 @@ public class LobbyController : NetworkBehaviour
             await DeckManager.Instance.WhenDataReadyAsync();
             
             isCardDataLoaded = true;
-            Debug.Log("[LobbyController] Card data loaded successfully through DeckManager");
         }
         catch (System.Exception ex)
         {
@@ -74,7 +75,6 @@ public class LobbyController : NetworkBehaviour
 
     public void OnColorDropdownButton(Int32 colorIndex)
     {
-        Debug.Log($"Input color: {colorIndex}");
         PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).ChangeColorServerRpc(colorIndex, NetworkManager.Singleton.LocalClientId);
     }
     #endregion
@@ -109,7 +109,7 @@ public class LobbyController : NetworkBehaviour
         }
 
         // 2명 미만이면 시작 못 함
-        if (NetworkManager.Singleton.ConnectedClientsList.Count < 2)
+        if (NetworkManager.Singleton.ConnectedClientsList.Count < GameConstants.Network.MinPlayersToStart)
         {
             Debug.LogError("Need at least 2 players to start the game!");
             return;
@@ -128,7 +128,7 @@ public class LobbyController : NetworkBehaviour
     private IEnumerator DelayedSceneLoad()
     {
         // PlayerObject 생성 시간을 확보하기 위해 잠시 대기
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(GameConstants.UI.DelayedSceneLoadTime);
         LoadVillageSceneServerRpc();
     }
 
@@ -151,24 +151,19 @@ public class LobbyController : NetworkBehaviour
 
     }
 
-    //TODO: Scene이동을 Static함수로 빼고, 씬 이름을 인자로 넣되 씬이름은 하드코딩x Utils로 관리
     [ServerRpc]
     private void LoadVillageSceneServerRpc()
     {
         // 모든 클라이언트를 VillageScene으로 이동
-        NetworkManager.Singleton.SceneManager.LoadScene("VillageScene", LoadSceneMode.Single);
+        SceneController.Instance.LoadVillageSceneServerRpc();
     }
 
     private void PlayerSpawn()
     {
-        PlayerFactoryManager playerFactory = FindAnyObjectByType<PlayerFactoryManager>();
-        if (playerFactory != null)
+        PlayerFactoryManager playerFactory = PlayerFactoryManager.Instance;
+        if (DebugUtils.AssertNotNull(playerFactory, "PlayerFactoryManager", this))
         {
             playerFactory.SpawnPlayerServerRpc();
-        }
-        else
-        {
-            Debug.LogError("PlayerFactoryManager not found in the scene.");
         }
     }
     #endregion

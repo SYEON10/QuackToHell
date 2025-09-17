@@ -58,7 +58,6 @@ public class SpawnPointsController : NetworkBehaviour
         // 'VillageScene'이 로딩되었는지 확인한다.
         if (sceneName == "VillageScene")
         {
-            Debug.Log("모든 클라이언트가 VillageScene 로딩 완료! 스폰 포인트 재배치를 시작합니다.");
 
             AssignAndRelocatePlayersAfterDelay();
         }
@@ -82,10 +81,10 @@ public class SpawnPointsController : NetworkBehaviour
     /// </summary>
     private void RelocateAllPlayers()
     {
-        foreach (var clientId in NetworkManager.Singleton.ConnectedClients.Keys)
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClients.Keys)
         {
-            var playerObject = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(clientId);
-            var spawnPoint = GetSpawnPointForClient(clientId);
+            GameObject playerObject = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(clientId);
+            Transform spawnPoint = GetSpawnPointForClient(clientId);
 
             if (playerObject != null && spawnPoint != null)
             {
@@ -105,9 +104,9 @@ public class SpawnPointsController : NetworkBehaviour
 
         _assignedSpawnPoints.Clear();
         //현재 연결된 모든 클라이언트의 ID 목록을 복사하여 할당
-        var clientsToAssign = new List<ulong>(NetworkManager.Singleton.ConnectedClients.Keys);
+        List<ulong> clientsToAssign = new List<ulong>(NetworkManager.Singleton.ConnectedClients.Keys);
         //리스트 순회 & 모든 스폰포인트 리스트화
-        var allAvailablePoints = spawnPointGroups.SelectMany(g => g.spawnPoints).ToList();
+        List<Transform> allAvailablePoints = spawnPointGroups.SelectMany(g => g.spawnPoints).ToList();
 
         // 플레이어 수보다 스폰 포인트가 부족하면 경고
         if (allAvailablePoints.Count < clientsToAssign.Count)
@@ -121,7 +120,6 @@ public class SpawnPointsController : NetworkBehaviour
         {
             if (TryAssign(clientsToAssign, spawnPointGroups))
             {
-                Debug.Log("모든 플레이어의 스폰 포인트 할당 완료.");
                 return; // 성공적으로 할당 완료
             }
         }

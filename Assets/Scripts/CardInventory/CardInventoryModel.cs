@@ -36,11 +36,9 @@ public class CardInventoryModel : NetworkBehaviour
     {  
         if (ownedCards.Count >= maxCardCount)
         {
-            Debug.Log("카드 추가 실패: 인벤토리 가득 참");
             return;
         }
         ownedCards.Add(card);
-        Debug.Log($"[CardInventoryModel] 카드 추가 성공: {card.cardIdKey}");
     }
 
     [ServerRpc]
@@ -54,7 +52,6 @@ public class CardInventoryModel : NetworkBehaviour
                 break;
             }
         }
-        Debug.Log($"[CardInventoryModel] 카드 삭제 성공: {card.cardItemStatusData.cardItemID}");
     }
     #endregion
 
@@ -65,8 +62,8 @@ public class CardInventoryModel : NetworkBehaviour
     {
 
         // NetworkList는 직접 정렬할 수 없으므로, 임시 리스트로 정렬 후 다시 추가
-        var sortedList = new List<CardItemData>();
-        foreach (var card in ownedCards)
+        List<CardItemData> sortedList = new List<CardItemData>();
+        foreach (CardItemData card in ownedCards)
         {
             sortedList.Add(card);
         }
@@ -75,9 +72,9 @@ public class CardInventoryModel : NetworkBehaviour
         
         // NetworkList 업데이트
         ownedCards.Clear();
-        foreach (var c in sortedList)
+        foreach (CardItemData card in sortedList)
         {
-            ownedCards.Add(c);
+            ownedCards.Add(card);
         }
     }*/
     

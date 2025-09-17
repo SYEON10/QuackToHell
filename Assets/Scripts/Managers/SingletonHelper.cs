@@ -18,7 +18,7 @@ public static class SingletonHelper<T> where T : MonoBehaviour
                 _instance = Object.FindAnyObjectByType<T>();
                 if (_instance == null)
                 {
-                    var go = new GameObject(typeof(T).Name);
+                    GameObject go = new GameObject(typeof(T).Name);
                     _instance = go.AddComponent<T>();
                 }
             }

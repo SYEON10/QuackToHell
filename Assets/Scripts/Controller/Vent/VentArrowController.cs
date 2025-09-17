@@ -35,9 +35,9 @@ public sealed class VentArrowController : MonoBehaviour
         // 터치 업
         if (Input.touchCount > 0)
         {
-            var t = Input.GetTouch(0);
-            if (t.phase == TouchPhase.Ended)
-                TryRaycastClick(t.position);
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Ended)
+                TryRaycastClick(touch.position);
         }
     }
 
@@ -46,10 +46,10 @@ public sealed class VentArrowController : MonoBehaviour
         if (_cam == null) _cam = Camera.main;
         if (_cam == null || _col == null) return;
 
-        var wp = _cam.ScreenToWorldPoint(screenPos);
-        var p2 = new Vector2(wp.x, wp.y);
+        Vector3 worldPosition = _cam.ScreenToWorldPoint(screenPos);
+        Vector2 point2D = new Vector2(worldPosition.x, worldPosition.y);
         // 같은 지점에 여러 콜라이더가 있으면 가장 가까운 것만 잡히므로 OverlapPointNonAlloc 사용
-        var hit = Physics2D.OverlapPoint(p2);
+        Collider2D hit = Physics2D.OverlapPoint(point2D);
         if (hit != null && hit.gameObject == gameObject)
             TryRequest();
     }

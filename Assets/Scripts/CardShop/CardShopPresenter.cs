@@ -6,37 +6,41 @@ using UnityEngine.SceneManagement;
 
 public class CardShopPresenter : NetworkBehaviour
 {
-    [SerializeField] private CardShopView viewBehaviour;
-    [SerializeField] private float rerollCooldown = 0.2f;
-
-
+    [Header("Components")]
     private CardShopView _view;
     private CardShopModel _model;
+    
+    [Header("Settings")]
+    [SerializeField] private float rerollCooldown = 0.2f;
+
     private static readonly Dictionary<ulong, CardShopPresenter> s_serverByClient = new();
     private bool _cooldown;
 
     private void Awake()
     {
-        _view = viewBehaviour;
-        _model = new CardShopModel();
+        _view = GetComponent<CardShopView>();
+        _model = GetComponent<CardShopModel>();
+            
+        DebugUtils.AssertComponent(_view, "CardShopView", this);
+        DebugUtils.AssertComponent(_model, "CardShopModel", this);
     }
  
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        var activeScene = SceneManager.GetActiveScene().name;
-        _model.Initiate();
-        _model.DisplayCardForSale();
-
+        
         if (_view != null)
         {
-
             _view.OnClickLock += OnClickLock;
             _view.OnClickReRoll += OnClickReRoll;
         }
 
         if (IsServer)
+        {
             s_serverByClient[OwnerClientId] = this;
+            // 서버에서 카드 표시
+            _model.DisplayCardForSale();
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -55,8 +59,7 @@ public class CardShopPresenter : NetworkBehaviour
 
     public void TryPurchaseCard(CardItemData card, ulong inputClientId)
     {
-        Debug.Log("[CardShopPresenter] TryPurchaseCard 실행됨");
-        var clientId = inputClientId == 0UL ? OwnerClientId : inputClientId;
+        ulong clientId = inputClientId == 0UL ? OwnerClientId : inputClientId;
         _model.RequestPurchase(card, clientId);
     }
 
@@ -102,13 +105,63 @@ public class CardShopPresenter : NetworkBehaviour
     public static void ServerSendResultTo(ulong clientId, bool success)
     {
         if (!NetworkManager.Singleton || !NetworkManager.Singleton.IsServer) return;
-        if (s_serverByClient.TryGetValue(clientId, out var presenter))
+        if (s_serverByClient.TryGetValue(clientId, out CardShopPresenter presenter))
         {
-            var p = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } };
-            presenter.PurchaseCardResultClientRpc(success, p);
+            ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } };
+            presenter.PurchaseCardResultClientRpc(success, clientRpcParams);
         }
     }
 
- 
-
+    #region 외부 인터페이스 (메시지 기반)
+    
+    /// <summary>
+    /// 카드샵 잠금 요청
+    /// </summary>
+    public void RequestLockShop()
+    {
+        OnClickLock();
+    }
+    
+    /// <summary>
+    /// 카드샵 상태 조회
+    /// </summary>
+    public bool IsShopLocked()
+    {
+        return _model?.IsLocked ?? false;
+    }
+    
+    /// <summary>
+    /// 카드 표시 요청 (외부에서 호출)
+    /// </summary>
+    public void RequestDisplayCards()
+    {
+        if (_model != null)
+        {
+            _model.DisplayCardForSale();
+        }
+    }
+    
+    /// <summary>
+    /// 리롤 요청 (외부에서 호출)
+    /// </summary>
+    public void RequestReroll()
+    {
+        if (!_cooldown && _model != null && !_model.IsLocked)
+        {
+            OnClickReRoll();
+        }
+    }
+    
+    /// <summary>
+    /// 카드 구매 요청 (외부에서 호출)
+    /// </summary>
+    public void RequestPurchaseCard(CardItemData card, ulong clientId)
+    {
+        if (_model != null && !_model.IsLocked)
+        {
+            _model.RequestPurchase(card, clientId);
+        }
+    }
+    
+    #endregion
 }

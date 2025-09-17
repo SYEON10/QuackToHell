@@ -1,7 +1,5 @@
 // PlayerModel.cs
 using System;
-using System.IO;
-using System.Numerics;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -72,17 +70,17 @@ public class PlayerModel : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void MovePlayerServerRpc(int inputXDirection, int inputYDirection)
     {
-        UnityEngine.Vector2 direction = new UnityEngine.Vector2(inputXDirection, inputYDirection).normalized;
+        Vector2 direction = new Vector2(inputXDirection, inputYDirection).normalized;
         playerRB.linearVelocity = direction * PlayerStatusData.Value.moveSpeed;
         if (inputXDirection != 0 || inputYDirection != 0)
         {
-            var newStateData = PlayerStateData.Value;
+            PlayerStateData newStateData = PlayerStateData.Value;
             newStateData.animationState = PlayerAnimationState.Walk;
             PlayerStateData.Value = newStateData;
         }
         else
         {
-            var newStateData = PlayerStateData.Value;
+            PlayerStateData newStateData = PlayerStateData.Value;
             newStateData.animationState = PlayerAnimationState.Idle;
             PlayerStateData.Value = newStateData;
         }
@@ -239,42 +237,35 @@ public class PlayerModel : NetworkBehaviour
     #region 색깔 변경
 
     [ServerRpc]
-    public void ChangeColorServerRpc(Int32 colorIndex, ulong clientId)
+    public void ChangeColorServerRpc(Int32 colorIndex, ulong clientId, ServerRpcParams rpcParams = default)
     {
-        var tempAppearanceData = _playerAppearanceData.Value;
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        
+        // 서버에서 권위적 정보로 클라이언트 ID 검증
+        if (clientId != requesterClientId)
+        {
+            Debug.LogError($"Server: Unauthorized color change attempt. Requested: {clientId}, Actual: {requesterClientId}");
+            return;
+        }
+        
+        PlayerAppearanceData tempAppearanceData = _playerAppearanceData.Value;
         tempAppearanceData.ColorIndex = colorIndex;
         _playerAppearanceData.Value = tempAppearanceData;
-        Debug.Log($"Color changed to {colorIndex} for client {clientId}");
     }
     #endregion
 
     #region Die
-    public void Die()
+    /// <summary>
+    /// 플레이어 사망 처리 (서버에서만 호출되어야 함)
+    /// 클라이언트는 이 메서드를 직접 호출할 수 없음
+    /// </summary>
+    [ServerRpc]
+    public void DieServerRpc(ServerRpcParams rpcParams = default)
     {
-        var newStateData = PlayerStateData.Value;
+        // 서버에서만 상태 변경 (권위적 정보)
+        PlayerStateData newStateData = PlayerStateData.Value;
         newStateData.AliveState = PlayerLivingState.Dead;
         PlayerStateData.Value = newStateData;
-        Debug.Log($"Player{NetworkManager.Singleton.LocalClientId} Alive State is {PlayerStateData.Value.AliveState.ToString()}");
-        CorpseFactory.Instance.CreateCorpseServerRpc(this.gameObject.transform.position, this.gameObject.transform.rotation, PlayerAppearanceData.Value);
-    }
-
-    [ClientRpc]
-    public void SetPlayerVisibilityForDeadPlayersClientRpc(ulong corpseClientId)
-    {
-        //실행중인 애가 살아있는 상태일때만
-        if (PlayerStateData.Value.AliveState == PlayerLivingState.Alive)
-        {
-            GameObject deadPlayer = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(corpseClientId);
-            //스프라이트 찾아서, 투명화하기
-            SpriteRenderer[] spriteRenderers = deadPlayer.GetComponentsInChildren<SpriteRenderer>();
-            for (int i = 0; i < spriteRenderers.Length; i++)
-            {
-                spriteRenderers[i].enabled = false;
-            }
-            //닉네임 찾아서, 투명화하기
-            TextMeshProUGUI nicknameTMP = deadPlayer.GetComponentInChildren<TextMeshProUGUI>();
-            nicknameTMP.enabled = false;
-        }
     }
     #endregion
 }

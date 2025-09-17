@@ -64,13 +64,11 @@ public sealed class ObjectController : MonoBehaviour
     void Reset()
     {
         TryCacheRefs();
-        if (player == null) player = GameObject.FindGameObjectWithTag("Player")?.transform;
     }
 
     void Awake()
     {
         TryCacheRefs();
-        if (player == null) player = GameObject.FindGameObjectWithTag("Player")?.transform;
         ApplyAll(); // 런타임에서도 즉시 적용
     }
 

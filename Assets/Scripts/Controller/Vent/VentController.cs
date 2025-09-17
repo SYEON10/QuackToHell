@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public sealed class VentController : NetworkBehaviour, IInteractable
@@ -82,19 +83,25 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     {
         if (Time.time < _localClickSuppressUntil) return;
 
-        var nm = NetworkManager.Singleton;
+        NetworkManager nm = NetworkManager.Singleton;
 
-        var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
+        GameObject localPlayerObj = null;
+        if (DebugUtils.EnsureNotNull(nm, "NetworkManager", this) && 
+            DebugUtils.EnsureNotNull(nm.SpawnManager, "SpawnManager", this))
+        {
+            localPlayerObj = nm.SpawnManager.GetLocalPlayerObject().gameObject;
+        }
+        
         if (localPlayerObj == null)
         {
             // Fallback: 내 소유 Player 찾기
             if (nm != null)
             {
-                foreach (var no in nm.SpawnManager.SpawnedObjectsList)
+                foreach (NetworkObject networkObject in nm.SpawnManager.SpawnedObjectsList)
                 {
-                    if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
+                    if (networkObject.OwnerClientId == nm.LocalClientId && networkObject.CompareTag("Player"))
                     {
-                        localPlayerObj = no;
+                        localPlayerObj = networkObject.gameObject;
                         break;
                     }
                 }
@@ -103,7 +110,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         if (localPlayerObj == null) return;
 
         bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
-                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
+                           (_occupantNetId.Value == localPlayerObj.GetComponent<NetworkObject>().NetworkObjectId);
 
         if (!_occupied.Value)
         {
@@ -121,14 +128,14 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         if (!IsClient || !enableSpacebar) return;
 
         // 네트워크 준비 전엔 아무 것도 안 함
-        var nm = Unity.Netcode.NetworkManager.Singleton;
+        NetworkManager nm = Unity.Netcode.NetworkManager.Singleton;
         if (nm == null || !nm.IsClient) return;
 
         // 로컬 플레이어 오브젝트 안전하게 얻기
-        var localPlayerObj = nm.SpawnManager?.GetLocalPlayerObject();
+        NetworkObject localPlayerObj = nm.SpawnManager?.GetLocalPlayerObject();
         if (localPlayerObj == null)
         {
-            foreach (var no in nm.SpawnManager.SpawnedObjectsList)
+            foreach (NetworkObject no in nm.SpawnManager.SpawnedObjectsList)
             {
                 if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
                             {
@@ -140,19 +147,19 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         }
 
         bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
-                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
+                           (_occupantNetId.Value == localPlayerObj.GetComponent<NetworkObject>().NetworkObjectId);
 
         if (!_occupied.Value)
         {
             float dist = Vector3.Distance(localPlayerObj.transform.position, _tr.position);
-            if (dist <= interactionRadius && Input.GetKeyDown(KeyCode.Space))
+            if (dist <= interactionRadius && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 RequestToggleEnterExit();
             }
         }
         else
         {
-            if (iAmOccupant && Input.GetKeyDown(KeyCode.Space))
+            if (iAmOccupant && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 RequestToggleEnterExit();
             }
@@ -163,17 +170,24 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     {
         if (!IsClient) return;
 
-        var nm = NetworkManager.Singleton;
-        var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
+        NetworkManager nm = NetworkManager.Singleton;
+        
+        GameObject localPlayerObj = null;
+        if (DebugUtils.EnsureNotNull(nm, "NetworkManager", this) && 
+            DebugUtils.EnsureNotNull(nm.SpawnManager, "SpawnManager", this))
+        {
+            localPlayerObj = nm.SpawnManager.GetLocalPlayerObject().gameObject;
+        }
+        
         if (localPlayerObj == null)
         {
             if (nm != null)
             {
-                foreach (var no in nm.SpawnManager.SpawnedObjectsList)
+                foreach (NetworkObject networkObject in nm.SpawnManager.SpawnedObjectsList)
                 {
-                    if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
+                    if (networkObject.OwnerClientId == nm.LocalClientId && networkObject.CompareTag("Player"))
                     {
-                        localPlayerObj = no;
+                        localPlayerObj = networkObject.gameObject;
                         break;
                     }
                 }
@@ -182,7 +196,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         if (localPlayerObj == null) return;
 
         bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
-                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
+                           (_occupantNetId.Value == localPlayerObj.GetComponent<NetworkObject>().NetworkObjectId);
 
         if (_occupied.Value && iAmOccupant)
         {
@@ -201,13 +215,12 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     private void ToggleEnterExitServerRpc(ServerRpcParams rpc = default)
     {
 
-        Debug.Log($"[Server] ToggleEnterExit from {rpc.Receive.SenderClientId}");
 
-        var sender = rpc.Receive.SenderClientId;
-        var playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
+        ulong sender = rpc.Receive.SenderClientId;
+        NetworkObject playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
         if (playerObj == null)
         {
-            foreach (var no in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
+            foreach (NetworkObject no in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
             {
                 if (no != null && no.OwnerClientId == sender && no.gameObject.CompareTag("Player"))
                             {
@@ -267,13 +280,13 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     [ServerRpc(RequireOwnership = false)]
     private void MoveToVentServerRpc(ulong targetVentNetId, ServerRpcParams rpc = default)
     {
-        var sender = rpc.Receive.SenderClientId;
+        ulong sender = rpc.Receive.SenderClientId;
 
         // 1) PlayerObject 확보 (fallback 포함)
-        var playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
+        NetworkObject playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
         if (playerObj == null)
         {
-            foreach (var netObj in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
+            foreach (NetworkObject netObj in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
             {
                 if (netObj != null && netObj.OwnerClientId == sender && netObj.gameObject.CompareTag("Player"))
                 {
@@ -291,13 +304,12 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         // 2) 현재 벤트의 점유자만 이동 가능
         if (_occupantNetId.Value != playerObj.NetworkObjectId)
         {
-            Debug.Log($"[Server] MoveTo: not occupant (occ={_occupantNetId.Value}, me={playerObj.NetworkObjectId})");
             return;
         }
 
         // 3) 타겟 벤트 조회 (out 변수도 다른 이름 사용)
-        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetVentNetId, out var targetNetObj)) return;
-        var targetVent = targetNetObj.GetComponent<VentController>();
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetVentNetId, out NetworkObject targetNetObj)) return;
+        VentController targetVent = targetNetObj.GetComponent<VentController>();
         if (targetVent == null) return;
 
         // 4) 점유 상태 A→B 이전
@@ -309,11 +321,10 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         TeleportPlayerServer(playerObj, targetVent.transform.position);
 
         // 6) 탑승자 본인에게만: A의 화살표 제거 → B의 화살표 생성
-        var onlySender = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } };
+        ClientRpcParams onlySender = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } };
         DespawnArrowsClientRpc(onlySender);
         targetVent.SpawnArrowsClientRpc(targetVent.NetworkObjectId, targetVent.BuildTargetIds(), onlySender);
 
-        Debug.Log($"[Server] MoveTo: {name} -> {targetVent.name} by client {sender}");
     }
 
     // 서버 권위 이동 (NetworkTransform 사용 권장)
@@ -326,18 +337,18 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     [ClientRpc]
     private void SetPlayerHiddenClientRpc(ulong playerNetId, bool hidden)
     {
-        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetId, out var no)) return;
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetId, out NetworkObject networkObject)) return;
 
-        foreach (var r in no.GetComponentsInChildren<Renderer>(true)) r.enabled = !hidden;
-        foreach (var c in no.GetComponentsInChildren<Collider2D>(true)) c.enabled = !hidden;
+        foreach (Renderer renderer in networkObject.GetComponentsInChildren<Renderer>(true)) renderer.enabled = !hidden;
+        foreach (Collider2D collider in networkObject.GetComponentsInChildren<Collider2D>(true)) collider.enabled = !hidden;
     }
 
     // 화살표
     [ClientRpc]
     private void SpawnArrowsClientRpc(ulong ventNetId, ulong[] linkedVentIds, ClientRpcParams target = default)
     {
-        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ventNetId, out var no)) return;
-        var vent = no.GetComponent<VentController>();
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(ventNetId, out NetworkObject networkObject)) return;
+        VentController vent = networkObject.GetComponent<VentController>();
         if (!vent) return;
 
         vent.LocalSpawnArrowsByNetworkIds(linkedVentIds);
@@ -354,33 +365,33 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         LocalDespawnArrows();
         if (arrowPrefab == null || linkedIds == null) return;
 
-        foreach (var id in linkedIds)
+        foreach (ulong linkedVentId in linkedIds)
         {
-            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(id, out var no)) continue;
-            var target = no.GetComponent<VentController>();
-            if (!target) continue;
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(linkedVentId, out NetworkObject linkedNetworkObject)) continue;
+            VentController targetVent = linkedNetworkObject.GetComponent<VentController>();
+            if (!targetVent) continue;
 
-            var go = Instantiate(arrowPrefab, transform.parent);
-            var arrow = go.GetComponent<VentArrowController>();
+            GameObject arrowGameObject = Instantiate(arrowPrefab, transform.parent);
+            VentArrowController arrowController = arrowGameObject.GetComponent<VentArrowController>();
 
-            Vector3 a = _tr.position;
-            Vector3 b = target.transform.position;
-            Vector3 ab = b - a;
-            float d = ab.magnitude;
-            if (d < 0.001f) continue;
+            Vector3 sourcePosition = _tr.position;
+            Vector3 targetPosition = targetVent.transform.position;
+            Vector3 directionVector = targetPosition - sourcePosition;
+            float distance = directionVector.magnitude;
+            if (distance < 0.001f) continue;
 
-            Vector3 dir = ab / d;
-            Vector3 perp = new(-dir.y, dir.x, 0f);
+            Vector3 direction = directionVector / distance;
+            Vector3 perpendicular = new(-direction.y, direction.x, 0f);
 
-            float place = Mathf.Clamp(arrowDistanceFromSource, 0.05f, Mathf.Max(0.05f, d - keepAwayFromTarget));
-            Vector3 pos = a + dir * place + perp * arrowNormalOffset;
+            float placementDistance = Mathf.Clamp(arrowDistanceFromSource, 0.05f, Mathf.Max(0.05f, distance - keepAwayFromTarget));
+            Vector3 arrowPosition = sourcePosition + direction * placementDistance + perpendicular * arrowNormalOffset;
 
-            go.transform.position = pos;
-            go.transform.rotation =
-                Quaternion.AngleAxis(Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg, Vector3.forward);
+            arrowGameObject.transform.position = arrowPosition;
+            arrowGameObject.transform.rotation =
+                Quaternion.AngleAxis(Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, Vector3.forward);
 
-            arrow.Setup(this, target);
-            _spawnedArrows.Add(go);
+            arrowController.Setup(this, targetVent);
+            _spawnedArrows.Add(arrowGameObject);
         }
     }
 
@@ -393,8 +404,8 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     private ulong[] BuildTargetIds()
     {
-        var ids = new List<ulong>(linkedVents.Count);
-        foreach (var v in linkedVents) if (v && v.NetworkObject) ids.Add(v.NetworkObjectId);
+        List<ulong> ids = new List<ulong>(linkedVents.Count);
+        foreach (VentController v in linkedVents) if (v && v.NetworkObject) ids.Add(v.NetworkObjectId);
         return ids.ToArray();
     }
 
@@ -427,7 +438,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         UnityEditor.Handles.color = Color.cyan;
         UnityEditor.Handles.Label(transform.position + Vector3.up * 0.6f, $"Vent_{ventId}");
         Gizmos.color = new Color(1f, 1f, 0f, 0.8f);
-        foreach (var v in linkedVents)
+        foreach (VentController v in linkedVents)
         {
             if (!v) continue;
             Gizmos.DrawLine(transform.position, v.transform.position);

@@ -1,6 +1,5 @@
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 게임 전체를 관리하는 중앙 매니저
@@ -28,7 +27,7 @@ public class GameManager : NetworkBehaviour
     private void Start()
     {
         //persistent씬에서 시작해서 바로 로비씬으로 전환
-        SceneManager.LoadScene("LobbyScene");
+        SceneController.Instance.LoadLobbyScene();
     }
 
     /// <summary>
@@ -37,14 +36,24 @@ public class GameManager : NetworkBehaviour
     /// <param name="clientId">골드를 차감할 클라이언트 ID</param>
     /// <param name="amount">차감할 골드 양</param>
     [ServerRpc]
-    public void DeductPlayerGoldServerRpc(ulong clientId, int amount)
+    public void DeductPlayerGoldServerRpc(ulong clientId, int amount, ServerRpcParams rpcParams = default)
     {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        
+        // 서버에서 권위적 정보로 클라이언트 ID 검증
+        if (clientId != requesterClientId)
+        {
+            Debug.LogError($"Server: Unauthorized gold deduction attempt. Requested: {clientId}, Actual: {requesterClientId}");
+            return;
+        }
+        
         //플레이어 골드차감
-        var player = PlayerHelperManager.Instance.GetPlayerModelByClientId(clientId);
-        var currentStatus = player.PlayerStatusData.Value;
+        PlayerModel player = PlayerHelperManager.Instance.GetPlayerModelByClientId(clientId);
+        if (!DebugUtils.AssertNotNull(player, "PlayerModel", this))
+            return;
+            
+        PlayerStatusData currentStatus = player.PlayerStatusData.Value;
         currentStatus.gold -= amount;
         player.PlayerStatusData.Value = currentStatus;
-        
-        Debug.Log($"[GameManager] Player {clientId} gold deducted by {amount}. Remaining gold: {player.PlayerStatusData.Value.gold}");
     }
 }

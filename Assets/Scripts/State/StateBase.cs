@@ -1,4 +1,6 @@
 using Unity.Netcode;
+using UnityEngine;
+using Unity.Netcode;
 /// <summary>
 /// 상태 추상클래스
 /// 각 상태들은 StateBase를 상속받아야 함 & 상속받은 구체적 클래스를 컴포넌트로 부착한 프리팹이 존재해야 함

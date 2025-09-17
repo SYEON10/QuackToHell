@@ -1,14 +1,15 @@
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
 public class TrialManager : NetworkBehaviour
 {
+    [Header("UI References")]
     private GameObject convocationOfTrialCanvas;
     private GameObject convocationOfTrialPanel;
     private GameObject corpseTextObject;
-
     private Image reporterImage;
     //TODO:  하드코딩 개선
     private bool colorInjected = false;
@@ -27,7 +28,7 @@ public class TrialManager : NetworkBehaviour
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<TrialManager>();
+                _instance = FindAnyObjectByType<TrialManager>();
                 if (_instance == null)
                 {
                     GameObject go = new GameObject("TrialManager");
@@ -54,17 +55,46 @@ public class TrialManager : NetworkBehaviour
 
 
     [ServerRpc(RequireOwnership = false)]
-    public void TryTrialServerRpc(ulong reporterClientId)
+    public void TryTrialServerRpc(ulong reporterClientId, ServerRpcParams rpcParams = default)
     {
-        Debug.Log($"StartTrialServerRpc called with reporterClientId: {reporterClientId}");
-        //TODO: UI띄우기 브로드캐스팅
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        
+        // 1. 서버에서 리포터 클라이언트 ID 검증
+        if (!NetworkManager.Singleton.ConnectedClients.ContainsKey(reporterClientId))
+        {
+            Debug.LogError($"Server: Reporter client {reporterClientId} not found in connected clients");
+            return;
+        }
+        
+        // 2. 서버에서 리포터가 실제로 살아있는 플레이어인지 검증
+        PlayerModel reporterModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(reporterClientId);
+        if (!DebugUtils.AssertNotNull(reporterModel, "ReporterModel", this))
+        {
+            Debug.LogError($"Server: Reporter {reporterClientId} not found");
+            return;
+        }
+        
+        if (reporterModel.PlayerStateData.Value.AliveState == PlayerLivingState.Dead)
+        {
+            Debug.LogError($"Server: Dead player {reporterClientId} cannot start trial");
+            return;
+        }
+        
+        // 3. 서버에서 이미 재판이 진행 중인지 검증
+        if (convocationOfTrialPanel != null && convocationOfTrialPanel.activeInHierarchy)
+        {
+            Debug.LogWarning($"Server: Trial already in progress, ignoring request from {reporterClientId}");
+            return;
+        }
+        
+        
+        // 4. 재판 시작 (서버가 권위적 정보로 처리)
         TrialResultClientRpc(reporterClientId);
     }
 
     [ClientRpc]
     public void TrialResultClientRpc(ulong reporterClientId)
     {
-        Debug.Log($"[multicast] StartTrialClientRpc called with reporterClientId: {reporterClientId}");
         convocationOfTrialPanel.SetActive(true);
         if (!colorInjected)
         {
@@ -77,7 +107,7 @@ public class TrialManager : NetworkBehaviour
             deadPlayerTextInjected = true;
         }
         //모든 플레이어의 움직임 멈춤
-        PlayerHelperManager.Instance.StopAllPlayer();
+        PlayerHelperManager.Instance.StopAllPlayerServerRpc();
         //5초뒤 씬 이동
         Invoke("LoadCourtScene", 5f);
     }
@@ -90,8 +120,7 @@ public class TrialManager : NetworkBehaviour
         }
 
         //재판장 씬으로 이동
-        NetworkManager.Singleton.SceneManager.LoadScene("CourtScene", LoadSceneMode.Single);
-        
+        SceneController.Instance.LoadCourtSceneServerRpc();
     }
     private void InjectReporterPlayerText(ulong reporterCliendId)
     {
@@ -131,23 +160,27 @@ public class TrialManager : NetworkBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        //TODO: 씬 이름 하드코딩 개선 -> 상수로 관리: VillageScene이라고.
-        if (scene.name == "VillageScene")
+        if (scene.name == GameScenes.Village)
         {
-            convocationOfTrialCanvas = GameObject.FindWithTag("ConvocationOfTrialCanvas");
-            
-            // Null 체크 추가
-            if (convocationOfTrialCanvas != null)
+            convocationOfTrialCanvas = GameObject.FindGameObjectWithTag(GameTags.UI_ConvocationOfTrialCanvas);
+            if (DebugUtils.EnsureNotNull(convocationOfTrialCanvas, "convocationOfTrialCanvas", this))
             {
                 convocationOfTrialPanel = convocationOfTrialCanvas.transform.GetChild(0).gameObject;
-                
-                //TODO: 하드코딩 개선
-                reporterImage = convocationOfTrialPanel.transform.GetChild(0).GetComponent<Image>();
-                corpseTextObject = convocationOfTrialPanel.transform.GetChild(1).gameObject;
+                if (convocationOfTrialPanel != null)
+                {
+                    reporterImage = convocationOfTrialPanel.transform.GetChild(0).GetComponent<Image>();
+                    corpseTextObject = convocationOfTrialPanel.transform.GetChild(1).gameObject;
+                }
             }
-            else
+            
+            // 검증
+            if (DebugUtils.AssertNotNull(convocationOfTrialCanvas, "ConvocationOfTrialCanvas", this))
             {
-                Debug.LogWarning("ConvocationOfTrialCanvas not found in VillageScene!");
+                if (DebugUtils.AssertNotNull(convocationOfTrialPanel, "ConvocationOfTrialPanel", this))
+                {
+                    DebugUtils.AssertNotNull(reporterImage, "ReporterImage", this);
+                    DebugUtils.AssertNotNull(corpseTextObject, "CorpseTextObject", this);
+                }
             }
         }
     }

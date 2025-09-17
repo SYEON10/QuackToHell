@@ -10,31 +10,11 @@ public class PlayerDeadState : StateBase
 
     public override void OnStateEnter()
     {
-        //1. 스프라이트 반투명
-        for (int i = 0; i < spriteRenderers.Length; i++)
-        {
-            Color color = spriteRenderers[i].color;
-            color.a = 0.5f; // 반투명 설정
-            spriteRenderers[i].color = color;
-        }
-        //2. 스피드
-        if (IsHost)
-        {
-            PlayerStatusData tempPlayerStatusData = playerModel.PlayerStatusData.Value;
-            tempPlayerStatusData.MoveSpeed *= MOVE_SPEED_MULTIPLIER;
-            playerModel.PlayerStatusData.Value = tempPlayerStatusData;
-        }
-
-        //3. 태그변경
-        gameObject.tag = "PlayerGhost";
-        //4. 레이어 변경
-        gameObject.layer = LayerMask.NameToLayer("PlayerGhost");
-        //5. 죽은애들끼리만 보이게
-        if (IsHost)
-        {
-            //멀티캐스트
-            playerModel.SetPlayerVisibilityForDeadPlayersClientRpc(OwnerClientId);
-        }
+        // PlayerPresenter.ChangeToGhostVisualState()에서 처리하므로 제거
+        // 투명화, 태그 변경, 레이어 변경, 가시성 업데이트는 모두 PlayerPresenter에서 처리
+        
+        // 이 State는 더 이상 사용하지 않음
+        // 모든 유령 관련 처리는 PlayerPresenter에서 통합 관리
     }
 
     public override void OnStateExit()
