@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Threading.Tasks;
 using System.Threading;
+using UnityEngine.SceneManagement;
 
 public class LobbyController : NetworkBehaviour
 {
@@ -155,7 +156,7 @@ public class LobbyController : NetworkBehaviour
     private void LoadVillageSceneServerRpc()
     {
         // 모든 클라이언트를 VillageScene으로 이동
-        SceneController.Instance.LoadVillageSceneServerRpc();
+        NetworkManager.Singleton.SceneManager.LoadScene(GameScenes.Village, LoadSceneMode.Single);
     }
 
     private void PlayerSpawn()

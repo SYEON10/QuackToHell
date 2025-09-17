@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 /// <summary>
@@ -27,7 +28,7 @@ public class GameManager : NetworkBehaviour
     private void Start()
     {
         //persistent씬에서 시작해서 바로 로비씬으로 전환
-        SceneController.Instance.LoadLobbyScene();
+        SceneManager.LoadScene(GameScenes.Lobby, LoadSceneMode.Single);
     }
 
     /// <summary>

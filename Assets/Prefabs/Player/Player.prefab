@@ -435,6 +435,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   playerInput: {fileID: 3855099441482742434}
+  nicknameText: {fileID: 4710416165935099427}
 --- !u!114 &1793609255088142441
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -638,6 +639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8855f352a717b6448dd4f29fda10491, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &4937549695881782939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -650,6 +652,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c8f791c19be59469bd07de4e2a5924, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   spriteRenderers:
   - {fileID: 2696677760322620458}
   - {fileID: 7388523557917837730}
@@ -666,6 +669,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9774f68e05a4ef24782ae93080295588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   animator: {fileID: 5639819905214187387}
 --- !u!114 &7471979354738972270
 MonoBehaviour:
@@ -679,6 +683,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a10678b2aecf2cb4ebb2ae072c8e2d63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   animator: {fileID: 5639819905214187387}
   head: {fileID: 7388523557917837730}
 --- !u!114 &6701049050385219470

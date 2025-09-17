@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 /// 씬 로딩을 중앙에서 관리하는 컨트롤러
 /// 모든 씬 전환은 이 클래스를 통해 처리
 /// </summary>
-public class SceneController : Singleton<SceneController>
+public class SceneController :MonoBehaviour
 {
     /// <summary>
     /// 네트워크 씬 로딩 (서버에서 호출)
@@ -29,38 +29,4 @@ public class SceneController : Singleton<SceneController>
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
 
-    /// <summary>
-    /// 게임 씬으로 이동 (서버 RPC)
-    /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void LoadGameSceneServerRpc(string sceneName)
-    {
-        LoadNetworkScene(sceneName);
-    }
-
-    /// <summary>
-    /// 로비 씬으로 이동
-    /// </summary>
-    public void LoadLobbyScene()
-    {
-        LoadLocalScene(GameScenes.Lobby);
-    }
-
-    /// <summary>
-    /// 마을 씬으로 이동 (서버 RPC)
-    /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void LoadVillageSceneServerRpc()
-    {
-        LoadNetworkScene(GameScenes.Village);
-    }
-
-    /// <summary>
-    /// 재판장 씬으로 이동 (서버 RPC)
-    /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void LoadCourtSceneServerRpc()
-    {
-        LoadNetworkScene(GameScenes.Court);
-    }
 }

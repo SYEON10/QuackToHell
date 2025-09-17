@@ -786,7 +786,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2025215114}
         m_TargetAssemblyTypeName: SceneController, Assembly-CSharp
-        m_MethodName: QLoadScene
+        m_MethodName: LoadNetworkScene
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

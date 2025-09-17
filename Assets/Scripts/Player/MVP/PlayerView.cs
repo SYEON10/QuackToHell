@@ -187,6 +187,7 @@ public class PlayerView : NetworkBehaviour
     #endregion
 
     #region 닉네임
+    [SerializeField]
     private TextMeshProUGUI nicknameText;
     
     public void UpdateNickname(string nickname)

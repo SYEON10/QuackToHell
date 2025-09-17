@@ -6,7 +6,7 @@ public static class GameConstants
     // 플레이어 관련 상수
     public static class Player
     {
-        public const float GhostSpeedMultiplier = 1.3f;
+        public const float GhostSpeedMultiplier = 1.5f;
         public const float GhostTransparency = 0.5f;
         public const int DefaultGold = 100000;
         public const float DefaultMoveSpeed = 10f;

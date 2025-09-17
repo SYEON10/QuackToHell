@@ -120,7 +120,7 @@ public class TrialManager : NetworkBehaviour
         }
 
         //재판장 씬으로 이동
-        SceneController.Instance.LoadCourtSceneServerRpc();
+        NetworkManager.Singleton.SceneManager.LoadScene(GameScenes.Court, LoadSceneMode.Single);
     }
     private void InjectReporterPlayerText(ulong reporterCliendId)
     {
