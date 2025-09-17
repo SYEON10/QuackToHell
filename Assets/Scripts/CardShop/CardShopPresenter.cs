@@ -15,7 +15,7 @@ public class CardShopPresenter : NetworkBehaviour
 
     private static readonly Dictionary<ulong, CardShopPresenter> s_serverByClient = new();
     private bool _cooldown;
-
+    private ulong clientId;
     private void Awake()
     {
         _view = GetComponent<CardShopView>();
@@ -23,6 +23,7 @@ public class CardShopPresenter : NetworkBehaviour
             
         DebugUtils.AssertComponent(_view, "CardShopView", this);
         DebugUtils.AssertComponent(_model, "CardShopModel", this);
+        clientId = NetworkManager.Singleton.LocalClientId;
     }
  
     public override void OnNetworkSpawn()
@@ -39,7 +40,7 @@ public class CardShopPresenter : NetworkBehaviour
         {
             s_serverByClient[OwnerClientId] = this;
             // 서버에서 카드 표시
-            _model.DisplayCardForSale();
+            _model.DisplayCardForSale(clientId);
         }
     }
 
@@ -81,8 +82,8 @@ public class CardShopPresenter : NetworkBehaviour
 
         StartCoroutine(RerollCooldown());
 
-        // 서버에게 진열 요청 (중복 진열 방지)
-        DeckManager.Instance.RequestDisplayCardsServerRpc(NetworkManager.Singleton.LocalClientId);
+        //model에게 진열 요청
+        _model.TryReRoll(clientId);
     }
 
     /// <summary>
@@ -133,11 +134,11 @@ public class CardShopPresenter : NetworkBehaviour
     /// <summary>
     /// 카드 표시 요청 (외부에서 호출)
     /// </summary>
-    public void RequestDisplayCards()
+    public void RequestDisplayCards(ulong clientId)
     {
         if (_model != null)
         {
-            _model.DisplayCardForSale();
+            _model.DisplayCardForSale(clientId);
         }
     }
     

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public interface ICardShopView
 {
-    event Action<int, ulong, int> OnClickBuy;
+
     event Action OnClickLock;
     event Action OnClickReRoll;
 
@@ -23,13 +23,12 @@ public class CardShopView : MonoBehaviour
     [SerializeField] private GameObject cardShopPanel;
     [SerializeField] private Animator cardShopPanelAnimator;
 
-    public event Action<int, ulong, int> OnClickBuy;
+
     public event Action OnClickLock;
     public event Action OnClickReRoll;
 
     private void Awake()
     {
-
         if (lockButton) lockButton.onClick.AddListener(() => OnClickLock?.Invoke());
         if (rerollButton) rerollButton.onClick.AddListener(() => OnClickReRoll?.Invoke());
     }

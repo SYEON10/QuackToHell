@@ -88,15 +88,12 @@ namespace CardItem.MVP
 
         private void OnCardItemDataChanged(CardItemData previousValue, CardItemData newValue)
         {
-            
             // 상태가 변경되었을 때만 상태 업데이트
             if (previousValue.cardItemStatusData.State != newValue.cardItemStatusData.State)
             {
                 SetStateByCardItemStateEnum(newValue.cardItemStatusData.State);
             }
-            else
-            {
-            }
+            
         }
 
         private void SetStateByCardItemStateEnum(CardItemState inputCardItemState = CardItemState.None)

@@ -13,7 +13,7 @@ public class CardInventoryView : MonoBehaviour
     [Header("UI References")]
     private GameObject cardShopPanel;
     private Animator cardShopPanelAnimator;
-    
+    private ulong clientId = 0;
     private void Start()
     {
         if (SceneManager.GetActiveScene().name == GameScenes.Village)
@@ -28,6 +28,8 @@ public class CardInventoryView : MonoBehaviour
                 cardShopPanelAnimator = cardShopPanel.GetComponent<Animator>();
             }
         }
+
+        clientId = NetworkManager.Singleton.LocalClientId;
     }
 
     
@@ -67,7 +69,6 @@ public class CardInventoryView : MonoBehaviour
 
         // 카드샵 열릴 때 카드 표시 요청
         RequestCardShopDisplay();
-        
     }
     
     private void RequestCardShopDisplay()
@@ -76,7 +77,7 @@ public class CardInventoryView : MonoBehaviour
         CardShopPresenter cardShopPresenter = FindFirstObjectByType<CardShopPresenter>();
         if (cardShopPresenter != null)
         {
-            cardShopPresenter.RequestDisplayCards();
+            cardShopPresenter.RequestDisplayCards(clientId);
         }
     }
     #endregion

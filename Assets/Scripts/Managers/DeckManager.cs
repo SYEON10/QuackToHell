@@ -9,6 +9,7 @@ using System.Text;
 using System.Linq;
 using CardItem.MVP;
 using Unity.Collections;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
@@ -53,7 +54,7 @@ public struct CardItemData : INetworkSerializable, IEquatable<CardItemData>, IEq
     public CardDef cardDef;
     public CardStatusData cardItemStatusData;
     public long acquiredTicks; // 카드 획득 시점
-    public ulong displayingClientId; // 진열 중인 클라이언트 ID (0이면 진열되지 않음) 
+    public ulong displayingClientId; // 진열 중인 클라이언트 ID (9999이면 진열되지 않음) 
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -279,6 +280,18 @@ public class DeckManager : NetworkBehaviour
         
         // NetworkList 변경 이벤트 바인딩
         _allCardsOnGameData.OnListChanged += OnAllCardsOnGameDataChanged;
+        //SceneLoad에 바인딩
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == GameScenes.Village)
+        {
+            GameObject CardShopCanvas =  GameObject.FindGameObjectWithTag(GameTags.UI_CardShopCanvas);
+            GameObject CardShopPanel = CardShopCanvas.transform.GetChild(0).gameObject;
+            cardShopPresenter = CardShopPanel.GetComponent<CardShopPresenter>();
+        }
     }
 
     public override void OnDestroy()
@@ -320,7 +333,7 @@ public class DeckManager : NetworkBehaviour
     [SerializeField] private List<CardItemData> _debugCardList = new List<CardItemData>();
     
     [Header("References")]
-    [SerializeField] private CardShopPresenter cardShopPresenter;
+    private CardShopPresenter cardShopPresenter;
     
     [Header("📋 모든 카드 상태 요약 (펼쳐서 보기)")]
     [Tooltip("모든 카드의 상태를 한 눈에 볼 수 있습니다. 리스트를 펼쳐서 각 카드의 상세 정보를 확인하세요.")]
@@ -883,7 +896,7 @@ public class DeckManager : NetworkBehaviour
         foreach (CardItemData card in _allCardsOnGameData)
         {
             if (card.cardItemStatusData.state != CardItemState.Sold && 
-                card.displayingClientId == 0)
+                card.displayingClientId == 9999)
             {
                 availableCards.Add(card);
             }
@@ -946,7 +959,7 @@ public class DeckManager : NetworkBehaviour
             {
                 var updatedCard = card;
                 updatedCard.cardItemStatusData.state = CardItemState.None;
-                updatedCard.displayingClientId = 0;
+                updatedCard.displayingClientId = 9999;
                 _allCardsOnGameData[i] = updatedCard;
                 
                 // 모든 클라이언트에게 상태 동기화

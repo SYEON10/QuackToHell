@@ -1,6 +1,8 @@
+using System;
 using UnityEngine;
 using CardItem.MVP;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 카드 아이템 생성 팩토리
@@ -21,10 +23,22 @@ public class CardItemFactoryManager : NetworkBehaviour
     #region 카드 아이템 생성
     [Header ("Card 프리팹을 넣어주세요.")]
     public GameObject cardItemPrefab;
-    
-    [Header("UI References")]
-    [SerializeField] private GameObject cardForSaleParent;
-    [SerializeField] private GameObject cardForInventoryParent;
+
+    [Header("UI References")] 
+    private GameObject cardForSaleParent;
+
+    private void Start()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == GameScenes.Village)
+        {
+            cardForSaleParent = GameObject.FindGameObjectWithTag(GameTags.CardForSaleParent);
+        }
+    }
 
     public GameObject CreateCardForInventory(CardItemData cardItemData)
     {
@@ -76,7 +90,7 @@ public class CardItemFactoryManager : NetworkBehaviour
             CardItemData cardItemData = DeckManager.Instance.AllCardsOnGameData[i];
 
             GameObject cardItemForSale = Instantiate(cardItemPrefab, Vector3.zero, Quaternion.identity);
-
+            
             if (!DebugUtils.AssertNotNull(cardForSaleParent, "CardForSaleParent", this))
                 continue;
 

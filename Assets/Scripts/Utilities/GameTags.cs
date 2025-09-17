@@ -16,11 +16,13 @@ public static class GameTags
     
     // 카드 관련 태그
     public const string CardForSale = "CardForSale";
+    public const string CardForSaleParent = "CardForSaleParent";
     public const string UI_CardInventory = "UI_CardInventory";
     public const string CardForInventory = "CardForInventory";
     public const string UI_CardShopRow = "UI_CardShopRow";
     public const string UI_CardShopCanvas = "UI_CardShopCanvas";
     public const string UI_CardShopPanel = "UI_CardShopPanel";
+    
     
     // 상호작용 관련 태그
     public const string Interactable = "Interactable";

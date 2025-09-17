@@ -16,15 +16,8 @@ public class CardShopModel : MonoBehaviour
     const int maximumDisplayCount = 5;
     private int totalCardCountOnMap = 0;
 
-    private void Start()
+    private void Awake()
     {
-        cardForSaleParentTransform = cardForSaleParent.transform;
-        
-        // 패널 활성화/비활성화
-        GameObject cardShopPanelObject = rowObjectTransform.parent.gameObject;
-        cardShopPanelObject.SetActive(true);
-        cardShopPanelObject.SetActive(false);
-        
         CardItemFactoryManager.Instance.CreateTotalCardForSale(cardForSaleParent);
         totalCardCountOnMap = cardForSaleParent.transform.childCount;
     }
@@ -41,22 +34,21 @@ public class CardShopModel : MonoBehaviour
     }
 
     #region 카드 목록 새로고침
-    public bool TryReRoll()
+    public bool TryReRoll(ulong clientId)
     {
         if (IsLocked) return false;
 
         // 새로 뿌리기
-        DisplayCardForSale();
+        DisplayCardForSale(clientId);
 
         return true;
     }
 
 
-    public void DisplayCardForSale()
+    public void DisplayCardForSale(ulong clientId)
     {
-        // 초기화 시에만 로컬에서 실행 (서버 동기화 대기)
-        // 실제 진열은 서버 RPC를 통해 처리됨
-        ClearCurrentDisplay();
+        //진열 요청
+        DeckManager.Instance.RequestDisplayCardsServerRpc(clientId);
     }
 
     /// <summary>
@@ -86,16 +78,13 @@ public class CardShopModel : MonoBehaviour
     /// </summary>
     private void ClearCurrentDisplay()
     {
-        if (rowObjectTransform.childCount > 0)
+        int childCount = rowObjectTransform.childCount;
+        for (int i = 0; i < childCount; i++)
         {
-            int childCount = rowObjectTransform.childCount;
-            for (int i = 0; i < childCount; i++)
-            {
-                Transform child = rowObjectTransform.GetChild(0);
-                child.SetParent(cardForSaleParentTransform, false);
-                child.gameObject.SetActive(false);
-            }
-        }
+            Transform child = rowObjectTransform.GetChild(0);
+            child.SetParent(cardForSaleParentTransform, false);
+            child.gameObject.SetActive(false);
+        }   
     }
 
     /// <summary>
