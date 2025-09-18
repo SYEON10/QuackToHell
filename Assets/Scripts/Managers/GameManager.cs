@@ -1,6 +1,10 @@
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using TMPro;
+using System.Collections;
+using UnityEngine.UI;
+using System;
 
 /// <summary>
 /// 게임 전체를 관리하는 중앙 매니저
@@ -16,6 +20,23 @@ using UnityEngine;
 /// </summary>
 public class GameManager : NetworkBehaviour
 {
+
+    #region 변수들
+    [Header("AssignRole UI")]
+    private GameObject assignRoleCanvas;
+    private RoleAssignUIReferences roleAssignUIReferences;
+    private GameObject intro;
+    private GameObject showRole;
+    private TextMeshProUGUI showRoleText;
+
+    private GameObject[] playerSlot;
+    [SerializeField]
+    private GameObject playerUIPrefab;
+
+    public Action onRoleAssignDirectionEnd;
+
+    #endregion
+
     #region 싱글톤
     public static GameManager Instance => SingletonHelper<GameManager>.Instance;
 
@@ -29,7 +50,35 @@ public class GameManager : NetworkBehaviour
     {
         //persistent씬에서 시작해서 바로 로비씬으로 전환
         SceneManager.LoadScene(GameScenes.Lobby, LoadSceneMode.Single);
+        //씬 로드 이벤트 구독
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == GameScenes.Lobby) // 또는 해당 씬 이름
+        {
+            FindLobbyUIElements();
+        }
+    }
+    private void FindLobbyUIElements()
+    {
+        assignRoleCanvas = GameObject.FindWithTag(GameTags.UI_RoleAssignCanvas);
+        roleAssignUIReferences = assignRoleCanvas.GetComponent<RoleAssignUIReferences>();
+        if (assignRoleCanvas != null)
+        {
+            intro = roleAssignUIReferences.Intro;
+            showRole = roleAssignUIReferences.ShowRole;
+            showRoleText = roleAssignUIReferences.ShowRoleText;
+            playerSlot = roleAssignUIReferences.PlayerSlot;
+        }
+        assignRoleCanvas.SetActive(false);
+    }
+
 
     /// <summary>
     /// 서버에서 특정 클라이언트의 골드를 차감하는 RPC
@@ -56,5 +105,84 @@ public class GameManager : NetworkBehaviour
         PlayerStatusData currentStatus = player.PlayerStatusData.Value;
         currentStatus.gold -= amount;
         player.PlayerStatusData.Value = currentStatus;
+    }
+    
+    /// <summary>
+    /// 역할 공개 시퀀스 시작
+    /// </summary>
+    [ClientRpc]
+    public void StartRoleRevealSequenceClientRpc(){
+        StartCoroutine(RoleRevealCoroutine());
+    }
+
+    private IEnumerator RoleRevealCoroutine(){
+        //캔버스 켜기
+        assignRoleCanvas.SetActive(true);
+        //1. 인트로 키기
+        intro.SetActive(true);
+        yield return new WaitForSeconds(3f);
+        intro.SetActive(false);
+        //2. 역할 공개
+        showRole.SetActive(true);
+            //2-1. 역할공개 text 세팅하기
+            //로컬플레이어 역할에 따라 텍스트 세팅
+            PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+            TextMeshProUGUI showRoleText = this.showRoleText;
+            switch(playerJob){
+                case PlayerJob.Farmer:
+                    showRoleText.text = "Farmer";
+                    showRoleText.color = Color.red;
+                    break;
+                case PlayerJob.Animal:
+                    showRoleText.text = "Animal";
+                    showRoleText.color = Color.blue;
+                    break;
+                default:
+                    showRoleText.text = "UnknownRole";
+                    showRoleText.color = Color.white;
+                    break;
+            }
+            //2-2. PlayerSlot에 PlayerUIPrefab 생성하기
+            //플레이어 수만큼 플레이어 프리팹 생성
+            PlayerPresenter[] players = PlayerHelperManager.Instance.GetAllPlayers();
+            int i = 0;
+            foreach(PlayerPresenter player in players){
+                GameObject playerUI = Instantiate(playerUIPrefab, playerSlot[i].transform);
+                playerUI.transform.position = playerSlot[i].transform.position;
+                playerUI.transform.rotation = playerSlot[i].transform.rotation;
+                playerUI.transform.localScale = playerSlot[i].transform.localScale;
+                //플레이어 닉네임 할당
+                playerUI.GetComponentInChildren<TextMeshProUGUI>().text = player.GetPlayerNickname();
+                //플레이어 색상 할당
+                Image playerColor =  playerUI.GetComponentInChildren<Image>();
+                int playerColorIndex = player.GetPlayerColorIndex();
+                switch (playerColorIndex)
+                {
+                    case 0:
+                        playerColor.color = Color.red;
+                        break;
+                    case 1:
+                        playerColor.color = Color.orange;
+                        break;
+                    case 2:
+                        playerColor.color = Color.yellow;
+                        break;
+                    case 3:
+                        playerColor.color = Color.green;
+                        break;
+                    case 4:
+                        playerColor.color = Color.blue;
+                        break;
+                    case 5:
+                        playerColor.color = Color.purple;
+                        break;
+                }
+                i++;
+            }
+            
+            
+        yield return new WaitForSeconds(3f);
+        showRole.SetActive(false);
+        onRoleAssignDirectionEnd.Invoke();
     }
 }

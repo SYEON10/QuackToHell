@@ -13,6 +13,7 @@ public static class GameTags
     
     // UI 관련 태그
     public const string UI_ConvocationOfTrialCanvas = "UI_ConvocationOfTrialCanvas";
+    public const string UI_RoleAssignCanvas = "UI_RoleAssignCanvas";
     
     // 카드 관련 태그
     public const string CardForSale = "CardForSale";

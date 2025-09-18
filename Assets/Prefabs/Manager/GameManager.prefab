@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 0
+  GlobalObjectIdHash: 3584117993
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -71,3 +71,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  assignRoleCanvas: {fileID: 3519142538284461929, guid: 69653b4f5f98779499faa858e544dc47, type: 3}
+  playerUIPrefab: {fileID: 3904200660345883418, guid: 8ad601674dfaf7f458eef5420e291666, type: 3}

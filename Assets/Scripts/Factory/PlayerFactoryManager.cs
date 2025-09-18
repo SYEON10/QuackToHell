@@ -39,7 +39,7 @@ public class PlayerFactoryManager : NetworkBehaviour
         string baseNickname = myPlayerStateData.Nickname.Split('_')[0];
         myPlayerStateData.Nickname = $"{baseNickname}_{rpcParams.Receive.SenderClientId}";
         
-        myPlayerStateData.job = PlayerJob.Farmer;
+        myPlayerStateData.job = PlayerJob.None;
         
         player.name = myPlayerStateData.Nickname;
         playerModel.PlayerStatusData.Value = myPlayerStateData;

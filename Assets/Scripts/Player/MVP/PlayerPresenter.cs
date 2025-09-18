@@ -178,7 +178,9 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleStatusChanged(PlayerStatusData previousValue, PlayerStatusData newValue)
     {
         // 닉네임 업데이트
-        playerView.UpdateNickname(newValue.nickname);
+        if(newValue.nickname != previousValue.nickname){
+            playerView.UpdateNickname(newValue.nickname);
+        }
         
         // 역할 변경 감지
         if (previousValue.job != newValue.job)
@@ -839,13 +841,18 @@ public class PlayerPresenter : NetworkBehaviour
     {
         return playerModel?.PlayerStatusData.Value.Nickname ?? "";
     }
+
+    public int GetPlayerColorIndex()
+    {
+        return  playerModel?.PlayerAppearanceData.Value.ColorIndex ?? 0;
+    }
     
     /// <summary>
     /// 플레이어 역할 조회
     /// </summary>
     public PlayerJob GetPlayerJob()
     {
-        return playerModel?.PlayerStatusData.Value.job ?? PlayerJob.Farmer;
+        return playerModel?.PlayerStatusData.Value.job ?? PlayerJob.None;
     }
     
     #endregion

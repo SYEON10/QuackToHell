@@ -18,6 +18,7 @@ TagManager:
   - UI_CardShopPanel
   - UI_CardShopCanvas
   - ConvocationOfTrial
+  - UI_RoleAssignCanvas
   layers:
   - Default
   - TransparentFX

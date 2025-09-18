@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Controller/ConvocationOfTrialController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Controller/ConvocationOfTrialController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Utilities/GameTags.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Utilities/GameTags.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" afterDir="false" />
-    </list>
+    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -43,23 +37,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Unity 에디터에 연결.Unity 에디터에 연결.executor&quot;: &quot;Debug&quot;,
-    &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.35037878&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;인풋시스템&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Unity 에디터에 연결.Unity 에디터에 연결.executor": "Debug",
+    "XThreadsFramesViewSplitterKey": "0.35037878",
+    "git-widget-placeholder": "역할부여",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Unity 에디터에 연결.Unity 에디터에 연결">
     <configuration name="유닛 테스트(배치 모드)" type="RunUnityExe" factoryName="Unity Executable">
       <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.1.9f1\Editor\Unity.exe" />
@@ -85,10 +79,10 @@
       <option name="MIXED_MODE_DEBUG" value="0" />
       <method v="2" />
     </configuration>
-    <configuration name="Unity 에디터에 연결" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="11784">
+    <configuration name="Unity 에디터에 연결" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="26164">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="11784" />
+      <option name="pid" value="26164" />
       <option name="projectPathOnTarget" />
       <option name="runtimes">
         <list>
@@ -136,6 +130,7 @@
       <workItem from="1758080676676" duration="2255000" />
       <workItem from="1758085981824" duration="3177000" />
       <workItem from="1758097467430" duration="11540000" />
+      <workItem from="1758211254165" duration="5145000" />
     </task>
     <servers />
   </component>
@@ -169,17 +164,30 @@
           <option name="timeStamp" value="3" />
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/Controller/ConvocationOfTrialController.cs</url>
-          <line>60</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\Controller\ConvocationOfTrialController.cs" containingFunctionPresentation="메서드 'OnTriggerEnter2D'">
+          <url>file://$PROJECT_DIR$/Assets/Scripts/Managers/GameManager.cs</url>
+          <line>156</line>
+          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\Managers\GameManager.cs" containingFunctionPresentation="메서드 'RoleRevealCoroutine'">
             <startOffsets>
-              <option value="1703" />
+              <option value="5210" />
             </startOffsets>
             <endOffsets>
-              <option value="1735" />
+              <option value="5272" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="72" />
+          <option name="timeStamp" value="75" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Scripts/Managers/GameManager.cs</url>
+          <line>161</line>
+          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\Managers\GameManager.cs" containingFunctionPresentation="메서드 'RoleRevealCoroutine'">
+            <startOffsets>
+              <option value="5454" />
+            </startOffsets>
+            <endOffsets>
+              <option value="5484" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="76" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -70,6 +70,8 @@ public class RoleManager : MonoBehaviour
         {
             _currentStrategy.Setup();
         }
+
+        Debug.Log($"ChangeRole: {newRole}, clientId: {_playerPresenter.NetworkObject.OwnerClientId}");
     }
     
     private IRoleStrategy CreateStrategyForRole(PlayerJob role)

@@ -137,7 +137,6 @@ public class PlayerHelperManager : MonoBehaviour
         {
             if (player.NetworkObject.OwnerClientId == clientId)
             {
-                DebugUtils.AssertNotNull(player, "PlayerPresenter", this);
                 return player;
             }
         }

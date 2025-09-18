@@ -31,6 +31,9 @@ public class LobbyController : NetworkBehaviour
         {
             colorDropdown.onValueChanged.AddListener(OnColorDropdownButton);
         }
+        
+        //역할부여 연출이벤트 바인딩
+        GameManager.Instance.onRoleAssignDirectionEnd += StartCoroutineDelayedSceneLoad;
 
         
         //호스트만 데이터 로드
@@ -125,7 +128,12 @@ public class LobbyController : NetworkBehaviour
         //플레이어 역할 부여
         AssignPlayerRolesServerRpc();
        
-        //본인 데이터가 모두 초기화되면, 씬 이동.
+        //본인 데이터가 모두 초기화되면, 씬 이동 : 바인딩 콜백
+        
+    }
+
+    public void StartCoroutineDelayedSceneLoad()
+    {
         StartCoroutine(DelayedSceneLoad());
     }
 
@@ -134,16 +142,38 @@ public class LobbyController : NetworkBehaviour
     {
         //모든 플레이어 가져오기
         PlayerPresenter[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers();
-        //모든 플레이어에게 역할 부여
-        foreach (PlayerPresenter player in allPlayers)
-        {
-            //기획서에 맞게, 역할 부여
-            
-            player.ChangeRole(PlayerJob.Farmer);
-        }
-    }
+        int totalPlayers = allPlayers.Length;
+        //농장 수 결정
+        int farmerCount = GetFarmerCountByPlayerCount(totalPlayers);
 
+        //플레이어 목록 섞기
+        MathUtils.ShuffleArray(allPlayers);
+
+        //역할 부여
+        for(int i=0;i<allPlayers.Length;i++){
+            if(i<farmerCount){
+                allPlayers[i].ChangeRole(PlayerJob.Farmer);
+            }
+            else{
+                allPlayers[i].ChangeRole(PlayerJob.Animal);
+            }
+        }
+
+        //연출 시퀀스 시작
+        GameManager.Instance.StartRoleRevealSequenceClientRpc();
+    }
     
+
+    private int GetFarmerCountByPlayerCount(int playerCount){
+        return playerCount switch
+        {
+            5 or 6 => 1,
+            7 or 8 or 9 => 2,
+            10 or 11 or 12 => UnityEngine.Random.Range(0, 2) == 0 ? 2 : 3, // 2 or 3 랜덤
+            13 or 14 or 15 => 3,
+            _ => 1 // 기본값
+        };
+    }
 
     private IEnumerator DelayedSceneLoad()
     {
