@@ -208,6 +208,11 @@ public class PlayerPresenter : NetworkBehaviour
 
     #region 외부에서 호출 가능한 메서드들 (중개자 역할)
     
+    public void ChangeRole(PlayerJob newRole){
+        playerModel.ChangeRole(newRole);
+    }
+
+
     /// <summary>
     /// 킬 시도 서버 RPC
     /// </summary>
@@ -741,6 +746,10 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
     #region 외부 인터페이스 (메시지 기반)
+    public void OnOffNickname(bool onOff)
+    {
+        playerView.SetNicknameVisibility(onOff);
+    }
     
     /// <summary>
     /// 플레이어 상태 변경 요청

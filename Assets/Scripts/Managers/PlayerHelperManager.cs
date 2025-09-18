@@ -124,4 +124,23 @@ public class PlayerHelperManager : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// 모든 플레이어를 가져오는 함수
+    /// </summary>
+    public PlayerPresenter[] GetAllPlayers(){
+        return FindObjectsByType<PlayerPresenter>(FindObjectsSortMode.None);
+    }
+
+    public PlayerPresenter GetPlayerPresenterByClientId(ulong clientId){
+        PlayerPresenter[] allPlayers = GetAllPlayers();
+        foreach (PlayerPresenter player in allPlayers)
+        {
+            if (player.NetworkObject.OwnerClientId == clientId)
+            {
+                DebugUtils.AssertNotNull(player, "PlayerPresenter", this);
+                return player;
+            }
+        }
+        return null;
+    }
 }

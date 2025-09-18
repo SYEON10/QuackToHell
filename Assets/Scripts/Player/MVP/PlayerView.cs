@@ -208,6 +208,7 @@ public class PlayerView : NetworkBehaviour
             nicknameText.enabled = visible;
         }
     }
+    
     #endregion
 
     #region 움직임 (Input System)
@@ -332,6 +333,8 @@ public class PlayerView : NetworkBehaviour
     #region 시체발견 (LeftShift키) - 모든 사람 가능 (Ghost 제외)
     public Action<ulong> OnCorpseReported;
     private GameObject corpseObj = null;
+    private GameObject convocationOfTrialObj = null;
+    
 
     // LeftShift키로 시체 리포트 처리
     private void OnReportInput(InputAction.CallbackContext context)
@@ -346,6 +349,12 @@ public class PlayerView : NetworkBehaviour
         
         // 시체 근처에 있는 경우에만 리포트
         if (corpseObj != null)
+        {
+            OnCorpseReported?.Invoke(OwnerClientId);
+        }
+        
+        //재판소집오브젝트 근처에 있는 경우에만 리포트
+        if (convocationOfTrialObj != null)
         {
             OnCorpseReported?.Invoke(OwnerClientId);
         }
@@ -364,7 +373,15 @@ public class PlayerView : NetworkBehaviour
             {
                 corpseObj = collision.gameObject;
             }
-        }    
+        }
+
+        if (collision.CompareTag(GameTags.ConvocationOfTrial))
+        {
+            if (IsOwner)
+            {
+                convocationOfTrialObj = collision.gameObject;
+            }
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -379,6 +396,13 @@ public class PlayerView : NetworkBehaviour
             if (IsOwner)
             {
                 corpseObj = null;
+            }
+        }
+        if (collision.CompareTag(GameTags.ConvocationOfTrial))
+        {
+            if (IsOwner)
+            {
+                convocationOfTrialObj = null;
             }
         }
     }

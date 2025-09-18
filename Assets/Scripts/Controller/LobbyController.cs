@@ -121,10 +121,29 @@ public class LobbyController : NetworkBehaviour
             Debug.LogError("Card data is not loaded!");
             return;
         }
+
+        //플레이어 역할 부여
+        AssignPlayerRolesServerRpc();
        
         //본인 데이터가 모두 초기화되면, 씬 이동.
-         StartCoroutine(DelayedSceneLoad());
+        StartCoroutine(DelayedSceneLoad());
     }
+
+    [ServerRpc]
+    private void AssignPlayerRolesServerRpc()
+    {
+        //모든 플레이어 가져오기
+        PlayerPresenter[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers();
+        //모든 플레이어에게 역할 부여
+        foreach (PlayerPresenter player in allPlayers)
+        {
+            //기획서에 맞게, 역할 부여
+            
+            player.ChangeRole(PlayerJob.Farmer);
+        }
+    }
+
+    
 
     private IEnumerator DelayedSceneLoad()
     {

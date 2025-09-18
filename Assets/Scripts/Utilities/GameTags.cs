@@ -26,4 +26,5 @@ public static class GameTags
     
     // 상호작용 관련 태그
     public const string Interactable = "Interactable";
+    public const string ConvocationOfTrial = "ConvocationOfTrial";
 }

@@ -17,6 +17,7 @@ TagManager:
   - UI_CardShopRow
   - UI_CardShopPanel
   - UI_CardShopCanvas
+  - ConvocationOfTrial
   layers:
   - Default
   - TransparentFX

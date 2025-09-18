@@ -68,7 +68,4 @@ public class ConvocationOfTrialController : MonoBehaviour
             reporter = null;
         }
     }
-
-    // R키 처리 제거 - 이제 PlayerView에서 Q키로만 처리
-    // private void Update() - 전체 메서드 제거
 }

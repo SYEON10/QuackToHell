@@ -268,4 +268,13 @@ public class PlayerModel : NetworkBehaviour
         PlayerStateData.Value = newStateData;
     }
     #endregion
+
+    #region 역할 변경
+    public void ChangeRole(PlayerJob newRole){
+        PlayerStatusData newStatusData = PlayerStatusData.Value;
+        newStatusData.job = newRole;
+        PlayerStatusData.Value = newStatusData;
+    }
+    #endregion
+
 }
