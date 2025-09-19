@@ -114,13 +114,13 @@ public class GameManager : NetworkBehaviour
     public void StartRoleRevealSequenceClientRpc(){
         StartCoroutine(RoleRevealCoroutine());
     }
-
     private IEnumerator RoleRevealCoroutine(){
         //캔버스 켜기
         assignRoleCanvas.SetActive(true);
         //1. 인트로 키기
         intro.SetActive(true);
-        yield return new WaitForSeconds(3f);
+        //TODO: 시간 늘리기 (테스트용으로 짧게바꿈)
+        yield return new WaitForSeconds(0.1f);
         intro.SetActive(false);
         //2. 역할 공개
         showRole.SetActive(true);
@@ -180,8 +180,8 @@ public class GameManager : NetworkBehaviour
                 i++;
             }
             
-            
-        yield return new WaitForSeconds(3f);
+        //TODO: 시간 늘리기 (테스트용으로 짧게바꿈)
+        yield return new WaitForSeconds(0.1f);
         showRole.SetActive(false);
         onRoleAssignDirectionEnd.Invoke();
     }

@@ -32,8 +32,10 @@ public interface IRoleStrategy
     void TrySabotage();
     void TryInteract();
     void TryReportCorpse();
+    void TryVent();
     bool CanKill();
     bool CanSabotage();
     bool CanInteract();
     bool CanReportCorpse();
+    bool CanVent();
 }

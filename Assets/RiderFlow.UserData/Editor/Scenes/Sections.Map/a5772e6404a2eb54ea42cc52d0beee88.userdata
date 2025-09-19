@@ -1,52 +1,12 @@
 {
-  "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-130326448-0": {
-    "GameObjectId": "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-130326448-0",
-    "SectionColorRed": 0.35,
-    "SectionColorGreen": 0.5,
-    "SectionColorBlue": 0.77,
-    "SectionAltColorRed": 0.35,
-    "SectionAltColorGreen": 0.5,
-    "SectionAltColorBlue": 0.77,
-    "RemoveSectionDuringBuild": false
-  },
-  "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-1916149401-0": {
-    "GameObjectId": "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-1916149401-0",
+  "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-2068888797-0": {
+    "GameObjectId": "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-2068888797-0",
     "SectionColorRed": 0.77,
-    "SectionColorGreen": 0.0,
-    "SectionColorBlue": 0.77,
+    "SectionColorGreen": 0.35,
+    "SectionColorBlue": 0.35,
     "SectionAltColorRed": 0.77,
-    "SectionAltColorGreen": 0.0,
-    "SectionAltColorBlue": 0.77,
-    "RemoveSectionDuringBuild": false
-  },
-  "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-842984785-0": {
-    "GameObjectId": "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-842984785-0",
-    "SectionColorRed": 0.77,
-    "SectionColorGreen": 0.0,
-    "SectionColorBlue": 0.77,
-    "SectionAltColorRed": 0.77,
-    "SectionAltColorGreen": 0.0,
-    "SectionAltColorBlue": 0.77,
-    "RemoveSectionDuringBuild": false
-  },
-  "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-258844547-0": {
-    "GameObjectId": "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-258844547-0",
-    "SectionColorRed": 0.76,
-    "SectionColorGreen": 0.56,
-    "SectionColorBlue": 0.3,
-    "SectionAltColorRed": 0.76,
-    "SectionAltColorGreen": 0.56,
-    "SectionAltColorBlue": 0.3,
-    "RemoveSectionDuringBuild": false
-  },
-  "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-902871042-0": {
-    "GameObjectId": "GlobalObjectId_V1-2-a5772e6404a2eb54ea42cc52d0beee88-902871042-0",
-    "SectionColorRed": 1.0,
-    "SectionColorGreen": 0.8333334,
-    "SectionColorBlue": 0.5,
-    "SectionAltColorRed": 0.5,
-    "SectionAltColorGreen": 0.375,
-    "SectionAltColorBlue": 0.125,
+    "SectionAltColorGreen": 0.35,
+    "SectionAltColorBlue": 0.35,
     "RemoveSectionDuringBuild": false
   }
 }

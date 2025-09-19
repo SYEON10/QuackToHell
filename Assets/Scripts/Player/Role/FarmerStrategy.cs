@@ -44,9 +44,6 @@ public class FarmerStrategy : IRoleStrategy
             case GameInputs.Actions.Kill:
                 TryKill();
                 break;
-            case GameInputs.Actions.Sabotage:
-                TrySabotage();
-                break;
             case GameInputs.Actions.Interact:
                 TryInteract();
                 break;
@@ -77,6 +74,36 @@ public class FarmerStrategy : IRoleStrategy
     }
     
     #region Ability 구현 (다형성)
+
+    public void TryVent()
+    {
+        if (!CanVent()) return;
+        
+        // 벤트 근처 확인
+        if (HasVentNearby())
+        {
+            _playerPresenter.TryVentServerRpc();
+        }
+    }
+    public bool CanVent()
+    {
+        // 농장주만 벤트 사용 가능
+        return _playerPresenter.GetPlayerAliveState() == PlayerLivingState.Alive;
+    }
+
+    private bool HasVentNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.Vent))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     
     public void TryKill()
     {
@@ -90,22 +117,85 @@ public class FarmerStrategy : IRoleStrategy
         if (!CanSabotage()) return;
         
         // TODO: 사보타지 액션 구현
-        Debug.Log("사보타지 액션 실행");
+        Debug.Log("사보타지 시도");
+        
     }
     
     public void TryInteract()
     {
         if (!CanInteract()) return;
         
-        _playerPresenter.TryInteractServerRpc();
+        // 1단계: 상호작용 오브젝트 확인
+        if (HasInteractableObjectsNearby())
+        {
+            _playerPresenter.TryInteractServerRpc(); // 기존 로직
+        }
+        else
+        {
+            // 2단계: 상호작용 오브젝트 없음 → 사보타지
+            TrySabotage(); 
+        }
+    }
+
+    public bool HasInteractableObjectsNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.MiniGame) ||
+                collider.CompareTag(GameTags.RareCardShop) ||
+                collider.CompareTag(GameTags.Exit) ||
+                collider.CompareTag(GameTags.Teleport) ||
+                collider.CompareTag(GameTags.Vent))
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
     public void TryReportCorpse()
     {
         if (!CanReportCorpse()) return;
         
-        _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
+        // 시체 또는 재판소집 오브젝트 근처 확인
+        if (HasCorpseNearby())
+        {
+            _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
+        }
+        if(HasTrialConvocationNearby()){
+            _playerPresenter.TryTrialServerRpc(_playerPresenter.OwnerClientId);
+        }
     }
+    
+
+    private bool HasCorpseNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.PlayerCorpse))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool HasTrialConvocationNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.ConvocationOfTrial))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     
     public bool CanKill()
     {

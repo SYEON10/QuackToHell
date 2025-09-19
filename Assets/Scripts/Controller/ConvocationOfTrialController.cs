@@ -1,18 +1,23 @@
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 키보드 키로 재판 소집하는 controller
+/// 재판 소집 상호작용 Controller (IInteractable 패턴 적용)
 /// </summary>
-public class ConvocationOfTrialController : MonoBehaviour
+public class ConvocationOfTrialController : InteractionControllerBase
 {
-    [SerializeField]
-    private CircleCollider2D circleCollider2D;
-    [SerializeField]
-    private float detectionRadius = 1.0f;
+    [Header("Settings")]
+    [SerializeField] private float detectionRadius = 1.0f;
+    
     private bool activateKey = false;
     private GameObject reporter;
+    
+    protected override void Awake()
+    {
+        base.Awake(); // InteractionControllerBase의 Awake 호출
+    }
     
     private void Start()
     {
@@ -27,33 +32,82 @@ public class ConvocationOfTrialController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // 오브젝트가 파괴될 때 이벤트 구독 해제
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
     
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 오브젝트가 파괴되었는지 확인
         if (this == null || gameObject == null)
         {
-            // 이벤트 구독 해제
             SceneManager.sceneLoaded -= OnSceneLoaded;
             return;
         }
 
         if (scene.name.Equals(GameScenes.Village))
         {
-            //콜라이더 설정
-            circleCollider2D = gameObject.GetComponent<CircleCollider2D>();
-            if (!DebugUtils.AssertNotNull(circleCollider2D, "CircleCollider2D", this))
-                return;
-            circleCollider2D.isTrigger = true;
-            circleCollider2D.radius = GameConstants.UI.DetectionRadius;
-            //키 활성화
+            // 콜라이더 설정 (InteractionControllerBase에서 이미 isTrigger = true 설정됨)
+            Collider2D collider = GetComponent<Collider2D>();
+            if (collider is CircleCollider2D circleCollider)
+            {
+                circleCollider.radius = detectionRadius;
+            }
+            
             activateKey = true;
         }
     }
 
+    #region IInteractable 구현
+    
+    /// <summary>
+    /// 상호작용 가능 여부 확인
+    /// </summary>
+    public override bool CanInteract(GameObject player)
+    {
+        if (!activateKey || player == null) return false;
+        
+        // 거리 체크
+        float distance = Vector3.Distance(player.transform.position, transform.position);
+        if (distance > detectionRadius) return false;
+        
+        // 살아있는 플레이어만 재판 소집 가능
+        PlayerPresenter playerPresenter = player.GetComponent<PlayerPresenter>();
+        if (playerPresenter != null)
+        {
+            return playerPresenter.GetPlayerAliveState() == PlayerLivingState.Alive;
+        }
+        
+        return true;
+    }
+
+    /// <summary>
+    /// 재판 소집 상호작용 실행
+    /// </summary>
+    public override void Interact(GameObject player)
+    {
+        if (!CanInteract(player)) return;
+        
+        PlayerPresenter playerPresenter = player.GetComponent<PlayerPresenter>();
+        if (playerPresenter != null)
+        {
+            ulong reporterClientId = playerPresenter.OwnerClientId;
+            
+            // TrialManager를 통해 재판 시작
+            if (TrialManager.Instance != null)
+            {
+                TrialManager.Instance?.TryTrialServerRpc(reporterClientId);
+                Debug.Log($"[ConvocationOfTrialController] Player {reporterClientId} started trial convocation");
+            }
+            else
+            {
+                Debug.LogError("[ConvocationOfTrialController] TrialManager.Instance is null");
+            }
+        }
+    }
+    
+    #endregion
+
+    #region 트리거 
+    
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag(GameTags.Player))
@@ -61,6 +115,7 @@ public class ConvocationOfTrialController : MonoBehaviour
             reporter = collision.gameObject;
         }
     }
+    
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.CompareTag(GameTags.Player))
@@ -68,4 +123,6 @@ public class ConvocationOfTrialController : MonoBehaviour
             reporter = null;
         }
     }
+    
+    #endregion
 }

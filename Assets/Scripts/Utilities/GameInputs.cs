@@ -19,16 +19,9 @@ public static class GameInputs
     public static class Actions
     {
         public const string Move = "Move";
-        public const string Look = "Look";
-        public const string Attack = "Attack";
         public const string Interact = "Interact";
-        public const string Crouch = "Crouch";
-        public const string Jump = "Jump";
-        public const string Previous = "Previous";
-        public const string Next = "Next";
-        public const string Sprint = "Sprint";
+        public const string Vent = "Vent";      
         public const string Report = "Report";
         public const string Kill = "Kill";
-        public const string Sabotage = "Sabotage";
     }
 }

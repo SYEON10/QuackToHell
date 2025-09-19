@@ -115,6 +115,8 @@ public class GhostStrategy : IRoleStrategy
         // 유령은 시체 리포트 불가능
         return false;
     }
+    public void TryVent() { /* 아무것도 하지 않음 */ }
+    public bool CanVent() { return false; }
     
     #endregion
 }

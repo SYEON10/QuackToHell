@@ -51,7 +51,7 @@ public class MinigameController : MonoBehaviour
         // 하이라이트 대상 자동 수집(없을 때만)
         if (highlightRenderers == null || highlightRenderers.Count == 0)
         {
-            var found = GetComponentsInChildren<Renderer>(includeInactive: true);
+            Renderer[] found = GetComponentsInChildren<Renderer>(includeInactive: true);
             highlightRenderers = new List<Renderer>(found);
         }
         DisableHighlight();

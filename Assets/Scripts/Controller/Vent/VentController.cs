@@ -49,7 +49,14 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     // 이동 직후 벤트 클릭을 잠깐 무시하기 위한 로컬 억제 타이머
     private static float _localClickSuppressUntil = 0f;
+    
+    //스페이스바 입력 상태
+    private bool _spaceInput =false;
 
+    public bool SpaceInput
+    {
+        set { _spaceInput = value; }
+    }
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -152,16 +159,18 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         if (!_occupied.Value)
         {
             float dist = Vector3.Distance(localPlayerObj.transform.position, _tr.position);
-            if (dist <= interactionRadius && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            if (dist <= interactionRadius &&  _spaceInput)
             {
                 RequestToggleEnterExit();
+                _spaceInput = false;
             }
         }
         else
         {
-            if (iAmOccupant && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            if (iAmOccupant &&  _spaceInput)
             {
                 RequestToggleEnterExit();
+                _spaceInput = false;
             }
         }
     }
@@ -173,11 +182,8 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         NetworkManager nm = NetworkManager.Singleton;
         
         GameObject localPlayerObj = null;
-        if (DebugUtils.EnsureNotNull(nm, "NetworkManager", this) && 
-            DebugUtils.EnsureNotNull(nm.SpawnManager, "SpawnManager", this))
-        {
-            localPlayerObj = nm.SpawnManager.GetLocalPlayerObject().gameObject;
-        }
+        localPlayerObj = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).gameObject;
+        
         
         if (localPlayerObj == null)
         {
@@ -204,6 +210,8 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         }
     }
 
+
+
     public void RequestToggleEnterExit()
     {
         if (!IsClient) return;
@@ -214,7 +222,6 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     [ServerRpc(RequireOwnership = false)]
     private void ToggleEnterExitServerRpc(ServerRpcParams rpc = default)
     {
-
 
         ulong sender = rpc.Receive.SenderClientId;
         NetworkObject playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;

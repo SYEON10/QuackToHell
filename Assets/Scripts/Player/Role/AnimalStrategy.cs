@@ -77,17 +77,72 @@ public class AnimalStrategy : IRoleStrategy
     {
         if (!CanInteract()) return;
         
-        // 상호작용 액션 실행
-        _playerPresenter.TryInteractServerRpc();
+        // 1단계: 상호작용 오브젝트 확인
+        if (HasInteractableObjectsNearby())
+        {
+            _playerPresenter.TryInteractServerRpc(); // 기존 로직
+        }
+        else
+        {
+            // 2단계: 상호작용 오브젝트 없음 → 사보타지
+            TrySabotage(); 
+        }
     }
-    
+
+    public bool HasInteractableObjectsNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.MiniGame) ||
+                collider.CompareTag(GameTags.RareCardShop) ||
+                collider.CompareTag(GameTags.Exit) ||
+                collider.CompareTag(GameTags.Teleport) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     public void TryReportCorpse()
     {
         if (!CanReportCorpse()) return;
         
-        // 시체 리포트 액션 실행
-        _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
+        // 시체 또는 재판소집 오브젝트 근처 확인
+        if (HasCorpseNearby())
+        {
+            _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
+        }
+        if(HasTrialConvocationNearby()){
+            _playerPresenter.TryTrialServerRpc(_playerPresenter.OwnerClientId);
+        }
     }
+    private bool HasCorpseNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.PlayerCorpse))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool HasTrialConvocationNearby()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.ConvocationOfTrial))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     
     public bool CanKill()
     {
@@ -112,6 +167,9 @@ public class AnimalStrategy : IRoleStrategy
         // 유령이 아닌 경우에만 시체 리포트 가능
         return _playerPresenter.GetPlayerAliveState() == PlayerLivingState.Alive;
     }
+
+    public void TryVent() { /* 아무것도 하지 않음 */ }
+    public bool CanVent() { return false; }
     
     #endregion
 }

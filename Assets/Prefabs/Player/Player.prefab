@@ -434,6 +434,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  playerDetectionRadius: 1.5
   playerInput: {fileID: 3855099441482742434}
   nicknameText: {fileID: 4710416165935099427}
 --- !u!114 &1793609255088142441

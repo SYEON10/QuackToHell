@@ -1,8 +1,10 @@
-using Unity.Netcode;
 using UnityEngine;
 using static PlayerView;
 using System;
 using Debug = UnityEngine.Debug;
+using UnityEngine.SceneManagement;
+using Unity.Netcode;
+using Unity.Collections;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -18,12 +20,14 @@ public class PlayerPresenter : NetworkBehaviour
     private PlayerView playerView;
     private RoleManager roleManager;
     private PlayerInput playerInput;
+    [Header("")]
     [SerializeField]    
     private GameObject corpsePrefab;
-    
-    [Header("UI")]
-    [SerializeField] private SpriteRenderer playerSpriteRenderer;
+    [SerializeField] 
+    private SpriteRenderer playerSpriteRenderer;
 
+    [Header("UI")] 
+    private InteractionHUDController interactionHUDController;
 
     // 외부 접근 제한 - 메시지 기반 인터페이스만 사용
 
@@ -41,7 +45,40 @@ public class PlayerPresenter : NetworkBehaviour
         // Start()에서 네트워크 이벤트 구독
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+    
+        //씬 로드 이벤트 구독
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode){
+        if(scene.name==GameScenes.Village){
+            GameObject interactionHUD = GameObject.FindGameObjectWithTag(GameTags.UI_InteractionHUD);
+            interactionHUDController = interactionHUD.GetComponent<InteractionHUDController>();
+            interactionHUDController.InitializeInteractionHUDUI();
+            playerView.InjectHUDController(interactionHUDController);
+        }
+    }
+
+    private void PlayerView_OnPlayerExited()
+    {
+        //현재 역할 확인
+        PlayerJob playerJob = GetPlayerJob();
+        if(interactionHUDController!=null)
+        {
+            interactionHUDController.SetPlayerInteractionUI(playerJob, false);
+        }
+    }
+
+    private void PlayerView_OnPlayerDetected(GameObject player)
+    {
+        //현재 역할 확인
+        PlayerJob playerJob = GetPlayerJob();
+        if(interactionHUDController!=null)
+        {
+            interactionHUDController.SetPlayerInteractionUI(playerJob, true);
+        }
+    }
+
 
     private void OnDestroy()
     {
@@ -95,13 +132,161 @@ public class PlayerPresenter : NetworkBehaviour
         // View -> Presenter -> Model
         playerView.OnMovementInput += HandleMovementInput;
         playerView.OnKillTryInput += HandleKillInput;
-        playerView.OnSabotageTryInput += HandleSabotageInput;
         playerView.OnInteractInput += HandleInteractInput;
         playerView.OnCorpseReported += HandleCorpseReported;
-        
+        playerView.OnVentTryInput += HandleVentInput;
+
         // Model -> Presenter -> View
         playerModel.PlayerStatusData.OnValueChanged += HandleStatusChanged;
         playerModel.PlayerAppearanceData.OnValueChanged += HandleAppearanceChanged;
+    
+        // View -> Presenter
+        playerView.onPlayerDetected += PlayerView_OnPlayerDetected;
+        playerView.onPlayerExited += PlayerView_OnPlayerExited;
+        playerView.OnObjectEntered += HandleObjectEntered;
+        playerView.OnObjectExited += HandleObjectExited;
+
+        //model -> presenter
+        playerModel.PlayerTag.OnValueChanged += HandleTagChanged;
+    }
+    private void HandleObjectEntered(Collider2D collision)
+    {
+        if (collision.CompareTag(GameTags.PlayerCorpse))
+        {   
+            if (IsOwner)
+            {
+                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.CorpseReport);
+            }
+        }
+
+        //상호작용 오브젝트 감지
+        if (collision.CompareTag(GameTags.ConvocationOfTrial))
+        {
+            if (IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonImageByObject(GameTags.ConvocationOfTrial);
+                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.TrialConvocation);
+            }
+            
+        }
+        if(collision.CompareTag(GameTags.Vent)){
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonImageByObject(GameTags.Vent);
+
+                PlayerJob playerJob = GetPlayerJob(); // 현재 역할 확인
+                
+                if(playerJob == PlayerJob.Animal)
+                {
+                    // Animal: Interact 버튼 비활성화
+                    interactionHUDController.DisableButton(InteractionHUDController.ButtonName.Vent);
+                }
+                else if(playerJob == PlayerJob.Farmer)
+                {
+                    // Farmer: Interact 버튼 활성화
+                    interactionHUDController.EnableButton(InteractionHUDController.ButtonName.Vent);
+                }
+            }
+        }
+        if(collision.CompareTag(GameTags.RareCardShop)){
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonImageByObject(GameTags.RareCardShop);
+                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.RareCardShop);
+            }
+        }
+        if(collision.CompareTag(GameTags.Exit)){
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonImageByObject(GameTags.Exit);
+                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.Exit);
+            }
+        }
+        if(collision.CompareTag(GameTags.MiniGame)){
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonImageByObject(GameTags.MiniGame);
+                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.MiniGame);
+            }
+        }
+        if(collision.CompareTag(GameTags.Teleport)){
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonImageByObject(GameTags.Teleport);
+                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.Teleport);
+            }
+        }
+        
+        
+   }
+    private void HandleObjectExited(Collider2D collision)
+    {
+        if (collision.CompareTag(GameTags.PlayerCorpse))
+        {
+            if (IsOwner)
+            {
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.CorpseReport);
+            }
+        }
+        
+        //상호작용 오브젝트 종류에서 Trigger Exit되면, 기본 상호작용 버튼 이미지로 변경
+        //vent, rarecardshop, exit, minigame, teleport, convocationoftrial
+        if(collision.CompareTag(GameTags.Vent))
+        {
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonDefault();
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.Vent);
+            }
+        }
+        if(collision.CompareTag(GameTags.RareCardShop))
+        {
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonDefault();
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.RareCardShop);
+            }
+        }
+        if(collision.CompareTag(GameTags.Exit))
+        {
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonDefault();
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.Exit);
+            }
+        }
+        if(collision.CompareTag(GameTags.MiniGame))
+        {
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonDefault();
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.MiniGame);
+            }
+        }
+        if(collision.CompareTag(GameTags.Teleport))
+        {
+            if(IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonDefault();
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.Teleport);
+            }
+            
+        }
+        if (collision.CompareTag(GameTags.ConvocationOfTrial))
+        {
+            if (IsOwner)
+            {
+                interactionHUDController.SetInteractionButtonDefault();
+                interactionHUDController.DisableButton(InteractionHUDController.ButtonName.TrialConvocation);
+            }
+        }   
+    }
+
+
+    private void HandleTagChanged(FixedString64Bytes previousTag, FixedString64Bytes newTag)
+    {
+        gameObject.tag = newTag.ToString();
+        Debug.Log($"Player tag changed from {previousTag} to {newTag}");
     }
     
     /// <summary>
@@ -138,17 +323,7 @@ public class PlayerPresenter : NetworkBehaviour
         
         roleManager.CurrentStrategy?.TryKill();
     }
-    
-    /// <summary>
-    /// View에서 받은 사보타지 입력을 RoleStrategy에 전달
-    /// </summary>
-    private void HandleSabotageInput()
-    {
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
-            return;
-        
-        roleManager.CurrentStrategy?.TrySabotage();
-    }
+
     
     /// <summary>
     /// View에서 받은 상호작용 입력을 RoleStrategy에 전달
@@ -157,9 +332,14 @@ public class PlayerPresenter : NetworkBehaviour
     {
         if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
             return;
+        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         roleManager.CurrentStrategy?.TryInteract();
     }
+
+    
+
+
     
     /// <summary>
     /// View에서 받은 시체 리포트를 RoleStrategy에 전달
@@ -168,8 +348,21 @@ public class PlayerPresenter : NetworkBehaviour
     {
         if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
             return;
-        
+        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+
         roleManager.CurrentStrategy?.TryReportCorpse();
+    }
+    
+    /// <summary>
+    /// View에서 받은 벤트 입력을 RoleStrategy에 전달
+    /// </summary>
+    private void HandleVentInput()
+    {
+        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+            return;
+        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        
+        roleManager.CurrentStrategy?.TryVent();
     }
     
     /// <summary>
@@ -212,6 +405,26 @@ public class PlayerPresenter : NetworkBehaviour
     
     public void ChangeRole(PlayerJob newRole){
         playerModel.ChangeRole(newRole);
+    }
+
+
+    [ServerRpc]
+    public void TryVentServerRpc()
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag(GameTags.Vent))
+            {
+                VentController ventController = collider.GetComponent<VentController>();
+                if (ventController != null)
+                {
+                    ventController.SpaceInput = true;
+                    Debug.Log("Space 인풋 들어옴!");
+                    return;
+                }
+            }
+        }
     }
 
 
@@ -271,18 +484,120 @@ public class PlayerPresenter : NetworkBehaviour
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
         foreach (Collider2D collider in colliders)
         {
-            if (collider.CompareTag(GameTags.Interactable))
+            // 기존 패턴: IInteractable 인터페이스 활용
+            IInteractable interactable = collider.GetComponent<IInteractable>();
+            if (interactable != null && interactable.CanInteract(gameObject))
             {
-                // 상호작용 가능한 오브젝트와 상호작용
+                interactable.Interact(gameObject);
                 Debug.Log($"[Server] Player {OwnerClientId} interacted with {collider.name}");
+                return;
+            }
+            
+            // 태그별 직접 처리 (기존 방식 유지)
+            if (collider.CompareTag(GameTags.Exit))
+            {
+                HandleExitInteraction(collider);
+                return;
+            }
+            
+            if (collider.CompareTag(GameTags.Teleport))
+            {
+                HandleTeleportInteraction(collider);
+                return;
+            }
+            if (collider.CompareTag(GameTags.RareCardShop))
+            {
+                HandleRareCardShopInteraction(collider);
+                return;
+            }
+            if (collider.CompareTag(GameTags.MiniGame))
+            {
+                HandleMiniGameInteraction(collider);
                 return;
             }
         }
         
         Debug.LogWarning($"[Server] No interactable object found for Player {OwnerClientId}");
     }
+
+    /// <summary>
+    /// 벤트 상호작용 처리 (농장주 전용)
+    /// </summary>
+    private void HandleVentInteraction(Collider2D ventCollider)
+    {
+        // 역할 검증
+        PlayerJob currentRole = GetPlayerJob();
+        if (currentRole != PlayerJob.Farmer)
+        {
+            Debug.LogWarning($"[Server] Only Farmer can use vents. Current role: {currentRole}");
+            return;
+        }
+        
+        roleManager.CurrentStrategy?.TryVent();
+    }
+
+    /// <summary>
+    /// TODO: 출입구 상호작용 처리
+    /// </summary>
+    private void HandleExitInteraction(Collider2D exitCollider)
+    {
+        Debug.Log($"[Server] Player {OwnerClientId} used exit");
+    }
+
+    /// <summary>
+    /// TODO: 텔레포트 상호작용 처리
+    /// </summary>
+    private void HandleTeleportInteraction(Collider2D teleportCollider)
+    {
+        Debug.Log($"[Server] Player {OwnerClientId} used teleport");
+        
+    }
+
+    /// <summary>
+    /// TODO: 희귀카드상점 상호작용 처리
+    /// </summary>
+    private void HandleRareCardShopInteraction(Collider2D shopCollider)
+    {
+        Debug.Log($"[Server] Player {OwnerClientId} used rare card shop");
+    }
+
+    /// <summary>
+    /// 미니게임 상호작용 처리
+    /// </summary>
+    private void HandleMiniGameInteraction(Collider2D miniGameCollider)
+    {
+        MinigameController minigameController = miniGameCollider.GetComponent<MinigameController>();
+        if (minigameController != null)
+        {
+            minigameController.OpenUi(); 
+        }
+    }
+
+    /// <summary>
+    /// 재판소집 상호작용 처리
+    /// </summary>
+    private void HandleTrialConvocationInteraction(Collider2D trialCollider)
+    {
+        Debug.Log($"[Server] Player {OwnerClientId} used trial convocation");
+        
+        // 기존 재판소집 로직 활용
+        ConvocationOfTrialController trialController = trialCollider.GetComponent<ConvocationOfTrialController>();
+        if (trialController != null)
+        {
+            trialController.Interact(gameObject); 
+            
+        }
+    }
     
+
     #endregion
+
+    [ServerRpc]
+    public void TryTrialServerRpc(ulong reporterClientId)
+    {
+        TrialManager.Instance.TryTrialServerRpc(reporterClientId);
+    }
+
 
     /// <summary>
     /// 시체 리포트 서버 RPC (검증 포함)
@@ -420,7 +735,7 @@ public class PlayerPresenter : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void HandlePlayerDeathServerRpc(ServerRpcParams rpcParams = default)
     {
-        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+
         
         // 1. 서버에서 플레이어 상태 검증 (이미 죽었는지 확인)
         if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
@@ -476,12 +791,16 @@ public class PlayerPresenter : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void ChangeToGhostStateServerRpc()
     {
-        // 서버에서 속도 변경 (NetworkVariable로 동기화됨)
+        
         if (DebugUtils.AssertNotNull(playerModel, "playerModel", this))
         {
+            
             PlayerStatusData statusData = playerModel.PlayerStatusData.Value;
+            // 서버에서 속도 변경 (NetworkVariable로 동기화됨)
             statusData.moveSpeed = statusData.moveSpeed * GameConstants.Player.GhostSpeedMultiplier; // 유령 속도로 설정
             playerModel.PlayerStatusData.Value = statusData;
+            // 서버에서 태그 변경 (NetworkVariable로 동기화됨)
+            playerModel.PlayerTag.Value = GameTags.PlayerGhost;
         }
         
         // 죽은 플레이어에게만 시각적 효과 적용 (OwnerClientId로 제한)
@@ -509,13 +828,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void ChangeToGhostVisualState()
     {
-        // 태그 변경
-        gameObject.tag = GameTags.PlayerGhost;
-        
         // 레이어 변경
         gameObject.layer = GameLayers.GetLayerIndex(GameLayers.PlayerGhost);
         
-        // 반투명 효과 (간단한 방법)
+        // 반투명 효과 
         SpriteRenderer[] spriteRenderer = GetComponentsInChildren<SpriteRenderer>();
         if (DebugUtils.AssertNotNull(spriteRenderer, "SpriteRenderer", this))
         {
@@ -605,26 +921,6 @@ public class PlayerPresenter : NetworkBehaviour
         HandlePlayerDeathServerRpc();
     }
 
-    /// <summary>
-    /// 테스트용 사망 메서드 (F3키로 테스트)
-    /// </summary>
-    private void Update()
-    {
-        // Input System을 사용하여 F3키 감지
-        if (IsOwner)
-        {
-            // Keyboard.current를 사용하여 F3키 감지
-            if (Keyboard.current != null && Keyboard.current.f3Key.wasPressedThisFrame)
-            {
-                HandlePlayerDeathServerRpc();
-            }
-        }
-    }
-
-    private void PlayerView_OnSabotageTryInput()
-    {
-        // TODO: Sabotage 액션 처리
-    }
 
     /// <summary>
     /// 모든 플레이어의 가시성 업데이트
@@ -675,7 +971,9 @@ public class PlayerPresenter : NetworkBehaviour
             else
             {
                 // 산 사람은 산 사람만 볼 수 있음
-                SetPlayerVisibility(isAlive);
+                PlayerJob targetPlayerJob = GetPlayerJob();
+                bool targetIsGhost = (targetPlayerJob == PlayerJob.Ghost || !isAlive);
+                SetPlayerVisibility(!targetIsGhost); // 유령이 아닌 경우만 보임
             }
         }
     }

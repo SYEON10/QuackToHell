@@ -1,14 +1,24 @@
 // PlayerModel.cs
 using System;
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using Unity.Collections;
 
 /// <summary>
 /// 로직 관리
 /// </summary>
 public class PlayerModel : NetworkBehaviour
 {
+
+    [Header("Network Synchronized Data")]
+    private NetworkVariable<FixedString64Bytes> _playerTag = new NetworkVariable<FixedString64Bytes>(
+        GameTags.Player, // 기본값
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public NetworkVariable<FixedString64Bytes> PlayerTag => _playerTag;
+
     private PlayerIdleState idleStateComponent;
     private PlayerWalkState walkStateComponent;
     private PlayerDeadState deadStateComponent;

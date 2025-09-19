@@ -14,6 +14,7 @@ public static class GameTags
     // UI 관련 태그
     public const string UI_ConvocationOfTrialCanvas = "UI_ConvocationOfTrialCanvas";
     public const string UI_RoleAssignCanvas = "UI_RoleAssignCanvas";
+    public const string UI_InteractionHUD = "UI_InteractionHUD";
     
     // 카드 관련 태그
     public const string CardForSale = "CardForSale";
@@ -27,5 +28,10 @@ public static class GameTags
     
     // 상호작용 관련 태그
     public const string Interactable = "Interactable";
-    public const string ConvocationOfTrial = "ConvocationOfTrial";
+    public const string Vent = "Vent";                    // 벤트 (농장주 전용)
+    public const string MiniGame = "MiniGame";            // 미니게임
+    public const string ConvocationOfTrial = "ConvocationOfTrial";  // 재판 소집 (기존과 동일)
+    public const string Teleport = "Teleport";           // 텔레포트
+    public const string RareCardShop = "RareCardShop";   // 희귀카드 상점
+    public const string Exit = "Exit";                   // 출입구
 }

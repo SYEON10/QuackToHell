@@ -4,12 +4,19 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
-
+using System.Collections.Generic;
 /// <summary>
 /// 시각 및 입력 처리 (완전 Input System 방식)
 /// </summary>
 public class PlayerView : NetworkBehaviour
 {
+    // PlayerView.cs에 추가
+    [Header("Player Detection")]
+    [SerializeField] private float playerDetectionRadius = 2f;
+    private HashSet<GameObject> previouslyDetectedPlayers = new HashSet<GameObject>();
+
+    public Action<GameObject> onPlayerDetected;
+    public Action onPlayerExited;
     private Camera localCamera = null;
 
     private NetworkVariable<bool> ignoreMoveInput = new NetworkVariable<bool>(false);
@@ -29,6 +36,8 @@ public class PlayerView : NetworkBehaviour
     [Header("Input System")]
     [SerializeField] private PlayerInput playerInput;
 
+    private InteractionHUDController interactionHUDController;
+
     protected void Awake()
     {
         if (playerInput == null)
@@ -36,6 +45,51 @@ public class PlayerView : NetworkBehaviour
             playerInput = GetComponent<PlayerInput>();
         }
     }
+    private void Update() {
+        #region 플레이어감지
+        // 소유자만 감지 실행
+        if (!IsOwner) return;
+        
+        
+        DetectNearbyPlayers();
+        #endregion
+    }
+    private void DetectNearbyPlayers()
+    {
+        // 현재 감지된 플레이어들
+        HashSet<GameObject> currentlyDetectedPlayers = new HashSet<GameObject>();
+        
+        // 범위 내 모든 콜라이더 검색
+        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, playerDetectionRadius);
+        
+        foreach (Collider2D collider in nearbyColliders)
+        {
+            if (collider.CompareTag(GameTags.Player) && collider.gameObject != gameObject)
+            {
+                GameObject detectedPlayer = collider.gameObject;
+                currentlyDetectedPlayers.Add(detectedPlayer);
+                
+                // 새로 감지된 플레이어 (Enter 이벤트)
+                if (!previouslyDetectedPlayers.Contains(detectedPlayer))
+                {
+                    onPlayerDetected?.Invoke(detectedPlayer);
+                }
+            }
+        }
+        
+        // Exit 이벤트 처리 (필요한 경우)
+        foreach (GameObject previousPlayer in previouslyDetectedPlayers)
+        {
+            if (!currentlyDetectedPlayers.Contains(previousPlayer))
+            {
+                onPlayerExited?.Invoke(); // 필요시 추가
+            }
+        }
+        
+        // 이전 상태 업데이트
+        previouslyDetectedPlayers = currentlyDetectedPlayers;
+    }
+
 
     
     protected void Start()
@@ -87,11 +141,11 @@ public class PlayerView : NetworkBehaviour
         {
             killAction.performed += OnKillInput;
         }
-
-        InputAction sabotageAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Sabotage}"];
-        if (DebugUtils.AssertNotNull(sabotageAction, "SabotageAction", this))
+        // 벤트 입력 추가 (Space키)
+        InputAction ventAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Vent}"];
+        if (DebugUtils.AssertNotNull(ventAction, "VentAction", this))
         {
-            sabotageAction.performed += OnSabotageInput;
+            ventAction.performed += OnVentInput;
         }
 
     }
@@ -126,11 +180,7 @@ public class PlayerView : NetworkBehaviour
                 killAction.performed -= OnKillInput;
             }
 
-            InputAction sabotageAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Sabotage}"];
-            if (DebugUtils.AssertNotNull(sabotageAction, "SabotageAction", this))
-            {
-                sabotageAction.performed -= OnSabotageInput;
-            }
+            
         }
         
         base.OnDestroy();
@@ -266,43 +316,21 @@ public class PlayerView : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        // Farmer 역할만 Kill 가능
-        if (!IsFarmerRole())
-        {
-            return;
-        }
+       
         OnKillTryInput?.Invoke();
     }
 
-    /// <summary>
-    /// 현재 플레이어가 Farmer 역할인지 확인
-    /// </summary>
-    private bool IsFarmerRole()
-    {
-        PlayerPresenter presenter = GetComponent<PlayerPresenter>();
-        if (!DebugUtils.AssertNotNull(presenter, "PlayerPresenter", this))
-            return false;
-        
-        return presenter.GetPlayerJob() == PlayerJob.Farmer;
-    }
+    
     #endregion
+    public Action OnVentTryInput;
 
-    #region Sabotage (Input System) - Farmer만 가능
-    public Action OnSabotageTryInput;
-
-    // Input System을 사용한 Sabotage 입력 처리
-    private void OnSabotageInput(InputAction.CallbackContext context)
+    // 핸들러 메서드 구현
+    private void OnVentInput(InputAction.CallbackContext context)
     {
         if (!IsOwner) return;
         
-        // Farmer 역할만 Sabotage 가능
-        if (!IsFarmerRole())
-        {
-            return;
-        }
-        OnSabotageTryInput?.Invoke();
+        OnVentTryInput?.Invoke();
     }
-    #endregion
 
     #region Interact (Input System) - 모든 사람 가능 (Ghost 제외)
     public Action OnInteractInput;
@@ -312,28 +340,15 @@ public class PlayerView : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        // Ghost는 상호작용 불가
-        if (IsGhostRole())
-        {
-            return;
-        }
-        
         OnInteractInput?.Invoke();
     }
 
-    /// <summary>
-    /// 현재 플레이어가 Ghost 역할인지 확인
-    /// </summary>
-    private bool IsGhostRole()
-    {
-        return gameObject.tag == GameTags.PlayerGhost;
-    }
+   
     #endregion
 
     #region 시체발견 (LeftShift키) - 모든 사람 가능 (Ghost 제외)
     public Action<ulong> OnCorpseReported;
-    private GameObject corpseObj = null;
-    private GameObject convocationOfTrialObj = null;
+
     
 
     // LeftShift키로 시체 리포트 처리
@@ -341,70 +356,31 @@ public class PlayerView : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        // Ghost는 시체 리포트 불가
-        if (IsGhostRole())
-        {
-            return;
-        }
         
-        // 시체 근처에 있는 경우에만 리포트
-        if (corpseObj != null)
-        {
-            OnCorpseReported?.Invoke(OwnerClientId);
-        }
+        OnCorpseReported?.Invoke(OwnerClientId);
         
-        //재판소집오브젝트 근처에 있는 경우에만 리포트
-        if (convocationOfTrialObj != null)
-        {
-            OnCorpseReported?.Invoke(OwnerClientId);
-        }
+        
     }
+    public void InjectHUDController(InteractionHUDController interactionHUDController)
+    {
+        this.interactionHUDController = interactionHUDController;
+    }
+
+    public Action<Collider2D> OnObjectEntered;
+    public Action<Collider2D> OnObjectExited;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag(GameTags.PlayerCorpse))
-        {   
-            //유령은 시체 감지 안함
-            if (IsGhostRole())
-            {
-                return;
-            }
-            if (IsOwner)
-            {
-                corpseObj = collision.gameObject;
-            }
-        }
-
-        if (collision.CompareTag(GameTags.ConvocationOfTrial))
-        {
-            if (IsOwner)
-            {
-                convocationOfTrialObj = collision.gameObject;
-            }
-        }
+        if (!IsOwner) return;
+    
+        OnObjectEntered?.Invoke(collision); 
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.CompareTag(GameTags.PlayerCorpse))
-        {
-            //유령은 시체 감지 안함
-            if (IsGhostRole())
-            {
-                return;
-            }
-            if (IsOwner)
-            {
-                corpseObj = null;
-            }
-        }
-        if (collision.CompareTag(GameTags.ConvocationOfTrial))
-        {
-            if (IsOwner)
-            {
-                convocationOfTrialObj = null;
-            }
-        }
+        if (!IsOwner) return;
+    
+        OnObjectExited?.Invoke(collision); 
     }
     #endregion
 }

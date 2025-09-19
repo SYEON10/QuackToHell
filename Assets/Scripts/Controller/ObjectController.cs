@@ -192,7 +192,6 @@ public sealed class ObjectController : MonoBehaviour
         {
 #if UNITY_EDITOR
             RemoveIfExists<VentController>();
-            RemoveIfExists<TrialSummonController>();
             RemoveIfExists<EntranceController>();
 #endif
             return;
@@ -202,9 +201,6 @@ public sealed class ObjectController : MonoBehaviour
         {
             case InteractionType.Vent:
                 AddIfMissing<VentController>();
-                break;
-            case InteractionType.TrialSummon:
-                AddIfMissing<TrialSummonController>();
                 break;
             case InteractionType.Entrance:
                 AddIfMissing<EntranceController>();
