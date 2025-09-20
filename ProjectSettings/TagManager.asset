@@ -19,6 +19,8 @@ TagManager:
   - UI_CardShopCanvas
   - ConvocationOfTrial
   - UI_RoleAssignCanvas
+  - task-wire
+  - MainCanvas
   layers:
   - Default
   - TransparentFX
