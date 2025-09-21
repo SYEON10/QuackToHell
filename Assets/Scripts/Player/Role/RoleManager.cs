@@ -90,7 +90,7 @@ public class RoleManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 현재 역할의 입력 처리
+    /// 현재 역할의 입력 처리: 키보드용
     /// </summary>
     public void HandleInput(InputAction.CallbackContext context)
     {

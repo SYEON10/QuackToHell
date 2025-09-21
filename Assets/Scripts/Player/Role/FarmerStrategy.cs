@@ -34,6 +34,10 @@ public class FarmerStrategy : IRoleStrategy
         _playerPresenter.ShowFarmerUI();
     }
     
+    /// <summary>
+    /// 농장주 전용 입력 처리: 키보드용
+    /// </summary>
+    /// <param name="context"></param>
     public void HandleInput(InputAction.CallbackContext context)
     {
         // 농장주 전용 입력 처리
@@ -117,7 +121,7 @@ public class FarmerStrategy : IRoleStrategy
         if (!CanSabotage()) return;
         
         // TODO: 사보타지 액션 구현
-        Debug.Log("사보타지 시도");
+        Debug.Log("다른 상호작용 범위에 없어서, defult키가 사보타지로 세팅됩니다: 사보타지 시도");
         
     }
     

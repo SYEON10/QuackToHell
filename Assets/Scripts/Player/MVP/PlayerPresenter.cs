@@ -157,7 +157,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleObjectEntered(Collider2D collision)
     {
         if(interactionHUDController == null) return;
-        
+
         if (collision.CompareTag(GameTags.PlayerCorpse))
         {   
             if (IsOwner)
@@ -1112,7 +1112,7 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
     /// <summary>
-    /// 상호작용 시도 요청
+    /// 상호작용 시도 요청: 버튼용
     /// </summary>
     public void RequestInteract()
     {
