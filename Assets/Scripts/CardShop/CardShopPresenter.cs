@@ -64,10 +64,15 @@ public class CardShopPresenter : NetworkBehaviour
         DeckManager.Instance.TryPurchaseCardServerRpc(card, clientId);
     }
 
-    [ClientRpc]
-    public void PurchaseCardResultClientRpc(bool success, ClientRpcParams sendParams = default)
+    public void OnPurchaseResult(bool success)
     {
         if (_view == null) return;
+        if(success){
+             Debug.Log("[CardShopPresenter] 구매 성공");
+        }
+        else{
+            Debug.Log("[CardShopPresenter] 구매 실패");
+        }
     }
 
     private void OnClickLock()
@@ -109,7 +114,7 @@ public class CardShopPresenter : NetworkBehaviour
         if (s_serverByClient.TryGetValue(clientId, out CardShopPresenter presenter))
         {
             ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } };
-            presenter.PurchaseCardResultClientRpc(success, clientRpcParams);
+            presenter.OnPurchaseResult(success);
         }
     }
 

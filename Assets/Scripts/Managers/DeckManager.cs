@@ -717,6 +717,21 @@ public class DeckManager : NetworkBehaviour
     #endregion
 
     #region 카드 구매 처리
+    [ClientRpc]
+    private void PurchaseResultToCardShopClientRpc(bool success, ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == targetClientId)
+        {
+            // 해당 클라이언트의 CardShopPresenter 찾기
+            CardShopPresenter presenter = FindFirstObjectByType<CardShopPresenter>();
+            if (presenter != null)
+            {
+                // UI 업데이트 로직 직접 호출
+                presenter.OnPurchaseResult(success);
+            }
+        }
+    }
+
 
     /// <summary>
     /// 살 수 있는지 검증하는 함수
@@ -755,7 +770,7 @@ public class DeckManager : NetworkBehaviour
         // 물량 초과 체크
         if (!IsCardAvailableForPurchase(card.cardIdKey))
         {
-            cardShopPresenter.PurchaseCardResultClientRpc(false, clientRpcParams);
+            PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
         }
@@ -765,7 +780,7 @@ public class DeckManager : NetworkBehaviour
         if (playerGold < card.cardItemStatusData.price)
         {
             //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
-            cardShopPresenter.PurchaseCardResultClientRpc(false, clientRpcParams);
+            PurchaseResultToCardShopClientRpc(false, clientId);
             //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
@@ -773,11 +788,13 @@ public class DeckManager : NetworkBehaviour
 
 
         //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
-        cardShopPresenter.PurchaseCardResultClientRpc(true, clientRpcParams);
+        PurchaseResultToCardShopClientRpc(true, clientId);
         //구매 성공 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
         PurchaseCardResultClientRpc(true, card, clientId, clientRpcParams);
 
     }
+
+
 
     [ClientRpc]
     private void PurchaseCardResultClientRpc(bool success, CardItemData card, ulong clientId, ClientRpcParams sendParams = default)

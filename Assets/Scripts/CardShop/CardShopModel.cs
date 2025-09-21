@@ -41,7 +41,7 @@ public class CardShopModel : MonoBehaviour
         ClearCurrentDisplay();
 
         // 서버에서 선택된 카드들을 진열
-        foreach (var cardData in displayedCards)
+        foreach (CardItemData cardData in displayedCards)
         {
             // 해당 카드 오브젝트 찾기
             Transform cardObject = FindCardObjectByCardItemId(cardData.cardItemStatusData.cardItemID);
