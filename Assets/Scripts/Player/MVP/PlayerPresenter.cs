@@ -157,7 +157,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleObjectEntered(Collider2D collision)
     {
         if(interactionHUDController == null) return;
-        
+
         if (collision.CompareTag(GameTags.PlayerCorpse))
         {   
             if (IsOwner)
@@ -396,16 +396,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleAppearanceChanged(PlayerAppearanceData previousValue, PlayerAppearanceData newValue)
     {
-        // 색상 변경
-        switch (newValue.ColorIndex)
-        {
-            case 0: playerSpriteRenderer.color = Color.red; break;
-            case 1: playerSpriteRenderer.color = Color.orange; break;
-            case 2: playerSpriteRenderer.color = Color.yellow; break;
-            case 3: playerSpriteRenderer.color = Color.green; break;
-            case 4: playerSpriteRenderer.color = Color.blue; break;
-            case 5: playerSpriteRenderer.color = Color.purple; break;
-        }
+        playerView.ChangeApprearence(newValue);
     }
     
     #endregion
@@ -617,7 +608,7 @@ public class PlayerPresenter : NetworkBehaviour
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
         
         // 1. 요청자가 실제로 이 플레이어의 소유자인지 검증
-        if (!IsOwner || OwnerClientId != requesterClientId)
+        if (OwnerClientId != requesterClientId)
         {
             ReportCorpseResultClientRpc(false, "Unauthorized request", requesterClientId);
             return;
@@ -698,31 +689,7 @@ public class PlayerPresenter : NetworkBehaviour
         playerModel.MovePlayerServerRpc(onMovementInputEventArgs.XDirection, onMovementInputEventArgs.YDirection);
     }
     
-    private void PlayerModel_OnColorChanged(Int32 colorIndex)
-    {
-        // 모든 클라이언트에서 색상 변경 적용
-        switch (colorIndex)
-        {
-            case 0:
-                playerSpriteRenderer.color = Color.red;
-                break;
-            case 1:
-                playerSpriteRenderer.color = Color.orange;
-                break;
-            case 2:
-                playerSpriteRenderer.color = Color.yellow;
-                break;
-            case 3:
-                playerSpriteRenderer.color = Color.green;
-                break;
-            case 4:
-                playerSpriteRenderer.color = Color.blue;
-                break;
-            case 5:
-                playerSpriteRenderer.color = Color.purple;
-                break;
-        }   
-    }
+ 
 
     /// <summary>
     /// 농장주 UI 표시
@@ -739,13 +706,11 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
     /// <summary>
-    /// 플레이어 사망 처리 (서버에서만 실행)
+    /// 플레이어 사망 처리 (죽은 플레이어의 presenter에서 실행)
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     public void HandlePlayerDeathServerRpc(ServerRpcParams rpcParams = default)
     {
-
-        
         // 1. 서버에서 플레이어 상태 검증 (이미 죽었는지 확인)
         if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
         {
@@ -759,99 +724,68 @@ public class PlayerPresenter : NetworkBehaviour
             return;
         }
         
-        // 2. 서버에서 권위적 정보로 상태 변경
-        PlayerStateData currentState = playerModel.PlayerStateData.Value;
-        currentState.AliveState = PlayerLivingState.Dead;
-        playerModel.PlayerStateData.Value = currentState;
         
-        
-        // 3. 시체 프리팹 생성 (서버가 권위적 정보로 처리)
+        // 시체 프리팹 생성 (서버가 권위적 정보로 처리)
         CreateCorpseServerRpc(transform.position, playerModel.PlayerAppearanceData.Value.ColorIndex);
         
-        // 4. 죽은 플레이어에게만 유령 상태로 변경하라고 알림
+        // 죽은 플레이어에게만 유령 상태로 변경하라고 알림
+        ChangeToGhostStateServerRpc();
+        
+        // 로컬: 유령 상태로 전환 (레이어..)
         ClientRpcParams clientRpcParams = new ClientRpcParams
         {
             Send = new ClientRpcSendParams
             {
-                TargetClientIds = new[] { OwnerClientId }
+                TargetClientIds = new[] { playerModel.ClientId }
             }
         };
-        HandlePlayerDeathClientRpc(clientRpcParams);
+        ChangeToGhostStateClientRpc(clientRpcParams);
         
-        // 5. 모든 클라이언트에서 가시성 업데이트
+        // 모든 클라이언트에서 가시성 업데이트
         UpdateVisibilityForAllPlayersClientRpc();
     }
 
-    /// <summary>
-    /// 클라이언트에서 사망 처리 (죽은 플레이어에게만 전송)
-    /// </summary>
-    [ClientRpc]
-    private void HandlePlayerDeathClientRpc(ClientRpcParams clientRpcParams = default)
-    {
-        ChangeToGhostStateServerRpc();
-        // 이 RPC는 죽은 플레이어에게만 전송되므로 IsOwner 체크 불필요
-        // 유령 역할로 변경
-        roleManager?.ChangeRole(PlayerJob.Ghost);
-    }
+
+       
+
 
     /// <summary>
-    /// 유령 상태로 전환 (서버에서 속도 변경, 죽은 플레이어에게만 시각적 효과)
+    /// 유령 상태로 전환 (서버전용함수)
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
     public void ChangeToGhostStateServerRpc()
     {
-        
         if (DebugUtils.AssertNotNull(playerModel, "playerModel", this))
         {
-            
             PlayerStatusData statusData = playerModel.PlayerStatusData.Value;
             // 서버에서 속도 변경 (NetworkVariable로 동기화됨)
             statusData.moveSpeed = statusData.moveSpeed * GameConstants.Player.GhostSpeedMultiplier; // 유령 속도로 설정
+            // 서버에서 job변경
+            statusData.job =  PlayerJob.Ghost;
             playerModel.PlayerStatusData.Value = statusData;
+            // 서버에서 상태 변경
+            PlayerStateData currentState = playerModel.PlayerStateData.Value;
+            currentState.AliveState = PlayerLivingState.Dead;
+            playerModel.PlayerStateData.Value = currentState;
             // 서버에서 태그 변경 (NetworkVariable로 동기화됨)
             playerModel.PlayerTag.Value = GameTags.PlayerGhost;
+            // 서버에서 투명도 변경
+            PlayerAppearanceData currentAppearanceData = playerModel.PlayerAppearanceData.Value;
+            currentAppearanceData.AlphaValue = GameConstants.Player.GhostTransparency;
+            playerModel.PlayerAppearanceData.Value = currentAppearanceData;
         }
-        
-        // 죽은 플레이어에게만 시각적 효과 적용 (OwnerClientId로 제한)
-        ClientRpcParams clientRpcParams = new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new[] { OwnerClientId }
-            }
-        };
-        ChangeToGhostVisualStateClientRpc(clientRpcParams);
     }
 
     /// <summary>
-    /// 유령 시각적 상태로 전환 (클라이언트에서만 실행)
+    /// 로컬: 유령 상태로 전환 (레이어..)
     /// </summary>
     [ClientRpc]
-    private void ChangeToGhostVisualStateClientRpc(ClientRpcParams clientRpcParams = default)
-    {
-        ChangeToGhostVisualState();
-    }
-
-    /// <summary>
-    /// 유령 시각적 상태로 전환 (반투명화, 태그 변경, 레이어 변경)
-    /// </summary>
-    public void ChangeToGhostVisualState()
+    private void ChangeToGhostStateClientRpc(ClientRpcParams clientRpcParams = default)
     {
         // 레이어 변경
         gameObject.layer = GameLayers.GetLayerIndex(GameLayers.PlayerGhost);
-        
-        // 반투명 효과 
-        SpriteRenderer[] spriteRenderer = GetComponentsInChildren<SpriteRenderer>();
-        if (DebugUtils.AssertNotNull(spriteRenderer, "SpriteRenderer", this))
-        {
-            foreach (SpriteRenderer renderer in spriteRenderer)
-            {
-                Color color = renderer.color;
-                color.a = GameConstants.Player.GhostTransparency; // 50% 투명도
-                renderer.color = color;
-            }
-        }
     }
+
 
     /// <summary>
     /// 시체 생성 (서버 RPC)
@@ -889,22 +823,6 @@ public class PlayerPresenter : NetworkBehaviour
         
     }
 
-    /// <summary>
-    /// 색상 인덱스에 따른 색상 반환
-    /// </summary>
-    private Color GetColorByIndex(int colorIndex)
-    {
-        switch (colorIndex)
-        {
-            case 0: return Color.red;
-            case 1: return Color.orange;
-            case 2: return Color.yellow;
-            case 3: return Color.green;
-            case 4: return Color.blue;
-            case 5: return Color.purple;
-            default: return Color.white;
-        }
-    }
 
     /// <summary>
     /// 유령 UI 표시
@@ -932,7 +850,7 @@ public class PlayerPresenter : NetworkBehaviour
 
 
     /// <summary>
-    /// 모든 플레이어의 가시성 업데이트
+    /// 모든 플레이어의 가시성 업데이트 :모든 클라가 실행
     /// </summary>
     [ClientRpc]
     public void UpdateVisibilityForAllPlayersClientRpc()
@@ -940,25 +858,31 @@ public class PlayerPresenter : NetworkBehaviour
         // 모든 플레이어 찾기
         PlayerPresenter[] allPlayers = FindObjectsByType<PlayerPresenter>(FindObjectsSortMode.None);
         
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        PlayerPresenter playerPresenter =  PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+        PlayerLivingState localPlayerLivingState = playerPresenter.GetPlayerAliveState();
+        
+
         foreach (PlayerPresenter player in allPlayers)
         {
             if (player == null) continue;
             
             // 각 플레이어의 가시성 업데이트
-            player.UpdatePlayerVisibility();
+            player.UpdatePlayerVisibility(localPlayerLivingState);
         }
     }
 
     /// <summary>
     /// 플레이어의 가시성 업데이트
     /// </summary>
-    public void UpdatePlayerVisibility()
+    public void UpdatePlayerVisibility(PlayerLivingState localPlayerLivingState)
     {
         if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
             return;
         
-        bool isAlive = playerModel.PlayerStateData.Value.AliveState == PlayerLivingState.Alive;
+       
         bool isLocalPlayer = IsOwner;
+        
         
         // 로컬 플레이어인 경우
         if (isLocalPlayer)
@@ -969,9 +893,9 @@ public class PlayerPresenter : NetworkBehaviour
         // 다른 플레이어인 경우
         else
         {
-            // 로컬 플레이어가 유령이면 모든 사람이 보임
-            // 로컬 플레이어가 산 사람이면 산 사람만 보임
-            bool localPlayerIsGhost = GetLocalPlayerIsGhost();
+            // 내 플레이어가 유령이면 모든 사람이 보임
+            // 내 플레이어가 산 사람이면 산 사람만 보임
+            bool localPlayerIsGhost = localPlayerLivingState == PlayerLivingState.Dead;
             if (localPlayerIsGhost)
             {
                 // 유령은 모든 사람을 볼 수 있음
@@ -980,36 +904,13 @@ public class PlayerPresenter : NetworkBehaviour
             else
             {
                 // 산 사람은 산 사람만 볼 수 있음
-                PlayerJob targetPlayerJob = GetPlayerJob();
-                bool targetIsGhost = (targetPlayerJob == PlayerJob.Ghost || !isAlive);
-                SetPlayerVisibility(!targetIsGhost); // 유령이 아닌 경우만 보임
+                SetPlayerVisibility(false); 
             }
         }
     }
 
-    /// <summary>
-    /// 로컬 플레이어가 유령인지 확인
-    /// </summary>
-    private bool GetLocalPlayerIsGhost()
-    {
-        PlayerPresenter localPlayer = GetLocalPlayer();
-        if (localPlayer == null) return false;
-        
-        return localPlayer.GetPlayerAliveState() != PlayerLivingState.Alive;
-    }
 
-    /// <summary>
-    /// 로컬 플레이어 찾기
-    /// </summary>
-    private PlayerPresenter GetLocalPlayer()
-    {
-        PlayerPresenter[] allPlayers = FindObjectsByType<PlayerPresenter>(FindObjectsSortMode.None);
-        foreach (PlayerPresenter player in allPlayers)
-        {
-            if (player.IsOwner) return player;
-        }
-        return null;
-    }
+  
 
     /// <summary>
     /// 플레이어 가시성 설정
@@ -1090,7 +991,7 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
     /// <summary>
-    /// 킬 시도 요청
+    /// 킬 시도 요청: 버튼전용
     /// </summary>
     public void RequestKill()
     {
@@ -1112,7 +1013,7 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
     /// <summary>
-    /// 상호작용 시도 요청
+    /// 상호작용 시도 요청: 버튼용
     /// </summary>
     public void RequestInteract()
     {
@@ -1138,7 +1039,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public PlayerLivingState GetPlayerAliveState()
     {
-        return playerModel?.PlayerStateData.Value.AliveState ?? PlayerLivingState.Alive;
+        return playerModel.PlayerStateData.Value.AliveState;
     }
     
     /// <summary>

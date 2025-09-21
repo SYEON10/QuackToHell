@@ -24,6 +24,18 @@ public class PlayerModel : NetworkBehaviour
     private PlayerDeadState deadStateComponent;
     private PlayerAliveState aliveStateComponent;
 
+    private ulong clientId;
+
+    public ulong ClientId
+    {
+        get { return clientId; }
+        set
+        {
+            if (!IsHost) return;
+            clientId = value;
+        }
+    }
+
     private void Awake()
     {
         playerRB = gameObject.GetComponent<Rigidbody2D>();

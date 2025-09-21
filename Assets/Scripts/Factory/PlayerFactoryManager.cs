@@ -34,6 +34,9 @@ public class PlayerFactoryManager : NetworkBehaviour
             return;
             
         networkObject.SpawnWithOwnership(rpcParams.Receive.SenderClientId);
+        
+        //클라이언트 아이디 부여
+        playerModel.ClientId = rpcParams.Receive.SenderClientId;
 
         PlayerStatusData myPlayerStateData = playerModel.PlayerStatusData.Value;
         string baseNickname = myPlayerStateData.Nickname.Split('_')[0];
@@ -46,7 +49,8 @@ public class PlayerFactoryManager : NetworkBehaviour
 
         playerModel.PlayerAppearanceData.Value = new PlayerAppearanceData
         {
-            ColorIndex = 0
+            ColorIndex = 0,
+            AlphaValue = 1
         };
 
         playerModel.PlayerStateData.Value = new PlayerStateData

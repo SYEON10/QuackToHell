@@ -27,9 +27,6 @@ public class GhostStrategy : IRoleStrategy
         
         // 유령 전용 UI 활성화
         _playerPresenter.ShowGhostUI();
-        
-        // 유령 상태로 변경 (시각적 효과만)
-        _playerPresenter.ChangeToGhostVisualState();
     }
     
     public void HandleInput(InputAction.CallbackContext context)

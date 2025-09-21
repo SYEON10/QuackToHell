@@ -173,27 +173,7 @@ public class GameManager : NetworkBehaviour
                 //플레이어 색상 할당
                 Image playerColor =  playerUI.GetComponentInChildren<Image>();
                 int playerColorIndex = player.GetPlayerColorIndex();
-                switch (playerColorIndex)
-                {
-                    case 0:
-                        playerColor.color = Color.red;
-                        break;
-                    case 1:
-                        playerColor.color = Color.orange;
-                        break;
-                    case 2:
-                        playerColor.color = Color.yellow;
-                        break;
-                    case 3:
-                        playerColor.color = Color.green;
-                        break;
-                    case 4:
-                        playerColor.color = Color.blue;
-                        break;
-                    case 5:
-                        playerColor.color = Color.purple;
-                        break;
-                }
+                playerColor.color = ColorUtils.GetColorByIndex(playerColorIndex);
                 i++;
             }
             

@@ -307,6 +307,29 @@ public class PlayerView : NetworkBehaviour
     }
     #endregion
 
+    /// <summary>
+    /// Appreance 데이터가 바뀌면 그에 맞게 모습이 바뀜
+    /// </summary>
+    public void ChangeApprearence(PlayerAppearanceData playerAppearanceData)
+    {
+        int colorIndex = playerAppearanceData.ColorIndex;
+        float alphaValue = playerAppearanceData.AlphaValue;
+        
+        //색 바꾸기
+        SpriteRenderer[] spriteRenderers = gameObject.GetComponentsInChildren<SpriteRenderer>();
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        {
+            if (spriteRenderer.gameObject.name.Contains("Body"))
+            {
+                spriteRenderer.color = ColorUtils.GetColorByIndex(colorIndex);
+            }
+
+            Color color = spriteRenderer.color;
+            color.a = alphaValue;
+            spriteRenderer.color =  color;
+        }
+    }
+
     #region Kill (Input System) - Farmer만 가능
     public Action OnKillTryInput;
 

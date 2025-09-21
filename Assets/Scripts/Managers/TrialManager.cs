@@ -134,28 +134,8 @@ public class TrialManager : NetworkBehaviour
         PlayerModel reporterModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(reporterClientId);
         PlayerAppearanceData playerAppearanceData = reporterModel.PlayerAppearanceData.Value;
         int colorIndex = playerAppearanceData.ColorIndex;
-        switch (colorIndex)
-        {
-            case 0:
-                reporterImage.color = Color.red;
-                break;
-            case 1:
-                reporterImage.color = Color.orange;
-                break;
-            case 2:
-                reporterImage.color = Color.yellow;
-                break;
-            case 3:
-                reporterImage.color = Color.green;
-                break;
-            case 4:
-                reporterImage.color = Color.blue;
-                break;
-            case 5:
-                reporterImage.color = Color.purple;
-                break;
-        }
-
+        reporterImage.color = ColorUtils.GetColorByIndex(colorIndex);               
+        
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

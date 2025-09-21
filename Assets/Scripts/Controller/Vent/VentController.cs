@@ -49,6 +49,10 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     // 이동 직후 벤트 클릭을 잠깐 무시하기 위한 로컬 억제 타이머
     private static float _localClickSuppressUntil = 0f;
+
+    // 로컬 플레이어 오브젝트
+    private GameObject localPlayerObj = null;
+
     
     //스페이스바 입력 상태
     private bool _spaceInput =false;
@@ -179,12 +183,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     {
         if (!IsClient) return;
 
-        NetworkManager nm = NetworkManager.Singleton;
-        
-        GameObject localPlayerObj = null;
-        localPlayerObj = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).gameObject;
-        
-        
+        NetworkManager nm = NetworkManager.Singleton;        
         if (localPlayerObj == null)
         {
             if (nm != null)

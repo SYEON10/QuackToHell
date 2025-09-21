@@ -190,7 +190,7 @@ public class InteractionHUDController : MonoBehaviour
             SetupAnimalButtons();
             break;
         default:
-            Debug.LogError("Unknown player job: " + playerJob);
+            Debug.Log("유령이어서 Button Setup 안 함");
             break;
         }
     }

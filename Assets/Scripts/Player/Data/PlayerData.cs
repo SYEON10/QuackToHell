@@ -38,9 +38,11 @@ public enum EPlayerColorIndex
 public struct PlayerAppearanceData : INetworkSerializable
 {
     public int ColorIndex;
+    public float AlphaValue;
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref ColorIndex);
+        serializer.SerializeValue(ref AlphaValue);
     }
 }
 

@@ -70,7 +70,7 @@ public class AnimalStrategy : IRoleStrategy
     public void TrySabotage()
     {
         // 동물은 사보타지 불가능
-        Debug.Log("동물은 사보타지를 사용할 수 없습니다.");
+        Debug.Log("다른 상호작용 범위에 없어서, defult키가 사보타지로 세팅됩니다: 동물이 사보타지를 시도했으나, 동물이어서 아무일도 일어나지 않습니다.");
     }
     
     public void TryInteract()
