@@ -64,6 +64,23 @@ public class GameManager : NetworkBehaviour
         {
             FindLobbyUIElements();
         }
+        if(scene.name == GameScenes.Village)
+        {
+            //시체 청소하기
+            CleanPlayerCorpse();
+            //움직임 켜기
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+            PlayerPresenter playerPresenter =  PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+            playerPresenter.SetAllPlayerIgnoreMoveInput(true);
+        }
+    }
+
+    private void CleanPlayerCorpse(){
+        //시체찾기: PlayerCorpse 태그가 붙은 오브젝트 찾기
+        GameObject[] playerCorpses = GameObject.FindGameObjectsWithTag(GameTags.PlayerCorpse);
+        foreach(GameObject playerCorpse in playerCorpses){
+            Destroy(playerCorpse);
+        }
     }
     private void FindLobbyUIElements()
     {

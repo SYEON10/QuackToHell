@@ -107,6 +107,11 @@ public class PlayerPresenter : NetworkBehaviour
         PlayerHelperManager.Instance.InvalidateCache();
         Debug.Log($"[PlayerPresenter] Client {clientId} disconnected - Cache invalidated");
     }
+
+    public void SetAllPlayerIgnoreMoveInput(bool value)
+    {
+        playerView.SetIgnoreAllPlayerMoveInputServerRpc(value);
+    }
     
     /// <summary>
     /// 컴포넌트 초기화
@@ -151,6 +156,8 @@ public class PlayerPresenter : NetworkBehaviour
     }
     private void HandleObjectEntered(Collider2D collision)
     {
+        if(interactionHUDController == null) return;
+        
         if (collision.CompareTag(GameTags.PlayerCorpse))
         {   
             if (IsOwner)
@@ -221,6 +228,8 @@ public class PlayerPresenter : NetworkBehaviour
    }
     private void HandleObjectExited(Collider2D collision)
     {
+        if(interactionHUDController == null) return;
+
         if (collision.CompareTag(GameTags.PlayerCorpse))
         {
             if (IsOwner)
@@ -1040,7 +1049,7 @@ public class PlayerPresenter : NetworkBehaviour
         {
             if (DebugUtils.AssertNotNull(player, "PlayerView", this))
             {
-                player.SetIgnoreMoveInputServerRpc(true);
+                player.SetIgnoreAllPlayerMoveInputServerRpc(true);
             }
         }
     }

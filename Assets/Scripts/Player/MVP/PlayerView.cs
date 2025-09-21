@@ -201,7 +201,7 @@ public class PlayerView : NetworkBehaviour
         }
         if(scene.name == GameScenes.Village && IsOwner)
         {
-            SetIgnoreMoveInputServerRpc(false);
+            SetIgnoreAllPlayerMoveInputServerRpc(false);
         }
     }
     
@@ -292,10 +292,9 @@ public class PlayerView : NetworkBehaviour
     #endregion
     
     #region 움직임 제한
-    [ServerRpc]
-    public void SetIgnoreMoveInputServerRpc(bool value)
+    [ServerRpc(RequireOwnership = false)]
+    public void SetIgnoreAllPlayerMoveInputServerRpc(bool value)
     {
-        
         //1. 모든 플레이어 객체 가져오기
         PlayerView[] allPlayers = FindObjectsByType<PlayerView>(FindObjectsSortMode.None);
         foreach (PlayerView player in allPlayers)
