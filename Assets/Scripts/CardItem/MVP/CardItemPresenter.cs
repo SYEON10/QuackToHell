@@ -9,7 +9,11 @@ namespace CardItem.MVP
         private CardItemView cardItemView;
         
         [Header("References")]
-        [SerializeField] private CardShopPresenter cardShopPresenter;
+        private CardShopPresenter _cardShopPresenter;
+        public CardShopPresenter CardShopPresenter
+        {
+            set { _cardShopPresenter = value; }
+        }
 
         private void Awake()
         {
@@ -22,66 +26,63 @@ namespace CardItem.MVP
 
         private void Start()
         {
+            
             //구매 클릭 이벤트 바인딩
             cardItemView.OnPurchaseClicked += CardItemView_OnPurchaseClicked;
             
             // 카드 데이터 변경 이벤트 바인딩
-            cardItemModel.CardItemData.OnValueChanged += OnCardItemDataChanged;
+            cardItemModel.OnCardDataChanged += OnCardItemDataChanged;
 
             //외향 초기화
-            CardItemData cardItemData = cardItemModel.CardItemData.Value;
-            CardDef cardItemDef = cardItemData.cardDef;
-            CardStatusData cardStatusData = cardItemData.cardItemStatusData;
-            CardDefData_OnValueChanged(cardItemDef, cardStatusData.cost);
-            CardItemStatusData_OnValueChanged(cardStatusData, cardItemDef.type, cardItemDef.mapRestriction);
-
-            //카드 판매 가격 초기화
-            cardItemView.SetCardForSaleAppearence(cardStatusData.price);
-            //카드 아이템 id 초기화
-            cardItemView.SetCardItemIdAppearence(cardStatusData.cardItemID);
+            UpdateCardAppearance(cardItemModel.CardItemData);
         }
 
+
         #region 외향
-
-
-        private void CardDefData_OnValueChanged(CardDef cardDefData, int cost)
+        /// <summary>
+        /// 카드 외관을 업데이트
+        /// </summary>
+        private void UpdateCardAppearance(CardItemData cardData)
         {
-            // DeckManager를 통해 로컬라이제이션된 데이터 가져오기
-            string localizedName = cardDefData.cardNameKey.ToString();
-            string localizedDescription = cardDefData.descriptionKey.ToString();
-        
-            // DeckManager가 준비되었고 데이터가 로드되었는지 확인
+            CardDef cardDef = cardData.cardDef;
+            CardStatusData statusData = cardData.cardItemStatusData;
+            
+            // 로컬라이제이션 처리
+            string localizedName = cardDef.cardNameKey.ToString();
+            string localizedDescription = cardDef.descriptionKey.ToString();
+            
             if (DeckManager.Instance != null && DeckManager.Instance.CardDefinitionCount > 0)
             {
-                if (DeckManager.Instance.TryGetCardDisplay(cardDefData.cardID, "ko", out CardDisplay display))
+                if (DeckManager.Instance.TryGetCardDisplay(cardDef.cardID, "ko", out CardDisplay display))
                 {
                     localizedName = display.name;
                     localizedDescription = display.description;
                 }
             }
-        
-            cardItemView.SetCardItemNameAppearence(localizedName, cardDefData.tier);
-            cardItemView.SetCardItemImageAppearence(cardDefData.tier, cardDefData.type);
-            cardItemView.SetCardTypeAppearence(cardDefData.mapRestriction, cardDefData.type);
+            
+            // 모든 외관 요소 한 번에 설정
+            cardItemView.SetCardItemNameAppearence(localizedName, cardDef.tier);
+            cardItemView.SetCardItemImageAppearence(cardDef.tier, cardDef.type);
+            cardItemView.SetCardTypeAppearence(cardDef.mapRestriction, cardDef.type);
             cardItemView.SetCardDefinitionAppearence(localizedDescription);
-            cardItemView.SetCardCharacteristicAppearence(cost, cardDefData.type, cardDefData.mapRestriction);
+            cardItemView.SetCardCharacteristicAppearence(statusData.cost, cardDef.type, cardDef.mapRestriction);
+            cardItemView.SetCardForSaleAppearence(statusData.price);
+            cardItemView.SetCardItemIdAppearence(statusData.cardItemID);
         }
-        private void CardItemStatusData_OnValueChanged(CardStatusData cardItemStatusData, TypeEnum type, int map_Restriction)
-        {
-            cardItemView.SetCardCharacteristicAppearence(cardItemStatusData.cost, type, map_Restriction);
-            cardItemView.SetCardForSaleAppearence(cardItemStatusData.price);
-            cardItemView.SetCardItemIdAppearence(cardItemStatusData.cardItemID);
-        }
+
+
+
+        
         #endregion
 
         #region 구매 클릭 입력 이벤트 전달
         private void CardItemView_OnPurchaseClicked(ulong inputClientId)
         {
-            CardItemData myCardItemData = cardItemModel.CardItemData.Value;
+            CardItemData myCardItemData = cardItemModel.CardItemData;
             // CardShop에게 카드 구매 요청
-            if (DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
+            if (DebugUtils.AssertNotNull(_cardShopPresenter, "CardShopPresenter", this))
             {
-                cardShopPresenter.TryPurchaseCard(myCardItemData, inputClientId);
+                _cardShopPresenter.TryPurchaseCard(myCardItemData, inputClientId);
             }
         }
 
@@ -93,7 +94,7 @@ namespace CardItem.MVP
             // 상태가 변경되었을 때 UI 업데이트
             if (previousValue.cardItemStatusData.state != newValue.cardItemStatusData.state)
             {
-                CardItemStatusData_OnValueChanged(newValue.cardItemStatusData, newValue.cardDef.type, newValue.cardDef.mapRestriction);
+                UpdateCardAppearance(newValue);            
             }
         }
         #endregion
@@ -115,7 +116,7 @@ namespace CardItem.MVP
         {
             if (cardItemModel != null)
             {
-                cardItemModel.CardItemData.Value = newData;
+                cardItemModel.SetCardData(newData);
             }
         }
         
@@ -124,7 +125,7 @@ namespace CardItem.MVP
         /// </summary>
         public CardItemData GetCardData()
         {
-            return cardItemModel?.CardItemData.Value ?? default(CardItemData);
+            return cardItemModel?.CardItemData ?? default(CardItemData);
         }
         
         /// <summary>
@@ -132,7 +133,7 @@ namespace CardItem.MVP
         /// </summary>
         public int GetCardPrice()
         {
-            return cardItemModel?.CardItemData.Value.cardItemStatusData.price ?? 0;
+            return cardItemModel?.CardItemData.cardItemStatusData.price ?? 0;
         }
         
         /// <summary>

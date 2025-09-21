@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerWalkState : StateBase
+public class PlayerWalkState : NetworkStateBase
 {
     [Header("References")]
     [SerializeField] private Animator animator;

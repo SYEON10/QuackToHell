@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerDeadState : StateBase
+public class PlayerDeadState : NetworkStateBase
 {
     [SerializeField]
     private SpriteRenderer[] spriteRenderers;

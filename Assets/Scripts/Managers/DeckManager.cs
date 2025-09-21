@@ -54,7 +54,7 @@ public struct CardItemData : INetworkSerializable, IEquatable<CardItemData>, IEq
     public CardDef cardDef;
     public CardStatusData cardItemStatusData;
     public long acquiredTicks; // 카드 획득 시점
-    public ulong displayingClientId; // 진열 중인 클라이언트 ID (9999이면 진열되지 않음) 
+    public ulong displayingClientId; // 진열 중인 클라이언트 ID (9999이면 진열되지 않음 상태) 
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -436,12 +436,12 @@ public class DeckManager : NetworkBehaviour
         _debugCardList.Clear();
         _cardStatusSummaries.Clear();
         
-        foreach (var card in _allCardsOnGameData)
+        foreach (CardItemData card in _allCardsOnGameData)
         {
             _debugCardList.Add(card);
             
             // 카드 상태 요약 생성
-            var summary = new CardStatusSummary
+            CardStatusSummary summary = new CardStatusSummary
             {
                 cardIdKey = card.cardIdKey,
                 cardItemId = card.cardItemStatusData.cardItemID,
@@ -546,6 +546,7 @@ public class DeckManager : NetworkBehaviour
                 {
                     cardIdKey = card.key,
                     cardDef = card.value,
+                    displayingClientId = GameConstants.Card.NOT_DISPLAYING_CLIENT_ID,
                     cardItemStatusData = new CardStatusData
                     {
                         cardID = card.key,
@@ -846,9 +847,9 @@ public class DeckManager : NetworkBehaviour
         CardItemModel[] cardItemModels = FindObjectsByType<CardItemModel>(FindObjectsSortMode.None);
         foreach (CardItemModel model in cardItemModels)
         {
-            if (model.CardItemData.Value.cardItemStatusData.cardItemID == cardItemId)
+            if (model.CardItemData.cardItemStatusData.cardItemID == cardItemId)
             {
-                CardItemData updatedData = model.CardItemData.Value;
+                CardItemData updatedData = model.CardItemData;
                 updatedData.cardItemStatusData.state = newState;
                 updatedData.acquiredTicks = acquiredTicks;
                 updatedData.displayingClientId = displayingClientId;
@@ -865,7 +866,7 @@ public class DeckManager : NetworkBehaviour
         CardItemModel[] cardItemModels = FindObjectsByType<CardItemModel>(FindObjectsSortMode.None);
         foreach (CardItemModel model in cardItemModels)
         {
-            if (model.CardItemData.Value.cardItemStatusData.cardItemID == cardItemId)
+            if (model.CardItemData.cardItemStatusData.cardItemID == cardItemId)
             {
                 model.UpdateCardStateFromServer(cardData);
                 break;
@@ -896,7 +897,7 @@ public class DeckManager : NetworkBehaviour
         foreach (CardItemData card in _allCardsOnGameData)
         {
             if (card.cardItemStatusData.state != CardItemState.Sold && 
-                card.displayingClientId == 9999)
+                card.displayingClientId == GameConstants.Card.NOT_DISPLAYING_CLIENT_ID)
             {
                 availableCards.Add(card);
             }
@@ -953,17 +954,17 @@ public class DeckManager : NetworkBehaviour
         // 해당 클라이언트가 진열한 카드들만 None으로 변경
         for (int i = 0; i < _allCardsOnGameData.Count; i++)
         {
-            var card = _allCardsOnGameData[i];
+            CardItemData card = _allCardsOnGameData[i];
             if (card.cardItemStatusData.state == CardItemState.Solding && 
                 card.displayingClientId == clientId)
             {
-                var updatedCard = card;
+                CardItemData updatedCard = card;
                 updatedCard.cardItemStatusData.state = CardItemState.None;
-                updatedCard.displayingClientId = 9999;
+                updatedCard.displayingClientId = GameConstants.Card.NOT_DISPLAYING_CLIENT_ID;
                 _allCardsOnGameData[i] = updatedCard;
                 
                 // 모든 클라이언트에게 상태 동기화
-                SyncCardStateToAllClientsClientRpc(card.cardItemStatusData.cardItemID, CardItemState.None, updatedCard.acquiredTicks, 0);
+                SyncCardStateToAllClientsClientRpc(card.cardItemStatusData.cardItemID, CardItemState.None, updatedCard.acquiredTicks, GameConstants.Card.NOT_DISPLAYING_CLIENT_ID);
             }
         }
     }

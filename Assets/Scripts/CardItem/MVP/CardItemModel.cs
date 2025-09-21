@@ -1,5 +1,5 @@
-using Unity.Netcode;
 using UnityEngine;
+using System;
 
 namespace CardItem.MVP
 {
@@ -34,25 +34,31 @@ namespace CardItem.MVP
 
 
         #region 데이터
-        private readonly NetworkVariable<CardItemData> _cardItemData = new NetworkVariable<CardItemData>();
-        public NetworkVariable<CardItemData> CardItemData => _cardItemData;
+        private CardItemData _cardItemData;
+        public CardItemData CardItemData => _cardItemData;
+        public event Action<CardItemData, CardItemData> OnCardDataChanged;
 
-        [ServerRpc]
-        public void UpdateCardDataServerRpc(CardItemData newData)
-        {
-            _cardItemData.Value = newData;
-        }
 
         public void UpdateCardStateFromServer(CardItemData newData)
         {
             // 이전 값을 저장
-            CardItemData previousValue = _cardItemData.Value;
+            CardItemData previousValue = _cardItemData;
             
             // 서버에서 직접 수정하거나, 클라이언트에서 서버 동기화 받기
-            _cardItemData.Value = newData;
+            _cardItemData = newData;
+
+            // 이벤트 발생 
+            OnCardDataChanged?.Invoke(previousValue, newData);
             
-            // OnValueChanged 이벤트가 발생하지 않으므로 수동으로 상태 업데이트
+            // 상태 업데이트
             OnCardItemDataChanged(previousValue, newData);
+        }
+
+        //(CardItemPresenter용)
+
+        public void SetCardData(CardItemData newData)
+        {
+            UpdateCardStateFromServer(newData);
         }
 
         #endregion
@@ -75,13 +81,10 @@ namespace CardItem.MVP
             soldStateComponent = GetComponent<CardItemSoldState>();
             soldingStateComponent = GetComponent<CardItemSoldingState>();
 
-            // NetworkVariable 값 변경 이벤트 바인딩
-            _cardItemData.OnValueChanged += OnCardItemDataChanged;
-            
             // 초기 상태 설정
-            if (_cardItemData.Value.cardItemStatusData.State != CardItemState.None)
+            if (_cardItemData.cardItemStatusData.State != CardItemState.None)
             {
-                SetStateByCardItemStateEnum(_cardItemData.Value.cardItemStatusData.State);
+                SetStateByCardItemStateEnum(_cardItemData.cardItemStatusData.State);
                 ApplyStateChange();
             }
         }

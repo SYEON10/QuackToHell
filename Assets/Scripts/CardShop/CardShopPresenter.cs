@@ -40,7 +40,7 @@ public class CardShopPresenter : NetworkBehaviour
         {
             s_serverByClient[OwnerClientId] = this;
             // 서버에서 카드 표시
-            _model.DisplayCardForSale(clientId);
+            RequestDisplayCards(clientId);
         }
     }
 
@@ -61,7 +61,7 @@ public class CardShopPresenter : NetworkBehaviour
     public void TryPurchaseCard(CardItemData card, ulong inputClientId)
     {
         ulong clientId = inputClientId == 0UL ? OwnerClientId : inputClientId;
-        _model.RequestPurchase(card, clientId);
+        DeckManager.Instance.TryPurchaseCardServerRpc(card, clientId);
     }
 
     [ClientRpc]
@@ -77,12 +77,12 @@ public class CardShopPresenter : NetworkBehaviour
     }
     private void OnClickReRoll()
     {
+        
         if (_model.IsLocked) return;
         if (_cooldown) return;
 
         StartCoroutine(RerollCooldown());
-
-        //model에게 진열 요청
+        
         _model.TryReRoll(clientId);
     }
 
@@ -136,9 +136,9 @@ public class CardShopPresenter : NetworkBehaviour
     /// </summary>
     public void RequestDisplayCards(ulong clientId)
     {
-        if (_model != null)
+        if (_model?.IsLocked == false)  
         {
-            _model.DisplayCardForSale(clientId);
+            DeckManager.Instance.RequestDisplayCardsServerRpc(clientId);
         }
     }
     
@@ -152,17 +152,6 @@ public class CardShopPresenter : NetworkBehaviour
             OnClickReRoll();
         }
     }
-    
-    /// <summary>
-    /// 카드 구매 요청 (외부에서 호출)
-    /// </summary>
-    public void RequestPurchaseCard(CardItemData card, ulong clientId)
-    {
-        if (_model != null && !_model.IsLocked)
-        {
-            _model.RequestPurchase(card, clientId);
-        }
-    }
-    
+
     #endregion
 }

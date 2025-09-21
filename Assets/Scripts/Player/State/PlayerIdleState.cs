@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Idle상태일 때 하는 행동 정의
 /// </summary>
-public class PlayerIdleState : StateBase
+public class PlayerIdleState : NetworkStateBase
 {
     private static readonly int IsWalking = Animator.StringToHash("IsWalking");
 

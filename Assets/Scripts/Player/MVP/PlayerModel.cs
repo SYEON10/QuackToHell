@@ -137,12 +137,12 @@ public class PlayerModel : NetworkBehaviour
 
     #region 플레이어 상태
 
-    private StateBase preAliveState;
-    private StateBase tempAliveState;
-    private StateBase curAliveState;
-    private StateBase preAnimationState;
-    private StateBase tempAnimationState;
-    private StateBase curAnimationState;
+    private NetworkStateBase preAliveState;
+    private NetworkStateBase tempAliveState;
+    private NetworkStateBase curAliveState;
+    private NetworkStateBase preAnimationState;
+    private NetworkStateBase tempAnimationState;
+    private NetworkStateBase curAnimationState;
 
     // AliveState만 처리하는 메서드
     private void SetAliveStateByEnum(PlayerLivingState aliveState)
@@ -172,7 +172,7 @@ public class PlayerModel : NetworkBehaviour
         }
     }
 
-    private void SetAliveState(StateBase state)
+    private void SetAliveState(NetworkStateBase state)
     {
         tempAliveState = curAliveState;
         curAliveState = state;
@@ -191,7 +191,7 @@ public class PlayerModel : NetworkBehaviour
         }
     }
 
-    private void SetAnimationState(StateBase state)
+    private void SetAnimationState(NetworkStateBase state)
     {
         tempAnimationState = curAnimationState;
         curAnimationState = state;

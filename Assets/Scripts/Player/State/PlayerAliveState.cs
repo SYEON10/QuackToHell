@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerAliveState : StateBase
+public class PlayerAliveState : NetworkStateBase
 {
     public override void OnStateEnter()
     {

@@ -21,35 +21,16 @@ public class CardShopModel : MonoBehaviour
         CardItemFactoryManager.Instance.CreateTotalCardForSale(cardForSaleParent);
         totalCardCountOnMap = cardForSaleParent.transform.childCount;
     }
-
-    public void RequestPurchase(CardItemData card, ulong clientId)
-    {
-        if (DeckManager.Instance == null)
-        {
-            Debug.LogError("[CardShopModel] DeckManager.Instance is null");
-            return;
-        }
-        DeckManager.Instance.TryPurchaseCardServerRpc(card, clientId);
-
-    }
+    
 
     #region 카드 목록 새로고침
-    public bool TryReRoll(ulong clientId)
-    {
-        if (IsLocked) return false;
 
-        // 새로 뿌리기
-        DisplayCardForSale(clientId);
-
+    public bool TryReRoll(ulong clientId){
+        if(IsLocked) return false;
+        DeckManager.Instance.RequestDisplayCardsServerRpc(clientId);
         return true;
     }
 
-
-    public void DisplayCardForSale(ulong clientId)
-    {
-        //진열 요청
-        DeckManager.Instance.RequestDisplayCardsServerRpc(clientId);
-    }
 
     /// <summary>
     /// 서버에서 진열 결과를 받아서 UI 업데이트
@@ -101,7 +82,7 @@ public class CardShopModel : MonoBehaviour
             
             CardItemModel cardItemModel = card.GetComponent<CardItemModel>();
             if (cardItemModel != null && 
-                cardItemModel.CardItemData.Value.cardItemStatusData.cardItemID == cardItemId)
+                cardItemModel.CardItemData.cardItemStatusData.cardItemID == cardItemId)
             {
                 return card;
             }
