@@ -5,23 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.cursor/rules/csharp-coding-standards.mdc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cursor/rules/git-commit-conventions.mdc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cursor/rules/pocu-csharp-standards.mdc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cursor/rules/team-development-guide.mdc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.cursor/rules/unity-naming-conventions.mdc" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Controller/InteractionHUDController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Controller/InteractionHUDController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Controller/LobbyController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Controller/LobbyController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Controller/Vent/VentController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Controller/Vent/VentController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Factory/PlayerFactoryManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Factory/PlayerFactoryManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/GameManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/TrialManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/TrialManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/Data/PlayerData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/Data/PlayerData.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerModel.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerPresenter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/Role/GhostStrategy.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/Role/GhostStrategy.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/Role/RoleManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/Role/RoleController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/Role/RoleManager.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/Role/RoleController.cs.meta" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,7 +153,7 @@
       <workItem from="1758419102656" duration="6517000" />
       <workItem from="1758441428509" duration="4749000" />
       <workItem from="1758545348490" duration="4588000" />
-      <workItem from="1758550180252" duration="2134000" />
+      <workItem from="1758550180252" duration="3703000" />
     </task>
     <servers />
   </component>
@@ -201,13 +188,13 @@
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerPresenter.cs</url>
-          <line>894</line>
+          <line>898</line>
           <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\Player\MVP\PlayerPresenter.cs" containingFunctionPresentation="메서드 'UpdatePlayerVisibility'">
             <startOffsets>
-              <option value="27565" />
+              <option value="28035" />
             </startOffsets>
             <endOffsets>
-              <option value="27588" />
+              <option value="28058" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="116" />

@@ -147,7 +147,7 @@ public class LobbyController : NetworkBehaviour
         int farmerCount = GetFarmerCountByPlayerCount(totalPlayers);
 
         //플레이어 목록 섞기
-        //MathUtils.ShuffleArray(allPlayers);
+        MathUtils.ShuffleArray(allPlayers);
 
         //역할 부여
         for(int i=0;i<allPlayers.Length;i++){

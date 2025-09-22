@@ -175,16 +175,6 @@ public class SpawnPointsController : NetworkBehaviour
         // 4. 할당이 모두 완료되었는지, 규칙을 만족하는지 최종 검증
         if (tempClients.Count > 0) return false; // 모든 클라이언트가 할당되지 못함
 
-        
-        var groupCounts = _assignedSpawnPoints.Values//트랜스폼 가져오기
-            .GroupBy(t => groups.First(g => g.spawnPoints.Contains(t)))//모든 트랜스폼에 대해, 그룹을 찾아 그룹별로 묶기. 
-            .ToDictionary(g => g.Key, g => g.Count());//각 그룹별로 몇명이 있는지 세기
-
-        // 사용된 그룹 중 플레이어가 1명만 있는 그룹이 있는지 확인
-        foreach (var count in groupCounts.Values)
-        {
-            if (count == 1) return false; // 규칙 위반!
-        }
 
         return true; // 유효한 배치
     }

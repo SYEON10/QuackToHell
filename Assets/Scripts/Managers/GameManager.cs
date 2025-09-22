@@ -137,7 +137,7 @@ public class GameManager : NetworkBehaviour
         //1. 인트로 키기
         intro.SetActive(true);
         //TODO: 시간 늘리기 (테스트용으로 짧게바꿈)
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(1f);
         intro.SetActive(false);
         //2. 역할 공개
         showRole.SetActive(true);
@@ -178,7 +178,7 @@ public class GameManager : NetworkBehaviour
             }
             
         //TODO: 시간 늘리기 (테스트용으로 짧게바꿈)
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(2f);
         showRole.SetActive(false);
         onRoleAssignDirectionEnd.Invoke();
     }

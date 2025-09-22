@@ -18,7 +18,7 @@ public class PlayerPresenter : NetworkBehaviour
     [Header("Components")]
     private PlayerModel playerModel;
     private PlayerView playerView;
-    private RoleManager roleManager;
+    private RoleController _roleController;
     private PlayerInput playerInput;
     [Header("")]
     [SerializeField]    
@@ -120,12 +120,12 @@ public class PlayerPresenter : NetworkBehaviour
     {
         playerModel = GetComponent<PlayerModel>();
         playerView = GetComponent<PlayerView>();
-        roleManager = GetComponent<RoleManager>();
+        _roleController = GetComponent<RoleController>();
         playerInput = GetComponent<PlayerInput>();
         
         DebugUtils.AssertComponent(playerModel, "PlayerModel", this);
         DebugUtils.AssertComponent(playerView, "PlayerView", this);
-        DebugUtils.AssertComponent(roleManager, "RoleManager", this);
+        DebugUtils.AssertComponent(_roleController, "RoleManager", this);
         DebugUtils.AssertComponent(playerInput, "PlayerInput", this);
     }
     
@@ -327,10 +327,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleKillInput()
     {
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
             return;
         
-        roleManager.CurrentStrategy?.TryKill();
+        _roleController.CurrentStrategy?.TryKill();
     }
 
     
@@ -339,11 +339,11 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleInteractInput()
     {
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
             return;
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
-        roleManager.CurrentStrategy?.TryInteract();
+        _roleController.CurrentStrategy?.TryInteract();
     }
 
     
@@ -355,11 +355,11 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleCorpseReported(ulong reporterClientId)
     {
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
             return;
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
 
-        roleManager.CurrentStrategy?.TryReportCorpse();
+        _roleController.CurrentStrategy?.TryReportCorpse();
     }
     
     /// <summary>
@@ -367,11 +367,11 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleVentInput()
     {
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
             return;
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
-        roleManager.CurrentStrategy?.TryVent();
+        _roleController.CurrentStrategy?.TryVent();
     }
     
     /// <summary>
@@ -387,7 +387,7 @@ public class PlayerPresenter : NetworkBehaviour
         // 역할 변경 감지
         if (previousValue.job != newValue.job)
         {
-            roleManager?.ChangeRole(newValue.job);
+            _roleController?.ChangeRole(newValue.job);
         }
     }
     
@@ -435,10 +435,10 @@ public class PlayerPresenter : NetworkBehaviour
     public void TryKillServerRpc()
     {
         // 서버 검증
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
             return;
         
-        if (roleManager.CurrentStrategy?.CanKill() != true)
+        if (_roleController.CurrentStrategy?.CanKill() != true)
         {
             Debug.LogWarning($"[Server] Player {OwnerClientId} cannot kill");
             return;
@@ -471,10 +471,10 @@ public class PlayerPresenter : NetworkBehaviour
     public void TryInteractServerRpc()
     {
         // 서버 검증
-        if (!DebugUtils.AssertNotNull(roleManager, "RoleManager", this))
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
             return;
         
-        if (roleManager.CurrentStrategy?.CanInteract() != true)
+        if (_roleController.CurrentStrategy?.CanInteract() != true)
         {
             Debug.LogWarning($"[Server] Player {OwnerClientId} cannot interact");
             return;
@@ -533,7 +533,7 @@ public class PlayerPresenter : NetworkBehaviour
             return;
         }
         
-        roleManager.CurrentStrategy?.TryVent();
+        _roleController.CurrentStrategy?.TryVent();
     }
 
     /// <summary>
@@ -995,9 +995,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestKill()
     {
-        if (roleManager?.CurrentStrategy != null)
+        if (_roleController?.CurrentStrategy != null)
         {
-            roleManager.CurrentStrategy.TryKill();
+            _roleController.CurrentStrategy.TryKill();
         }
     }
     
@@ -1006,9 +1006,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestSabotage()
     {
-        if (roleManager?.CurrentStrategy != null)
+        if (_roleController?.CurrentStrategy != null)
         {
-            roleManager.CurrentStrategy.TrySabotage();
+            _roleController.CurrentStrategy.TrySabotage();
         }
     }
     
@@ -1017,9 +1017,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestInteract()
     {
-        if (roleManager?.CurrentStrategy != null)
+        if (_roleController?.CurrentStrategy != null)
         {
-            roleManager.CurrentStrategy.TryInteract();
+            _roleController.CurrentStrategy.TryInteract();
         }
     }
     
@@ -1028,9 +1028,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestReportCorpse()
     {
-        if (roleManager?.CurrentStrategy != null)
+        if (_roleController?.CurrentStrategy != null)
         {
-            roleManager.CurrentStrategy.TryReportCorpse();
+            _roleController.CurrentStrategy.TryReportCorpse();
         }
     }
     

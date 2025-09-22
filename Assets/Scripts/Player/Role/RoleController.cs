@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 /// 플레이어 역할 관리자
 /// State 패턴과 유사하게 역할별 전략을 관리
 /// </summary>
-public class RoleManager : MonoBehaviour
+public class RoleController : MonoBehaviour
 {
     [Header("Role Settings")]
     [SerializeField] private PlayerInput playerInput;
