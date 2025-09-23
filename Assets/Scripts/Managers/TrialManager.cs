@@ -12,8 +12,7 @@ public class TrialManager : NetworkBehaviour
     private GameObject corpseTextObject;
     private Image reporterImage;
     //TODO:  하드코딩 개선
-    private bool colorInjected = false;
-    private bool deadPlayerTextInjected = false;
+
     private string reporterPlayerText = "Not_Set";
     private void Start()
     {
@@ -96,16 +95,10 @@ public class TrialManager : NetworkBehaviour
     public void TrialResultClientRpc(ulong reporterClientId)
     {
         convocationOfTrialPanel.SetActive(true);
-        if (!colorInjected)
-        {
-            InjectReporterColor(reporterClientId);
-            colorInjected = true;
-        }
-        if (!deadPlayerTextInjected)
-        {
-            InjectReporterPlayerText(reporterClientId);
-            deadPlayerTextInjected = true;
-        }
+        
+        InjectReporterColor(reporterClientId);
+        InjectReporterPlayerText(reporterClientId);
+          
         //모든 플레이어의 움직임 멈춤
         PlayerHelperManager.Instance.StopAllPlayerServerRpc();
         //5초뒤 씬 이동
