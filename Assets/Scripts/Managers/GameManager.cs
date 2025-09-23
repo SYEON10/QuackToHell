@@ -164,6 +164,11 @@ public class GameManager : NetworkBehaviour
             PlayerPresenter[] players = PlayerHelperManager.Instance.GetAllPlayers();
             int i = 0;
             foreach(PlayerPresenter player in players){
+                if (playerJob == PlayerJob.Farmer)
+                {
+                    if (playerJob != player.GetPlayerJob())
+                        continue;
+                }
                 GameObject playerUI = Instantiate(playerUIPrefab, playerSlot[i].transform);
                 playerUI.transform.position = playerSlot[i].transform.position;
                 playerUI.transform.rotation = playerSlot[i].transform.rotation;
