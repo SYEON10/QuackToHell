@@ -15,8 +15,17 @@ public static class GameConstants
     // UI 관련 상수
     public static class UI
     {
-        public const float DelayedSceneLoadTime = 2f;
-        public const float DetectionRadius = 1.0f;
+        
+        public static class SortingOrder{
+            //참고문서: https://ariari-ewha.atlassian.net/wiki/spaces/~712020e9509d1767994750b2ca1d1e408ddb2d/pages/107773956/UI+order+in+layer
+            public const int WorldSpace = -10;
+            public const int Background = 0;
+            public const int HUD = 10;
+            //인벤, 설정창, ..
+            public const int MenusAndPanels = 20;
+            public const int Popup=30;
+            public const int System=100;
+        }
     }
     
     // 카드 관련 상수
@@ -34,4 +43,8 @@ public static class GameConstants
     {
         public const int MinPlayersToStart = 2;
     }
+
+  
+        
+    
 }

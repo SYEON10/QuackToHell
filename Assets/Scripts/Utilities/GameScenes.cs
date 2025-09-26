@@ -3,6 +3,7 @@
 /// </summary>
 public static class GameScenes
 {
+    
     // 메인 씬들
     public const string Lobby = "LobbyScene";
     public const string Village = "VillageScene";

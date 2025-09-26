@@ -33,7 +33,7 @@ public class LobbyController : NetworkBehaviour
         }
         
         //역할부여 연출이벤트 바인딩
-        GameManager.Instance.onRoleAssignDirectionEnd += StartCoroutineDelayedSceneLoad;
+        GameManager.Instance.onRoleAssignDirectionEnd += LoadVillageSceneServerRpc;
 
         
         //호스트만 데이터 로드
@@ -132,10 +132,6 @@ public class LobbyController : NetworkBehaviour
         
     }
 
-    public void StartCoroutineDelayedSceneLoad()
-    {
-        StartCoroutine(DelayedSceneLoad());
-    }
 
     [ServerRpc]
     private void AssignPlayerRolesServerRpc()
@@ -175,12 +171,8 @@ public class LobbyController : NetworkBehaviour
         };
     }
 
-    private IEnumerator DelayedSceneLoad()
-    {
-        // PlayerObject 생성 시간을 확보하기 위해 잠시 대기
-        yield return new WaitForSeconds(GameConstants.UI.DelayedSceneLoadTime);
-        LoadVillageSceneServerRpc();
-    }
+   
+    
 
 
 
