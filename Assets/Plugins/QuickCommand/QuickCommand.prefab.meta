@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bbe1d7e784d8a494eba5769e1b18133b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 306500
+  packageName: Quick Command
+  packageVersion: 1.0
+  assetPath: Assets/ExternalAssets/QuickCommand/QuickCommand.prefab
+  uploadId: 741105

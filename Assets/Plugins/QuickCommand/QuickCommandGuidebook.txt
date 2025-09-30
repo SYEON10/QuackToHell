@@ -1,0 +1,47 @@
+See walkthrough video: https://www.youtube.com/watch?v=POQHrMj6Lm8&t=39s
+
+
+Import the QuickCommand package to Unity and drag the prefab to the higher rack.
+Use canvas and input, so if there is no EventSystem in the scene, add it.
+
+
+--------------------------- Components
+- MaxLogLength
+Maximum log length. Default 100
+
+- OpenKeyWithCtrl
+Pressing the appropriate key along with the Ctrl key allows you to open/close the window. Default ' (BackQuote)
+
+
+--------------------------- Hierarchy
+- CommandBtn
+Double-click the lower left transparent button to open the window.
+You can also open a window in a mobile environment.
+If you don't test it on your mobile or if it's annoying, you can disable it or move it.
+
+- CommandView
+The window you see.
+If you want to keep it hidden at first, you can deactivate it.
+
+
+--------------------------- 
+Only one script in the scene can have a function command.
+You must declare the QuickCmd Namespace and attach the Command attribute.
+Parameters should be of a simple type, such as int, float, bool, and string, which can be entered as text.
+
+There are also times when I want to see my own variables on the screen.
+In that case, use Quickcommand.SendWatch (string key, object value).
+The value is output above the log to match the key.
+
+
+When you write down a function name, 
+help appears in order of the relevant name, 
+select the command up and down the arrow keys, 
+and press Tab to complete automatically.
+If there is a parameter, you can separate it by floating a space.
+
+Click E to clear the log cleanly.
+Click X to close the window.
+You can open a window in a mobile environment by double-clicking the transparent button on the bottom left.
+You can activate and toggle the window by pressing Ctrl + '.
+You can check all executable functions with the /help command.

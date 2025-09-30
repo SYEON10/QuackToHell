@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1752f02ffe86ba143b219b1bec1a0d0e
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 306500
+  packageName: Quick Command
+  packageVersion: 1.0
+  assetPath: Assets/ExternalAssets/QuickCommand/QuickCommandDemoScene.unity
+  uploadId: 741105

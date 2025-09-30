@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9ed321285e76441449804621e9f193b5
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 306500
+  packageName: Quick Command
+  packageVersion: 1.0
+  assetPath: Assets/ExternalAssets/QuickCommand/QuickCommandGuidebook.txt
+  uploadId: 741105
