@@ -48,8 +48,8 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        //persistent씬에서 시작해서 바로 로비씬으로 전환
-        SceneManager.LoadScene(GameScenes.Lobby, LoadSceneMode.Single);
+        //persistent씬에서 시작해서 바로 홈씬으로 전환
+        SceneManager.LoadScene(GameScenes.Home, LoadSceneMode.Single);
         //씬 로드 이벤트 구독
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -60,6 +60,10 @@ public class GameManager : NetworkBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if(scene.name == GameScenes.Home)
+        {
+            UIManager.Instance.ShowHUDUI<HomeUI>("HomeUI");
+        }
         if (scene.name == GameScenes.Lobby) // 또는 해당 씬 이름
         {
             FindLobbyUIElements();

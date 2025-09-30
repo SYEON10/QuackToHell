@@ -680,11 +680,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: c95b6b31-956f-460b-83a9-0f8caba5c693
+  cloudProjectId: da51d6bb-be76-47d1-b46f-784731cc6bae
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: QuackToHell
-  organizationId: unity_8829ec61b24b91267056
+  organizationId: yujin787786785
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

@@ -8,7 +8,7 @@ public static class GameScenes
     public const string Lobby = "LobbyScene";
     public const string Village = "VillageScene";
     public const string Court = "CourtScene";
-    
+    public const string Home = "HomeScene";
     // 테스트 씬들
-   
+
 }

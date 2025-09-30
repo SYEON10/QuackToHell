@@ -1,0 +1,481 @@
+fileFormatVersion: 2
+guid: bf1d3b6a790676d43b9024e9eb5960a1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1713058105628333495
+    second: QuackToHellTitle_0
+  - first:
+      213: 6255849609474314483
+    second: QuackToHellTitle_1
+  - first:
+      213: -6691183472526283234
+    second: QuackToHellTitle_2
+  - first:
+      213: -6995602763691426174
+    second: QuackToHellTitle_3
+  - first:
+      213: 3209661436866351410
+    second: QuackToHellTitle_4
+  - first:
+      213: 1618373040089402673
+    second: QuackToHellTitle_5
+  - first:
+      213: 5190631477119422774
+    second: QuackToHellTitle_6
+  - first:
+      213: -2244704932970083053
+    second: QuackToHellTitle_7
+  - first:
+      213: -3070568420779393211
+    second: QuackToHellTitle_8
+  - first:
+      213: -4939563153167985210
+    second: QuackToHellTitle_9
+  - first:
+      213: -7336752318192636596
+    second: QuackToHellTitle_10
+  - first:
+      213: -3607023258194268229
+    second: QuackToHellTitle_11
+  - first:
+      213: -1174082092590734560
+    second: QuackToHellTitle_12
+  - first:
+      213: -4756950212744479953
+    second: QuackToHellTitle_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: QuackToHellTitle_0
+      rect:
+        serializedVersion: 2
+        x: 140
+        y: 328
+        width: 589
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94a6b66aabef938e0800000000000000
+      internalID: -1713058105628333495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_1
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 409
+        width: 205
+        height: 299
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f09bfc231e31d650800000000000000
+      internalID: 6255849609474314483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_2
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 420
+        width: 183
+        height: 304
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1e2b1945142423a0800000000000000
+      internalID: -6691183472526283234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_3
+      rect:
+        serializedVersion: 2
+        x: 1128
+        y: 536
+        width: 92
+        height: 229
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 28e7e68c950aaee90800000000000000
+      internalID: -6995602763691426174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_4
+      rect:
+        serializedVersion: 2
+        x: 1138
+        y: 432
+        width: 90
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23150b142120b8c20800000000000000
+      internalID: 3209661436866351410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_5
+      rect:
+        serializedVersion: 2
+        x: 1367
+        y: 183
+        width: 218
+        height: 334
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13d099894bd957610800000000000000
+      internalID: 1618373040089402673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_6
+      rect:
+        serializedVersion: 2
+        x: 893
+        y: 286
+        width: 159
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6311aa9c3d3d80840800000000000000
+      internalID: 5190631477119422774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_7
+      rect:
+        serializedVersion: 2
+        x: 1088
+        y: 182
+        width: 152
+        height: 248
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31d40c4a1c439d0e0800000000000000
+      internalID: -2244704932970083053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_8
+      rect:
+        serializedVersion: 2
+        x: 1240
+        y: 180
+        width: 128
+        height: 248
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54f79e43a462365d0800000000000000
+      internalID: -3070568420779393211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_9
+      rect:
+        serializedVersion: 2
+        x: 1488
+        y: 183
+        width: 121
+        height: 247
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c550ddab75237bb0800000000000000
+      internalID: -4939563153167985210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_10
+      rect:
+        serializedVersion: 2
+        x: 1170
+        y: 85
+        width: 55
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4daa1d63ae9e2a90800000000000000
+      internalID: -7336752318192636596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_11
+      rect:
+        serializedVersion: 2
+        x: 1224
+        y: 85
+        width: 52
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bbf22ce157741fdc0800000000000000
+      internalID: -3607023258194268229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_12
+      rect:
+        serializedVersion: 2
+        x: 1275
+        y: 85
+        width: 57
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0236bfdae82d4bfe0800000000000000
+      internalID: -1174082092590734560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: QuackToHellTitle_13
+      rect:
+        serializedVersion: 2
+        x: 1375
+        y: 54
+        width: 321
+        height: 168
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2b75232cfaebfdb0800000000000000
+      internalID: -4756950212744479953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      QuackToHellTitle_0: -1713058105628333495
+      QuackToHellTitle_1: 6255849609474314483
+      QuackToHellTitle_10: -7336752318192636596
+      QuackToHellTitle_11: -3607023258194268229
+      QuackToHellTitle_12: -1174082092590734560
+      QuackToHellTitle_13: -4756950212744479953
+      QuackToHellTitle_2: -6691183472526283234
+      QuackToHellTitle_3: -6995602763691426174
+      QuackToHellTitle_4: 3209661436866351410
+      QuackToHellTitle_5: 1618373040089402673
+      QuackToHellTitle_6: 5190631477119422774
+      QuackToHellTitle_7: -2244704932970083053
+      QuackToHellTitle_8: -3070568420779393211
+      QuackToHellTitle_9: -4939563153167985210
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
