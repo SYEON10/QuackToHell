@@ -1,12 +1,16 @@
 using TMPro;
 using Unity.Netcode;
 using System;
+using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Services.Lobbies.Models;
+
 public class LobbyUI : UIHUD
 {
+    private bool isReady = false;
     private TMP_Dropdown colorDropdown;
     
     enum Dropdowns
@@ -51,12 +55,69 @@ public class LobbyUI : UIHUD
         BindEvent(Button_Back_gameObject, OnClick_Button_Back, GameEvents.UIEvent.Click);
         GameObject Button_StartGame_gameObject = Get<Button>((int)Buttons.Button_StartGame).gameObject;
         BindEvent(Button_StartGame_gameObject, OnClick_Button_StartGame, GameEvents.UIEvent.Click);
+
+        
+        //플레이어가 생성된 후에 바인드하기.
+        PlayerFactoryManager.Instance.onPlayerSpawned += () =>
+        {
+            StartCoroutine(BindHandlePlayerStatusChanged());
+        };
+    }
+
+    IEnumerator BindHandlePlayerStatusChanged()
+    {
+        //컴포넌트가 초기화 될 떄까지 기다리기
+        yield return new WaitForEndOfFrame();
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        PlayerPresenter localPlayer = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+        if (localPlayer!=null)
+        {
+            localPlayer.SubscribeToPlayerReadyStatusChanges(HandlePlayerStatusChanged);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        Debug.Log("[LobbyUI] OnDestroy");
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("[LobbyUI] OnDisable");
+    }
+
+    
+    private void HandlePlayerStatusChanged(PlayerStatusData previousValue, PlayerStatusData newValue){ 
+        if(newValue.IsReady){
+            Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame).GetComponentInParent<Image>().color = new Color(0.4f, 0.4f, 0.4f, 1f);
+        }
+        else{
+            Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame).GetComponentInParent<Image>().color = new Color(0.78f, 0.78f, 0.80f, 1f); 
+        }
+    }
+
+
+    private void OnClick_Button_StartGame(PointerEventData data)
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost)
+        {
+            LobbyManager.Instance.StartGame();    
+        }
+        else
+        {
+            //ready 변수 켜기
+            ToggleReadyState();
+        }
+
         
         
     }
-    private void OnClick_Button_StartGame(PointerEventData data)
-    {
-        LobbyManager.Instance.StartGame();
+    private void ToggleReadyState(){
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        PlayerPresenter localPlayer = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+        if(localPlayer!=null){
+            localPlayer.ToggleReady();
+        }
     }
     private void OnClick_Button_Back(PointerEventData data)
     {

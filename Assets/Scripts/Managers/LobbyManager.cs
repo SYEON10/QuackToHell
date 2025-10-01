@@ -80,6 +80,8 @@ public class LobbyManager : NetworkBehaviour
         
     }
     
+    
+    
     public override async void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -342,12 +344,29 @@ public class LobbyManager : NetworkBehaviour
             Debug.LogError("Card data is not loaded!");
             return;
         }
+        
+        //전부 레디해야 시작함
+        if(!AreAllPlayersReady()){
+            Debug.LogError("Not all players are ready!");
+            return;
+        }
 
         //플레이어 역할 부여
         AssignPlayerRolesServerRpc();
        
         //본인 데이터가 모두 초기화되면, 씬 이동 : 바인딩 콜백
         
+    }
+    private bool AreAllPlayersReady(){
+        PlayerPresenter[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers();
+        foreach(var player in allPlayers){
+            if(player.IsOwner && IsHost) continue;
+            if(!player.IsReady()){
+                Debug.LogError("Player " + player.GetPlayerNickname() + " is not ready!");
+                return false;
+            }
+        }
+        return true;
     }
 
 

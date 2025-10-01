@@ -72,6 +72,13 @@ public class PlayerModel : NetworkBehaviour
                 ApplyAnimationStateChange();
             }
         };
+
+        PlayerStatusData.OnValueChanged += (oldValue, newValue) =>
+        {
+            Debug.Log($"{NetworkManager.Singleton.LocalClientId}의 PlayerStatusData.OnValueChanged!!{oldValue.IsReady} to {newValue.IsReady}");
+            Debug.Log($"바인딩 된 함수 목록: {PlayerStatusData.OnValueChanged .Method}");
+        };
+        
     }
 
     private void Update()

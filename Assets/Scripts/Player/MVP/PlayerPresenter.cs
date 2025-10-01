@@ -1062,6 +1062,37 @@ public class PlayerPresenter : NetworkBehaviour
     {
         return playerModel?.PlayerStatusData.Value.job ?? PlayerJob.None;
     }
+
+    public void ToggleReady(){
+        if(!IsOwner) return;
+        ulong myClientId = NetworkManager.Singleton.LocalClientId;
+        ToggleReadyServerRpc(myClientId);
+        
+    }
+
+    public bool IsReady(){
+        return playerModel?.PlayerStatusData.Value.IsReady??false;
+    }
+    
+    [ServerRpc]
+    private void ToggleReadyServerRpc(ulong clientId)
+    {
+        PlayerPresenter requestPlayer = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(clientId);
+        PlayerStatusData statusDataCopy = requestPlayer.GetPlayerStatusData();
+        statusDataCopy.IsReady = !statusDataCopy.IsReady;
+        requestPlayer.playerModel.PlayerStatusData.Value = statusDataCopy;
+
+    }
+    public PlayerStatusData GetPlayerStatusData()
+    {
+        return playerModel.PlayerStatusData.Value;
+    }
+
+    public void SubscribeToPlayerReadyStatusChanges(NetworkVariable<PlayerStatusData>.OnValueChangedDelegate handler){
+        playerModel.PlayerStatusData.OnValueChanged += handler;
+        Debug.Log($"바인딩된 플레이어의 id는 {NetworkManager.Singleton.LocalClientId}");
+        Debug.Log($"바인딩된 함수는 {handler.Method.Name}, 타겟 = {handler.Target}");
+    }
     
     #endregion
 }

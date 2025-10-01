@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using System;
 
 /// <summary>
 /// 플레이어 생성 담당
@@ -8,7 +9,7 @@ using Unity.Netcode;
 public class PlayerFactoryManager : NetworkBehaviour
 {
     public GameObject playerPrefab;
-    
+    public Action onPlayerSpawned;
     
     private Transform _playerSpawnPoint;
     private void Start()
@@ -22,17 +23,27 @@ public class PlayerFactoryManager : NetworkBehaviour
     public void SpawnPlayerServerRpc(ServerRpcParams rpcParams = default)
     {
         if (!DebugUtils.AssertNotNull(playerPrefab, "playerPrefab", this))
+        {
+            SpawnPlayerResultClientRpc(false);
             return;
+        }
+            
             
         GameObject player = Instantiate(playerPrefab, _playerSpawnPoint);
         PlayerModel playerModel = player.GetComponent<PlayerModel>();
         if (!DebugUtils.AssertNotNull(playerModel, "PlayerModel", this))
+        {
+            SpawnPlayerResultClientRpc(false);
             return;
-            
+        }
+
         NetworkObject networkObject = player.GetComponent<NetworkObject>();
         if (!DebugUtils.AssertNotNull(networkObject, "NetworkObject", this))
+        {
+            SpawnPlayerResultClientRpc(false);
             return;
-            
+        }
+
         networkObject.SpawnWithOwnership(rpcParams.Receive.SenderClientId);
         
         //클라이언트 아이디 부여
@@ -60,7 +71,21 @@ public class PlayerFactoryManager : NetworkBehaviour
         };
 
         DontDestroyOnLoad(player);
-        
+        SpawnPlayerResultClientRpc(true);
+
+    }
+
+    [ClientRpc]
+    public void SpawnPlayerResultClientRpc(bool success)
+    {
+        if (success)
+        {
+            onPlayerSpawned.Invoke();
+        }
+        else
+        {
+            Debug.LogError("Error spawning player");
+        }
     }
 
     #region 싱글톤

@@ -59,7 +59,8 @@ public struct PlayerStatusData : INetworkSerializable
     [FormerlySerializedAs("Spellpower")] public int spellpower;
     [FormerlySerializedAs("Gold")] public int gold;
     [FormerlySerializedAs("MoveSpeed")] public float moveSpeed;
-    
+    private bool isReady;
+
     // Properties for compatibility with existing code
     public string Nickname 
     { 
@@ -71,6 +72,10 @@ public struct PlayerStatusData : INetworkSerializable
         get => moveSpeed; 
         set => moveSpeed = value; 
     }
+    public bool IsReady{
+        get => isReady;
+        set => isReady = value;
+    }
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         if (nickname == null)
@@ -81,6 +86,7 @@ public struct PlayerStatusData : INetworkSerializable
         serializer.SerializeValue(ref spellpower);
         serializer.SerializeValue(ref gold);
         serializer.SerializeValue(ref moveSpeed);
+        serializer.SerializeValue(ref isReady); 
     }
 }
 
