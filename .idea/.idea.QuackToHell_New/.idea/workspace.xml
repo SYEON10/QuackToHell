@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/MVP/PlayerPresenter.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,8 +66,8 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Unity 에디터에 연결.Unity 에디터에 연결.executor&quot;: &quot;Debug&quot;,
-    &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.35037878&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;로비&quot;,
+    &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.35&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;오류고치기&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -171,6 +173,7 @@
       <workItem from="1759163861402" duration="2696000" />
       <workItem from="1759230346188" duration="18000" />
       <workItem from="1759230390665" duration="1445000" />
+      <workItem from="1759375064336" duration="350000" />
     </task>
     <servers />
   </component>
@@ -203,32 +206,6 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/UI/UIBase.cs</url>
-          <line>52</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\UI\UIBase.cs" containingFunctionPresentation="메서드 'BindEvent'">
-            <startOffsets>
-              <option value="1736" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1764" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Resources/UI/Popup/Test/UIPopupTest.cs</url>
-          <line>48</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Resources\UI\Popup\Test\UIPopupTest.cs" containingFunctionPresentation="메서드 'Init'">
-            <startOffsets>
-              <option value="841" />
-            </startOffsets>
-            <endOffsets>
-              <option value="935" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -238,6 +215,7 @@
         <watch expression="            _allCardsOnGameData" language="C#" />
         <watch expression="            _allCardsOnGameData.Value" language="C#" />
         <watch expression="            _cardStatusSummaries" language="C#" />
+        <watch expression="                        NetworkManager.Singleton.LocalClientId;" language="C#" />
       </configuration>
     </watches-manager>
   </component>

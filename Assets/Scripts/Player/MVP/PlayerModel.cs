@@ -63,6 +63,10 @@ public class PlayerModel : NetworkBehaviour
             {
                 SetAliveStateByEnum(newValue.AliveState);
                 ApplyAliveStateChange();
+                if (newValue.AliveState == PlayerLivingState.Dead)
+                {
+                    GetComponent<PlayerPresenter>().UpdateVisibilityForAllPlayers();
+                }
             }
 
             // AnimationState가 변경된 경우만 처리

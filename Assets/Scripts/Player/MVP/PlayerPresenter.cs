@@ -709,7 +709,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// 플레이어 사망 처리 (죽은 플레이어의 presenter에서 실행)
     /// </summary>
     [ServerRpc(RequireOwnership = false)]
-    public void HandlePlayerDeathServerRpc(ServerRpcParams rpcParams = default)
+    public void HandlePlayerDeathServerRpc(ServerRpcParams rpcParams=default)
     {
         // 1. 서버에서 플레이어 상태 검증 (이미 죽었는지 확인)
         if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
@@ -741,8 +741,8 @@ public class PlayerPresenter : NetworkBehaviour
         };
         ChangeToGhostStateClientRpc(clientRpcParams);
         
-        // 모든 클라이언트에서 가시성 업데이트
-        UpdateVisibilityForAllPlayersClientRpc();
+        //시각처리: Model의 State.OnValueChanged에서
+       
     }
 
 
@@ -764,9 +764,12 @@ public class PlayerPresenter : NetworkBehaviour
             statusData.job =  PlayerJob.Ghost;
             playerModel.PlayerStatusData.Value = statusData;
             // 서버에서 상태 변경
-            PlayerStateData currentState = playerModel.PlayerStateData.Value;
-            currentState.AliveState = PlayerLivingState.Dead;
-            playerModel.PlayerStateData.Value = currentState;
+            PlayerStateData newState = new PlayerStateData
+            {
+                AliveState = PlayerLivingState.Dead,
+                AnimationState = playerModel.PlayerStateData.Value.AnimationState  // 기존 값 유지
+            };
+            playerModel.PlayerStateData.Value = newState;
             // 서버에서 태그 변경 (NetworkVariable로 동기화됨)
             playerModel.PlayerTag.Value = GameTags.PlayerGhost;
             // 서버에서 투명도 변경
@@ -817,10 +820,6 @@ public class PlayerPresenter : NetworkBehaviour
             Debug.LogError("Corpse prefab doesn't have NetworkObject component!");
         }
         
-        
-    
-
-        
     }
 
 
@@ -848,67 +847,48 @@ public class PlayerPresenter : NetworkBehaviour
         HandlePlayerDeathServerRpc();
     }
 
+    
 
     /// <summary>
-    /// 모든 플레이어의 가시성 업데이트 :모든 클라가 실행
+    /// 모든 플레이어의 가시성 업데이트
     /// </summary>
-    [ClientRpc]
-    public void UpdateVisibilityForAllPlayersClientRpc()
+    public void UpdateVisibilityForAllPlayers()
     {
-        // 모든 플레이어 찾기
-        PlayerPresenter[] allPlayers = FindObjectsByType<PlayerPresenter>(FindObjectsSortMode.None);
-        
+        //죽은애의 오브젝트에서 실행되는 함수임.
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
         PlayerPresenter playerPresenter =  PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
         PlayerLivingState localPlayerLivingState = playerPresenter.GetPlayerAliveState();
+        PlayerPresenter[] players= PlayerHelperManager.Instance.GetAllPlayers();
         
-
-        foreach (PlayerPresenter player in allPlayers)
+        //내가 죽었는지 체크
+        if (localPlayerLivingState == PlayerLivingState.Dead)
         {
-            if (player == null) continue;
-            
-            // 각 플레이어의 가시성 업데이트
-            player.UpdatePlayerVisibility(localPlayerLivingState);
-        }
-    }
-
-    /// <summary>
-    /// 플레이어의 가시성 업데이트
-    /// </summary>
-    public void UpdatePlayerVisibility(PlayerLivingState localPlayerLivingState)
-    {
-        if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
-            return;
-        
-       
-        bool isLocalPlayer = IsOwner;
-        
-        
-        // 로컬 플레이어인 경우
-        if (isLocalPlayer)
-        {
-            // 로컬 플레이어는 항상 보임
-            SetPlayerVisibility(true);
-        }
-        // 다른 플레이어인 경우
-        else
-        {
-            // 내 플레이어가 유령이면 모든 사람이 보임
-            // 내 플레이어가 산 사람이면 산 사람만 보임
-            bool localPlayerIsGhost = localPlayerLivingState == PlayerLivingState.Dead;
-            if (localPlayerIsGhost)
+            //플레이어 다 끌어와서, 모두 보이도록 하기
+            foreach (var player in players)
             {
-                // 유령은 모든 사람을 볼 수 있음
-                SetPlayerVisibility(true);
+                player.SetPlayerVisibility(true);
             }
-            else
+        }
+        else//내가 살았으면
+        {
+            //플레이어 다 끌어와서, 죽은 플레이어만 안 보이게 하기
+            foreach (var player in players)
             {
-                // 산 사람은 산 사람만 볼 수 있음
-                SetPlayerVisibility(false); 
+                if (player.playerModel.PlayerStateData.Value.AliveState == PlayerLivingState.Dead)
+                {
+                    player.SetPlayerVisibility(false);    
+                    Debug.Log("죽은애발견 ");
+                }
+                else
+                {
+                    player.SetPlayerVisibility(true);    
+                    Debug.Log("살은애발견 ");
+                }
             }
         }
     }
 
+ 
 
   
 
