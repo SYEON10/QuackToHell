@@ -66,6 +66,7 @@ public class GameManager : NetworkBehaviour
         }
         if (scene.name == GameScenes.Lobby) // 또는 해당 씬 이름
         {
+            UIManager.Instance.ShowHUDUI<LobbyUI>("LobbyUI");
             FindLobbyUIElements();
         }
         if(scene.name == GameScenes.Village)

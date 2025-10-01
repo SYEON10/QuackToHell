@@ -1,7 +1,10 @@
 using System;
+using TMPro;
+using Unity.Netcode;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 public class HomeUI : UIHUD
 {
     private GameObject GameStartContents_gameObject;
@@ -9,6 +12,18 @@ public class HomeUI : UIHUD
     private GameObject CreateGameContents_gameObject;
     private GameObject EnterCodeContents_gameObject;
     private GameObject FindGame_gameObject;
+    private GameObject Button_Lock_gameObject;
+
+
+    private TextMeshProUGUI Text_MaxPlayerNum;
+
+    private string sessionName="";
+    private string code="";
+    private bool buttonLock = false;
+    private bool isPrivate = false;
+    private Color buttonLockColor;
+    private int maxPlayerNum=0;
+    
     
     enum Buttons
     {
@@ -19,7 +34,23 @@ public class HomeUI : UIHUD
         Button_EnterGame,
         Button_Back_CreateGameContents,
         Button_Back_EnterGameContents,
-        Button_Back_FindGame
+        Button_Back_FindGame,
+        Button_MaxPlayerNumPlus,
+        Button_MaxPlayerNumMinus,
+        Button_Lock,
+        Button_Create,
+        Button_EnterCodeConfirm
+    }
+
+    enum InputFields
+    {
+        InputField_SessionName,
+        InputField_Code
+    }
+
+    enum Texts
+    {
+        Text_MaxPlayerNum,
     }
     
     enum GameObjects
@@ -45,7 +76,6 @@ public class HomeUI : UIHUD
         FindGame_gameObject = Get<GameObject>((int)GameObjects.FindGame).gameObject;
         
         Bind<Button>(typeof(Buttons));
-        
         GameObject Button_GameStart_gameObject = Get<Button>((int)Buttons.Button_GameStart).gameObject;
         BindEvent(Button_GameStart_gameObject,OnClicked_GameStart, GameEvents.UIEvent.Click);
         GameObject Button_Option_gameObject = Get<Button>((int)Buttons.Button_Option).gameObject;
@@ -62,9 +92,102 @@ public class HomeUI : UIHUD
         BindEvent(Button_Back_EnterGameContents_gameObject,OnClicked_Button_Back, GameEvents.UIEvent.Click);
         GameObject Button_Back_FindGame_gameObject = Get<Button>((int)Buttons.Button_Back_FindGame).gameObject;
         BindEvent(Button_Back_FindGame_gameObject,OnClicked_Button_Back, GameEvents.UIEvent.Click);
+        Button_Lock_gameObject = Get<Button>((int)Buttons.Button_Lock).gameObject;
+        buttonLockColor = Button_Lock_gameObject.GetComponent<Image>().color;
+        BindEvent(Button_Lock_gameObject, OnClicked_ButtonLock,GameEvents.UIEvent.Click);
+        GameObject Button_MaxPlayerNumPlus = Get<Button>((int)Buttons.Button_MaxPlayerNumPlus).gameObject;
+        BindEvent(Button_MaxPlayerNumPlus,OnClicked_Button_MaxPlayerNumPlus, GameEvents.UIEvent.Click);
+        GameObject Button_MaxPlayerNumMinus = Get<Button>((int)Buttons.Button_MaxPlayerNumMinus).gameObject;
+        BindEvent(Button_MaxPlayerNumMinus,OnClicked_Button_MaxPlayerNumMinus, GameEvents.UIEvent.Click);
+        GameObject Button_Create = Get<Button>((int)Buttons.Button_Create).gameObject;
+        BindEvent(Button_Create,OnClicked_Button_Create, GameEvents.UIEvent.Click );
+        GameObject Button_EnterCodeConfirm = Get<Button>((int)Buttons.Button_EnterCodeConfirm).gameObject;
+        BindEvent(Button_EnterCodeConfirm,OnClicked_Button_EnterCodeConfirm, GameEvents.UIEvent.Click );
         
+        Bind<TMP_InputField>(typeof(InputFields));
+        TMP_InputField InputField_SessionName= Get<TMP_InputField>((int)InputFields.InputField_SessionName);
+        InputField_SessionName.onSubmit.AddListener(OnSubmit_SessionName);
+        InputField_SessionName.onDeselect.AddListener(OnSubmit_SessionName);
+        TMP_InputField InputField_Code= Get<TMP_InputField>((int)InputFields.InputField_Code);
+        InputField_Code.onSubmit.AddListener(OnSubmit_Code);
+        InputField_Code.onDeselect.AddListener(OnSubmit_Code);
+        
+        Bind<TextMeshProUGUI>(typeof(Texts));
+        Text_MaxPlayerNum = Get<TextMeshProUGUI>((int)Texts.Text_MaxPlayerNum);
+
+    }
+    
+    
+
+    private void OnSubmit_SessionName(string input)
+    {
+        sessionName = input;
+    }
+    private void OnSubmit_Code(string input)
+    {
+        code = input;
+    }
+    
+    
+    private async void OnClicked_Button_Create(PointerEventData data)
+    {
+        try{
+            await LobbyManager.Instance.CreateLobby(sessionName,isPrivate,maxPlayerNum);
+            //로비씬으로 이동
+            await SceneManager.LoadSceneAsync(GameScenes.Lobby, LoadSceneMode.Single);
+            //로비씬 이동 후, 호스트로써 게임 참가
+            LobbyManager.Instance.JoinAsHost();
+        }
+        
+        catch(Exception e){
+            Debug.Log(e);
+        }
+    }
+    private async void OnClicked_Button_EnterCodeConfirm(PointerEventData data)
+    {
+        //방 참가: 코드로
+        try{
+            bool joinSuccess = await LobbyManager.Instance.JoinLobbyByCode(code);
+            if (joinSuccess)
+            {
+                //로비씬으로 이동
+                await SceneManager.LoadSceneAsync(GameScenes.Lobby, LoadSceneMode.Single);
+                //로비씬 이동 후, 클라이언트로써 게임 참가
+                LobbyManager.Instance.JoinAsClient();
+            }
+        }
+        
+        catch(Exception e){
+            Debug.Log(e);
+        }
+    }
+    private void OnClicked_Button_MaxPlayerNumMinus(PointerEventData data)
+    {
+        maxPlayerNum--;
+        Text_MaxPlayerNum.text = maxPlayerNum.ToString();
     }
 
+    private void OnClicked_Button_MaxPlayerNumPlus(PointerEventData data)
+    {
+        maxPlayerNum++;
+        Text_MaxPlayerNum.text = maxPlayerNum.ToString();
+    }
+
+    private void OnClicked_ButtonLock(PointerEventData data)
+    {
+        buttonLock = !buttonLock;
+        isPrivate = buttonLock;
+        if (buttonLock)
+        {
+            //색 진하게
+            Button_Lock_gameObject.GetComponent<Image>().color = new Color32(200, 200, 200, 255);
+        }
+        if (!buttonLock)
+        {
+            //원래의 색
+            Button_Lock_gameObject.GetComponent<Image>().color = buttonLockColor;
+        }
+    }
     private void OnClicked_GameStart(PointerEventData data)
     {
         GameStartContents_gameObject.SetActive(true);

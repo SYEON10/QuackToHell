@@ -35,12 +35,15 @@ public static class SingletonHelper<T> where T : MonoBehaviour
     /// NetworkBehaviour를 상속하는 클래스의 Awake에서 호출
     /// </summary>
     /// <param name="self">싱글톤으로 만들 객체</param>
-    public static void InitializeSingleton(T self)
+    public static void InitializeSingleton(T self, bool dontDestroyOnLoad = true)
     {
         if (_instance == null)
         {
             _instance = self;
-            Object.DontDestroyOnLoad(self.gameObject);
+            if (dontDestroyOnLoad)
+            {
+                Object.DontDestroyOnLoad(self.gameObject);
+            }
         }
         else if (_instance != self)
         {
