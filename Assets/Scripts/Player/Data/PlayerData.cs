@@ -53,12 +53,12 @@ public struct PlayerStatusData : INetworkSerializable
     public const int MaxCredibility = 100;
     public const int MaxSpellpower = 100;
 
-    [FormerlySerializedAs("Nickname")] public string nickname;
-    [FormerlySerializedAs("Job")] public PlayerJob job;
-    [FormerlySerializedAs("Credibility")] public int credibility;
-    [FormerlySerializedAs("Spellpower")] public int spellpower;
-    [FormerlySerializedAs("Gold")] public int gold;
-    [FormerlySerializedAs("MoveSpeed")] public float moveSpeed;
+    public string nickname;
+    public PlayerJob job;
+    public int credibility;
+    public int spellpower;
+    public int gold;
+    public float moveSpeed;
     private bool isReady;
 
     // Properties for compatibility with existing code
