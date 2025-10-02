@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 public enum RenderRule
 {
@@ -47,7 +48,7 @@ public sealed class ObjectController : MonoBehaviour
 
     [Header("Refs (자동)")]
     [SerializeField] private SpriteRenderer spriteRenderer;
-    [SerializeField] private Collider2D collider2D;
+    [FormerlySerializedAs("collider2D")] [SerializeField] private Collider2D _collider2D;
     [SerializeField] private SortingGroup sortingGroup;
     [SerializeField] private Transform player;
 
@@ -127,9 +128,9 @@ public sealed class ObjectController : MonoBehaviour
 
     private void ApplyCollision()
     {
-        if (collider2D == null) return;
-        collider2D.enabled = true;
-        collider2D.isTrigger = passThrough; // 통과 O → Trigger
+        if (_collider2D == null) return;
+        _collider2D.enabled = true;
+        _collider2D.isTrigger = passThrough; // 통과 O → Trigger
     }
 
     private void ApplySortingInitial()
@@ -215,8 +216,8 @@ public sealed class ObjectController : MonoBehaviour
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>(true);
 
-        if (collider2D == null)
-            collider2D = GetComponent<Collider2D>() ?? GetComponentInChildren<Collider2D>(true);
+        if (_collider2D == null)
+            _collider2D = GetComponent<Collider2D>() ?? GetComponentInChildren<Collider2D>(true);
 
         if (sortingGroup == null)
             sortingGroup = GetComponent<SortingGroup>() ?? GetComponentInChildren<SortingGroup>(true);

@@ -53,9 +53,10 @@ public class GameManager : NetworkBehaviour
         //씬 로드 이벤트 구독
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        base.OnDestroy();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

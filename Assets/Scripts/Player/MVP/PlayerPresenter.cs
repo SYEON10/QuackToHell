@@ -94,7 +94,7 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         // 네트워크 이벤트 구독 해제
         if (NetworkManager.Singleton != null)
@@ -102,6 +102,7 @@ public class PlayerPresenter : NetworkBehaviour
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
+        base.OnDestroy();
     }
 
     /// <summary>

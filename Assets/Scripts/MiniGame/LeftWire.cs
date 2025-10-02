@@ -28,7 +28,7 @@ public class LeftWire : MonoBehaviour
 
     private void Start()
     {
-        mGameCanvas = FindObjectOfType<Canvas>();
+        mGameCanvas = FindAnyObjectByType<Canvas>();
     }
    
     public void SetTarget(Vector3 targetPosition, float offset)
