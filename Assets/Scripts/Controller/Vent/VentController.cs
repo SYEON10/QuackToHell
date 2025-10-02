@@ -349,6 +349,28 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
         foreach (Renderer renderer in networkObject.GetComponentsInChildren<Renderer>(true)) renderer.enabled = !hidden;
         foreach (Collider2D collider in networkObject.GetComponentsInChildren<Collider2D>(true)) collider.enabled = !hidden;
+
+        try
+        {
+            var ownerClientId = networkObject.OwnerClientId;
+            var presenter = PlayerHelperManager.Instance?.GetPlayerPresenterByClientId(ownerClientId);
+            if (presenter != null)
+            {
+                // hidden = true(벤트 안) → 닉네임 끔(false)
+                // hidden = false(벤트 밖) → 닉네임 켬(true)
+                presenter.OnOffNickname(!hidden);
+            }
+#if UNITY_EDITOR
+            else
+            {
+                Debug.LogWarning($"[Vent] PlayerPresenter not found for client {ownerClientId}");
+            }
+#endif
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[Vent] OnOffNickname failed: {e.Message}");
+        }
     }
 
     // 화살표
