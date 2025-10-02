@@ -142,10 +142,16 @@ public class PlayerView : NetworkBehaviour
             killAction.performed += OnKillInput;
         }
         // 벤트 입력 추가 (Space키)
-        InputAction ventAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Vent}"];
+        InputAction ventAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Vent}"];
         if (DebugUtils.AssertNotNull(ventAction, "VentAction", this))
         {
             ventAction.performed += OnVentInput;
+        }
+        // 사보타지 입력 추가 (e키)
+        InputAction savotageAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Savotage}"];
+        if (DebugUtils.AssertNotNull(savotageAction, "SavotageAction", this))
+        {
+            savotageAction.performed += OnSavotageInput;
         }
 
     }
@@ -345,6 +351,7 @@ public class PlayerView : NetworkBehaviour
     
     #endregion
     public Action OnVentTryInput;
+    public Action OnSavotageTryInput;
 
     // 핸들러 메서드 구현
     private void OnVentInput(InputAction.CallbackContext context)
@@ -352,6 +359,12 @@ public class PlayerView : NetworkBehaviour
         if (!IsOwner) return;
         
         OnVentTryInput?.Invoke();
+    }
+    private void OnSavotageInput(InputAction.CallbackContext context)
+    {
+        if (!IsOwner) return;
+        
+        OnSavotageTryInput?.Invoke();
     }
 
     #region Interact (Input System) - 모든 사람 가능 (Ghost 제외)

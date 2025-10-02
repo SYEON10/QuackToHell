@@ -55,6 +55,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     public bool SpaceInput
     {
+        get { return _spaceInput;}
         set { _spaceInput = value; }
     }
     public override void OnNetworkSpawn()

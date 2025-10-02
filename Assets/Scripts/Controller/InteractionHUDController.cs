@@ -140,6 +140,7 @@ public class InteractionHUDController : MonoBehaviour
         }
         //animal: 변화 x
     }
+    //-------------버튼-------------
 
     public void OnKillButton(){
         if (!killButtonButton.interactable) return;

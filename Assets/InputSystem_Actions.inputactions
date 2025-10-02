@@ -25,15 +25,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Vent",
-                    "type": "Button",
-                    "id": "f1ba0d36-48eb-4cd5-b651-1c94a6531f70",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Report",
                     "type": "Button",
                     "id": "f6ebe7de-8e3a-404c-9d68-6817c47fdadd",
@@ -156,19 +147,8 @@
                 },
                 {
                     "name": "",
-                    "id": "eb40bb66-4559-4dfa-9a2f-820438abb426",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Vent",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "1c04ea5f-b012-41d1-a6f7-02e963b52893",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -179,7 +159,7 @@
                 {
                     "name": "",
                     "id": "d78690aa-a9bf-4a26-9c22-1b04e2e48c51",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/#(R)",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
@@ -717,17 +697,57 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Vent",
+                    "type": "Button",
+                    "id": "497f6696-c1c5-41f2-87cb-43885aeb2921",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Savotage",
+                    "type": "Button",
+                    "id": "3c0c47ef-db66-4fed-be77-c69453ecaf79",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
                 {
                     "name": "",
                     "id": "c3f1803e-ab86-4f81-8494-8d4ccee4d80f",
-                    "path": "<Keyboard>/r",
+                    "path": "<Keyboard>/leftShift",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Kill",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2880e3a3-b7d6-436e-a1a8-3eba43fe80f1",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Vent",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9b4de0ee-0193-40af-8f91-06d794cb6932",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Savotage",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

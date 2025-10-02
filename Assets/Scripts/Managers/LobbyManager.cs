@@ -388,6 +388,8 @@ public class LobbyManager : NetworkBehaviour
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
             }
             else{
+                
+                
                 allPlayers[i].ChangeRole(PlayerJob.Animal);
             }
         }

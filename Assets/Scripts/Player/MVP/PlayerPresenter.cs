@@ -50,6 +50,20 @@ public class PlayerPresenter : NetworkBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (!IsOwner)
+        {
+            //내 오너캐릭터만 입력받기
+            PlayerInput playerInput = GetComponent<PlayerInput>();
+            if (playerInput != null)
+            {
+                playerInput.enabled = false;
+            }
+        }
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode){
         if(scene.name==GameScenes.Village){
             GameObject interactionHUD = GameObject.FindGameObjectWithTag(GameTags.UI_InteractionHUD);
@@ -140,6 +154,7 @@ public class PlayerPresenter : NetworkBehaviour
         playerView.OnInteractInput += HandleInteractInput;
         playerView.OnCorpseReported += HandleCorpseReported;
         playerView.OnVentTryInput += HandleVentInput;
+        playerView.OnSavotageTryInput += HandleSavotageInput;
 
         // Model -> Presenter -> View
         playerModel.PlayerStatusData.OnValueChanged += HandleStatusChanged;
@@ -375,6 +390,18 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
     /// <summary>
+    /// View에서 받은 사보타지 입력을 RoleStrategy에 전달
+    /// </summary>
+    private void HandleSavotageInput()
+    {
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
+            return;
+        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        
+        _roleController.CurrentStrategy?.TrySabotage();
+    }
+    
+    /// <summary>
     /// Model에서 받은 상태 변경을 View에 전달
     /// </summary>
     private void HandleStatusChanged(PlayerStatusData previousValue, PlayerStatusData newValue)
@@ -408,8 +435,8 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
 
-    [ServerRpc]
-    public void TryVentServerRpc()
+  
+    public void TryVent()
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
         foreach (Collider2D collider in colliders)
@@ -468,7 +495,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// 상호작용 시도 서버 RPC
     /// </summary>
     [ServerRpc]
-    public void TryInteractServerRpc()
+    public void TryInteractServerRpc(ServerRpcParams serverRpcParams = default)
     {
         // 서버 검증
         if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
@@ -521,6 +548,19 @@ public class PlayerPresenter : NetworkBehaviour
                 HandleTrialConvocationInteraction(collider);
                 return;
             }
+
+            if (collider.CompareTag(GameTags.Vent))
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new[] { serverRpcParams.Receive.SenderClientId }
+                    }
+                };
+                HandleVentInteractionClientRpc(clientRpcParams);
+                return;
+            }
             
         }
         
@@ -530,7 +570,8 @@ public class PlayerPresenter : NetworkBehaviour
     /// <summary>
     /// 벤트 상호작용 처리 (농장주 전용)
     /// </summary>
-    private void HandleVentInteraction(Collider2D ventCollider)
+    [ClientRpc]
+    private void HandleVentInteractionClientRpc( ClientRpcParams  clientRpcParams)
     {
         // 역할 검증
         PlayerJob currentRole = GetPlayerJob();
