@@ -150,7 +150,8 @@ public class FarmerStrategy : IRoleStrategy
                 collider.CompareTag(GameTags.RareCardShop) ||
                 collider.CompareTag(GameTags.Exit) ||
                 collider.CompareTag(GameTags.Teleport) ||
-                collider.CompareTag(GameTags.Vent))
+                collider.CompareTag(GameTags.Vent)||
+                collider.CompareTag(GameTags.ConvocationOfTrial))
             {
                 return true;
             }

@@ -97,7 +97,8 @@ public class AnimalStrategy : IRoleStrategy
             if (collider.CompareTag(GameTags.MiniGame) ||
                 collider.CompareTag(GameTags.RareCardShop) ||
                 collider.CompareTag(GameTags.Exit) ||
-                collider.CompareTag(GameTags.Teleport) )
+                collider.CompareTag(GameTags.Teleport) ||
+                collider.CompareTag(GameTags.ConvocationOfTrial))
             {
                 return true;
             }

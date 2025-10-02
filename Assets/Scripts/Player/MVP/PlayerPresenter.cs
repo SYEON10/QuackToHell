@@ -515,6 +515,13 @@ public class PlayerPresenter : NetworkBehaviour
                 HandleMiniGameInteraction(collider);
                 return;
             }
+
+            if (collider.CompareTag(GameTags.ConvocationOfTrial))
+            {
+                HandleTrialConvocationInteraction(collider);
+                return;
+            }
+            
         }
         
         Debug.LogWarning($"[Server] No interactable object found for Player {OwnerClientId}");
