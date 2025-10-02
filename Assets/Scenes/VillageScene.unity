@@ -2708,10 +2708,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 7, y: 7, z: 1}
+  m_LocalScale: {x: 1.694915, y: 1.694915, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1916149402}
+  m_Father: {fileID: 481569059}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &393997151
 SpriteRenderer:
@@ -2809,7 +2809,7 @@ GameObject:
   m_Component:
   - component: {fileID: 481569059}
   m_Layer: 0
-  m_Name: MapObjects
+  m_Name: "MapObjects_\uC784\uC2DC"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2850,6 +2850,7 @@ Transform:
   - {fileID: 97462422}
   - {fileID: 60382378}
   - {fileID: 694448706}
+  - {fileID: 393997150}
   m_Father: {fileID: 1916149402}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &492062376
@@ -10368,7 +10369,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 393997150}
   - {fileID: 481569059}
   - {fileID: 955255818}
   - {fileID: 2068888798}
