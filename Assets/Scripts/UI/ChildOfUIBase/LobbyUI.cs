@@ -88,11 +88,22 @@ public class LobbyUI : UIHUD
 
     
     private void HandlePlayerStatusChanged(PlayerStatusData previousValue, PlayerStatusData newValue){ 
+        
         if(newValue.IsReady){
-            Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame).GetComponentInParent<Image>().color = new Color(0.4f, 0.4f, 0.4f, 1f);
+            var obj= Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame);
+            if (obj)
+            {
+                obj.GetComponentInParent<Image>().color = new Color(0.4f, 0.4f, 0.4f, 1f);   
+            }
+            
         }
         else{
-            Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame).GetComponentInParent<Image>().color = new Color(0.78f, 0.78f, 0.80f, 1f); 
+            var obj = Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame);
+            if (obj)
+            {
+                obj.GetComponentInParent<Image>().color = new Color(0.78f, 0.78f, 0.80f, 1f); 
+            }
+            
         }
     }
 

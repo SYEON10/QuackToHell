@@ -80,7 +80,7 @@ public class PlayerFactoryManager : NetworkBehaviour
     {
         if (success)
         {
-            onPlayerSpawned.Invoke();
+            onPlayerSpawned?.Invoke();
         }
         else
         {
