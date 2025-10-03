@@ -94,7 +94,8 @@ namespace CardItem.MVP
             // 상태가 변경되었을 때 UI 업데이트
             if (previousValue.cardItemStatusData.state != newValue.cardItemStatusData.state)
             {
-                UpdateCardAppearance(newValue);            
+                UpdateCardAppearance(newValue);     
+                
             }
         }
         #endregion

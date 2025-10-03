@@ -6,11 +6,16 @@ public class CardItemSoldState : StateBase
     {
         
         // 카드가 상점에서 진열된 상태인지 확인
-        if (this.gameObject.transform.parent != null && 
-            this.gameObject.transform.parent.CompareTag("CardForSale"))
+        if (gameObject.transform.parent != null && 
+            gameObject.transform.CompareTag(GameTags.CardForSale))
         {
-            // 약간의 지연을 두고 파괴 (UI 업데이트 완료 후)
-            Destroy(gameObject, 0.1f);
+            CanvasGroup canvasGroup = GameObjectUtils.GetOrAddComponent<CanvasGroup>(gameObject);
+            // 1. 안 보이게 (완전 투명하게)
+            canvasGroup.alpha = 0f;
+        
+            // 2. 입력 막기 (버튼 등이 비활성화되고 클릭 이벤트 무시)
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
         }
         else
         {
