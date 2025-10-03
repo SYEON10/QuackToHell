@@ -24,10 +24,29 @@ public class MiniMapUI : MonoBehaviour
     [SerializeField] 
     private Transform targetPlayer;
 
+    [SerializeField] 
+    private string[] playerTags = { "Player", "PlayerGhost" };
+
+    private Transform FindOwnerByTags()
+    {
+        foreach (var tag in playerTags)
+        {
+            var candidates = GameObject.FindGameObjectsWithTag(tag);
+            foreach (var go in candidates)
+            {
+                var no = go.GetComponent<Unity.Netcode.NetworkObject>();
+                if (no != null && no.IsOwner && go.activeInHierarchy)
+                    return go.transform;
+            }
+        }
+        return null;
+    }
+
     private void Start()
     {
         var inst = Instantiate(minimapImage.material);
         minimapImage.material = inst;
+
         var localPlayerObj = Unity.Netcode.NetworkManager.Singleton?.LocalClient?.PlayerObject;
         if (localPlayerObj != null)
         {
@@ -36,12 +55,7 @@ public class MiniMapUI : MonoBehaviour
 
         if (targetPlayer == null)
         {
-            var candidates = GameObject.FindGameObjectsWithTag("Player");
-            foreach (var go in candidates)
-            {
-                var no = go.GetComponent<Unity.Netcode.NetworkObject>();
-                if (no != null && no.IsOwner) { targetPlayer = go.transform; break; }
-            }
+            targetPlayer = FindOwnerByTags();
         }
 
         // targetPlayer = AmongUsRoomPlayer.MyRoomPlayer.myCharacter;
@@ -50,14 +64,27 @@ public class MiniMapUI : MonoBehaviour
 
     private void Update()
     {
+        if (targetPlayer == null || !targetPlayer.gameObject.activeInHierarchy)
+        {
+            var localPlayerObj = Unity.Netcode.NetworkManager.Singleton?.LocalClient?.PlayerObject;
+            targetPlayer = (localPlayerObj != null) ? localPlayerObj.transform : FindOwnerByTags();
+        }
+
         if (targetPlayer != null)
         {
-            Vector2 mapArea = new Vector2(Vector3.Distance(left.position, right.position), Vector3.Distance(bottom.position, top.position));
-            Vector2 charPos = new Vector2(Vector3.Distance(left.position, new Vector3(targetPlayer.transform.position.x, 0f, 0f)), 
+            Vector2 mapArea = new Vector2(
+                Vector3.Distance(left.position, right.position),
+                Vector3.Distance(bottom.position, top.position));
+
+            Vector2 charPos = new Vector2(
+                Vector3.Distance(left.position, new Vector3(targetPlayer.transform.position.x, 0f, 0f)),
                 Vector3.Distance(bottom.position, new Vector3(0f, targetPlayer.transform.position.y, 0f)));
+
             Vector2 normalPos = new Vector2(charPos.x / mapArea.x, charPos.y / mapArea.y);
 
-            minimapPlayerImage.rectTransform.anchoredPosition = new Vector2(minimapImage.rectTransform.sizeDelta.x * normalPos.x, minimapImage.rectTransform.sizeDelta.y * normalPos.y);
+            minimapPlayerImage.rectTransform.anchoredPosition =
+                new Vector2(minimapImage.rectTransform.sizeDelta.x * normalPos.x,
+                            minimapImage.rectTransform.sizeDelta.y * normalPos.y);
         }
 
     }
