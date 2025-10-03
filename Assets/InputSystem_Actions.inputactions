@@ -699,15 +699,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Vent",
-                    "type": "Button",
-                    "id": "497f6696-c1c5-41f2-87cb-43885aeb2921",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Savotage",
                     "type": "Button",
                     "id": "3c0c47ef-db66-4fed-be77-c69453ecaf79",
@@ -726,17 +717,6 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Kill",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2880e3a3-b7d6-436e-a1a8-3eba43fe80f1",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Vent",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

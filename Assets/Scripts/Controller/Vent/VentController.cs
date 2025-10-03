@@ -16,7 +16,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     [Header("Interaction")]
     [SerializeField] private bool enableSpacebar = true;
-    [SerializeField, Range(0.5f, 5f)] private float interactionRadius = 1f;
+    [SerializeField, Range(0.5f, 5f)] private float interactionRadius = 4f;
     [SerializeField, Range(0f, 2f)] private float cooldownSec = 0.5f;
     [SerializeField] private Vector2 exitOffset = new(0f, 0.5f);
 
@@ -215,15 +215,19 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     public void RequestToggleEnterExit()
     {
+        Debug.Log("벤트탔음!");
         if (!IsClient) return;
         if (!IsSpawned) { Debug.LogWarning($"[Vent/{name}] Not spawned yet"); return; }
+        //디버깅깅
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        Debug.Log($"[RequestToggleEnterExit] LocalClientId: {localClientId}");
+        
         ToggleEnterExitServerRpc();
     }
 
     [ServerRpc(RequireOwnership = false)]
     private void ToggleEnterExitServerRpc(ServerRpcParams rpc = default)
     {
-
         ulong sender = rpc.Receive.SenderClientId;
         NetworkObject playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
         if (playerObj == null)

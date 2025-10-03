@@ -481,6 +481,11 @@ public class PlayerPresenter : NetworkBehaviour
                 PlayerPresenter targetPlayer = collider.GetComponent<PlayerPresenter>();
                 if (targetPlayer != null && targetPlayer.GetPlayerAliveState() == PlayerLivingState.Alive)
                 {
+                    if (targetPlayer.GetPlayerJob() != PlayerJob.Animal)
+                    {
+                        Debug.Log("Animal이 아니어서 못 죽임");
+                        return;
+                    }
                     // 대상 플레이어를 죽임
                     targetPlayer.HandlePlayerDeathServerRpc();
                     Debug.Log($"[Server] Player {OwnerClientId} killed Player {targetPlayer.OwnerClientId}");
@@ -512,6 +517,10 @@ public class PlayerPresenter : NetworkBehaviour
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
         foreach (Collider2D collider in colliders)
         {
+            if (collider.CompareTag(GameTags.Player))
+            {
+                continue;
+            }
             // 기존 패턴: IInteractable 인터페이스 활용
             IInteractable interactable = collider.GetComponent<IInteractable>();
             if (interactable != null && interactable.CanInteract(gameObject))

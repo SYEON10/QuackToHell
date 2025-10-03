@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardInventory/CardInventoryModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardInventory/CardInventoryModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardInventory/CardInventoryPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardInventory/CardInventoryPresenter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardItem/MVP/CardItemPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardItem/MVP/CardItemPresenter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardItem/State/CardItemSoldState.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardItem/State/CardItemSoldState.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopPresenter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/DeckManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/DeckManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Utilities/GameConstants.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Utilities/GameConstants.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
-    </list>
+    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -253,32 +243,6 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopPresenter.cs</url>
-          <line>80</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\CardShop\CardShopPresenter.cs" containingFunctionPresentation="메서드 'OnClickLock'">
-            <startOffsets>
-              <option value="2069" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2104" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="48" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopPresenter.cs</url>
-          <line>86</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\CardShop\CardShopPresenter.cs" containingFunctionPresentation="메서드 'OnClickReRoll'">
-            <startOffsets>
-              <option value="2223" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2243" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="49" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -286,6 +250,8 @@
         <watch expression="                    model" language="C#" />
         <watch expression="            gameObject.transform.parent != null " language="C#" />
         <watch expression="            gameObject.transform.parent.CompareTag(GameTags.CardForSale)" language="C#" />
+        <watch expression="            localPlayerObj" language="C#" />
+        <watch expression="            NetworkManager.Singleton.LocalClientId" language="C#" />
       </configuration>
     </watches-manager>
   </component>
