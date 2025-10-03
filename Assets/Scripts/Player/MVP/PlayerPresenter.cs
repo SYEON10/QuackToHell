@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Unity.Collections;
 using UnityEngine.InputSystem;
+using Unity.Services.Lobbies.Models;
 
 /// <summary>
 /// View와 Model 간 중개자 역할
@@ -178,6 +179,9 @@ public class PlayerPresenter : NetworkBehaviour
         {   
             if (IsOwner)
             {
+                if(GetPlayerJob()==PlayerJob.Ghost){
+                    return;
+                }
                 interactionHUDController.EnableButton(InteractionHUDController.ButtonName.CorpseReport);
             }
         }
@@ -886,11 +890,8 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void ShowGhostUI()
     {
-        // 유령 전용 UI 활성화
-        // TODO: 유령 전용 UI 구현
-        
-        // TODO: 시체 리포트 버튼 비활성화
-        
+        // 유령 전용 UI 세팅
+        interactionHUDController.DisableButton(InteractionHUDController.ButtonName.CorpseReport);        
     }
 
     /// <summary>
