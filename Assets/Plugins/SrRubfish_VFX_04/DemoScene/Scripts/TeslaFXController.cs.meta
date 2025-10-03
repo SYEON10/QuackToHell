@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a6a1dfae3a3235548aa277bc66767cef
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 274090
+  packageName: Electricity- Assets for VFX 04
+  packageVersion: 1.0
+  assetPath: Assets/SrRubfish_VFX_04/DemoScene/Scripts/TeslaFXController.cs
+  uploadId: 636742

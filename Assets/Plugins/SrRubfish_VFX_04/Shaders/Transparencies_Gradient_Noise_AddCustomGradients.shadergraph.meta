@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 0950a098d5a72b0469aa73ae25594c10
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 274090
+  packageName: Electricity- Assets for VFX 04
+  packageVersion: 1.0
+  assetPath: Assets/SrRubfish_VFX_04/Shaders/Transparencies_Gradient_Noise_AddCustomGradients.shadergraph
+  uploadId: 636742
