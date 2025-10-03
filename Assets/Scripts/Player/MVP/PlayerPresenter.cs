@@ -995,6 +995,11 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
     #region 외부 인터페이스 (메시지 기반)
+
+    public int GetGold()
+    {
+        return playerModel.PlayerStatusData.Value.gold;
+    }
     public void OnOffNickname(bool onOff)
     {
         playerView.SetNicknameVisibility(onOff);

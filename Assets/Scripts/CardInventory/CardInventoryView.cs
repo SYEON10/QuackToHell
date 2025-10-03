@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
@@ -10,6 +11,9 @@ public class CardInventoryView : MonoBehaviour
     [Header("인벤토리 UI의 하위 오브젝트: Content를 넣어주세요.")]
     [SerializeField]
     private GameObject content;
+    [Header("인벤토리 UI의 하위 오브젝트: Gold Text를 넣어주세요.")]
+    [SerializeField]
+    private TextMeshProUGUI goldText;
     [Header("UI References")]
     private GameObject cardShopPanel;
     private Animator cardShopPanelAnimator;
@@ -50,6 +54,12 @@ public class CardInventoryView : MonoBehaviour
             cardItemForInventory.transform.SetParent(content.transform, false);
         }
     }
+
+    public void UpdatePlayerGold(int gold)
+    {
+        goldText.text = "gold: " + gold.ToString();
+    }
+    
     #endregion
 
     #region 버튼

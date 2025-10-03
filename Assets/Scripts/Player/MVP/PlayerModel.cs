@@ -80,10 +80,14 @@ public class PlayerModel : NetworkBehaviour
 
         PlayerStatusData.OnValueChanged += (oldValue, newValue) =>
         {
-            Debug.Log($"{NetworkManager.Singleton.LocalClientId}의 PlayerStatusData.OnValueChanged!!{oldValue.IsReady} to {newValue.IsReady}");
-            Debug.Log($"바인딩 된 함수 목록: {PlayerStatusData.OnValueChanged .Method}");
+            //골드 띄우기
+            CardInventoryView cardInventoryView = FindAnyObjectByType<CardInventoryView>();
+            if (cardInventoryView)
+            {
+                cardInventoryView.UpdatePlayerGold(_playerStatusData.Value.gold);    
+            }
+            
         };
-        
     }
 
     private void Update()

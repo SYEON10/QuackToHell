@@ -21,6 +21,9 @@ public class CardInventoryPresenter : MonoBehaviour
         _cardInventoryModel.OwnedCards.OnListChanged += CardInventoryModel_OwnedCardsOnListChanged;
         //초기 뷰 업데이트
         _cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards);
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        PlayerPresenter playerPresenter=  PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+        _cardInventoryView.UpdatePlayerGold(playerPresenter.GetGold());
         //TODO: 정렬기능 추가되면, 정렬 enum에 따라 다른 정렬 함수 호출
         /*switch (_cardInventoryModel.SortingOption)
         {
@@ -36,7 +39,7 @@ public class CardInventoryPresenter : MonoBehaviour
     {
         //view 업데이트 함수 호출
         CardInventoryView cardInventoryView = gameObject.GetComponent<CardInventoryView>();
-        cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards);
+        cardInventoryView?.UpdateInventoryView(_cardInventoryModel.OwnedCards);
     }
 
     #region 외부 인터페이스 (메시지 기반)
