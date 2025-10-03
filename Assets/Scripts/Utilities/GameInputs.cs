@@ -20,6 +20,7 @@ public static class GameInputs
     {
         public const string Move = "Move";
         public const string Interact = "Interact";
+        public const string Savotage = "Savotage";
         public const string Vent = "Vent";      
         public const string Report = "Report";
         public const string Kill = "Kill";

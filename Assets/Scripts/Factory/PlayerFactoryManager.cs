@@ -51,13 +51,18 @@ public class PlayerFactoryManager : NetworkBehaviour
 
         PlayerStatusData myPlayerStateData = playerModel.PlayerStatusData.Value;
         string baseNickname = myPlayerStateData.Nickname.Split('_')[0];
-        myPlayerStateData.Nickname = $"{baseNickname}_{rpcParams.Receive.SenderClientId}";
-        
+        myPlayerStateData.Nickname = $"{baseNickname}_{rpcParams.Receive.SenderClientId}";        
         myPlayerStateData.job = PlayerJob.None;
-        
-        player.name = myPlayerStateData.Nickname;
+        myPlayerStateData.moveSpeed = GameConstants.Player.DefaultMoveSpeed;
+        myPlayerStateData.gold = GameConstants.Player.DefaultGold;
+        myPlayerStateData.IsReady = false;
+        myPlayerStateData.credibility = PlayerStatusData.MaxCredibility;
+        myPlayerStateData.spellpower = PlayerStatusData.MaxSpellpower;
+
         playerModel.PlayerStatusData.Value = myPlayerStateData;
 
+        player.name = myPlayerStateData.Nickname;
+        
         playerModel.PlayerAppearanceData.Value = new PlayerAppearanceData
         {
             ColorIndex = 0,

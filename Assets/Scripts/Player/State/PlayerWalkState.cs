@@ -78,12 +78,14 @@ public class PlayerWalkState : NetworkStateBase
         headFlipX.Value = flip;
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         // 이벤트 구독 해제
         if (headFlipX != null)
         {
             headFlipX.OnValueChanged -= OnHeadFlipChanged;
         }
+
+        base.OnDestroy();
     }
 }

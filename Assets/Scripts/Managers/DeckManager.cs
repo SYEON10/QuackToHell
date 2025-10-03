@@ -750,6 +750,8 @@ public class DeckManager : NetworkBehaviour
         
         if (!DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
             return;
+        
+        
 
         ClientRpcParams clientRpcParams = new ClientRpcParams
         {
@@ -758,11 +760,23 @@ public class DeckManager : NetworkBehaviour
                 TargetClientIds = new[] { clientId }
             }
         };
-
+        
+        //로컬클라이언트의 인벤토리를 조회해서, 인벤의 개수가 max인지 확인. max면 구매 못 함. 로그도 찍기.
+        CardInventoryPresenter myLocalInventoryPresenter = FindAnyObjectByType<CardInventoryPresenter>();
+        if (myLocalInventoryPresenter.IsInventoryMaximum())
+        {
+            Debug.Log($"인벤토리 한도를 초과해서 구매 못 합니다. 인벤토리 한도: {GameConstants.Card.maxCardCount}");
+            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
+            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
+            return;
+        }
+        
         // 해당 카드가 존재하는지 확인
         int cardItemIdKey = card.cardItemStatusData.cardItemID;
         if (!IsValidCardItemIdKey(cardItemIdKey))
         {
+            Debug.Log($"카드가 존재하지 않습니다.");
+            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
         }
@@ -770,6 +784,7 @@ public class DeckManager : NetworkBehaviour
         // 물량 초과 체크
         if (!IsCardAvailableForPurchase(card.cardIdKey))
         {
+            Debug.Log($"물량이 없습니다.");
             PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
@@ -779,6 +794,7 @@ public class DeckManager : NetworkBehaviour
         int playerGold = PlayerHelperManager.Instance.GetPlayerGoldByClientId(clientId);
         if (playerGold < card.cardItemStatusData.price)
         {
+            Debug.Log($"돈이 부족합니다.");
             //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
             PurchaseResultToCardShopClientRpc(false, clientId);
             //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
@@ -871,7 +887,6 @@ public class DeckManager : NetworkBehaviour
                 updatedData.acquiredTicks = acquiredTicks;
                 updatedData.displayingClientId = displayingClientId;
                 model.UpdateCardStateFromServer(updatedData);
-                break;
             }
         }
     }

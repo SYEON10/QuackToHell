@@ -8,7 +8,7 @@ public static class GameConstants
     {
         public const float GhostSpeedMultiplier = 1.5f;
         public const float GhostTransparency = 0.5f;
-        public const int DefaultGold = 100000;
+        public const int DefaultGold = 100;
         public const float DefaultMoveSpeed = 10f;
     }
     
@@ -35,6 +35,7 @@ public static class GameConstants
         public const float InventoryCardHeight = 300f;
         public const float SaleCardWidth = 200f;
         public const float SaleCardHeight = 350f;
+        public const int maxCardCount = 20;
         public const ulong NOT_DISPLAYING_CLIENT_ID = 9999; //아무도 카드를 진열하고있지 않음을 나타내는 값
     }
     

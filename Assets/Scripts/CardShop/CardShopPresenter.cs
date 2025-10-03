@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,11 +26,9 @@ public class CardShopPresenter : NetworkBehaviour
         DebugUtils.AssertComponent(_model, "CardShopModel", this);
         clientId = NetworkManager.Singleton.LocalClientId;
     }
- 
-    public override void OnNetworkSpawn()
+
+    private void Start()
     {
-        base.OnNetworkSpawn();
-        
         if (_view != null)
         {
             _view.OnClickLock += OnClickLock;
@@ -43,6 +42,8 @@ public class CardShopPresenter : NetworkBehaviour
             RequestDisplayCards(clientId);
         }
     }
+
+
 
     public override void OnNetworkDespawn()
     {

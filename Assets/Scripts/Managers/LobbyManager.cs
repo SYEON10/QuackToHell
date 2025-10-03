@@ -11,10 +11,7 @@ using Unity.Services.Relay.Models;
 using Unity.Netcode.Transports.UTP;
 using Unity.Services.Relay;
 using Unity.Netcode;
-using UnityEngine.UI;
-using TMPro;
 using System.Threading;
-using Unity.Services.Relay;
 using UnityEngine.SceneManagement;
 
 public class LobbyManager : NetworkBehaviour
@@ -127,12 +124,14 @@ public class LobbyManager : NetworkBehaviour
         
     }
 
-    private void OnDestroy(){
+    public override void OnDestroy(){
         //로비 정리 작업
         CleanUpLobby();
         
         _cancellationTokenSource?.Cancel(); 
         _cancellationTokenSource?.Dispose(); 
+
+        base.OnDestroy();
     }
     
     public async void CleanUpLobby(){

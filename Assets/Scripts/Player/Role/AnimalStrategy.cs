@@ -82,11 +82,6 @@ public class AnimalStrategy : IRoleStrategy
         {
             _playerPresenter.TryInteractServerRpc(); // 기존 로직
         }
-        else
-        {
-            // 2단계: 상호작용 오브젝트 없음 → 사보타지
-            TrySabotage(); 
-        }
     }
 
     public bool HasInteractableObjectsNearby()
@@ -109,13 +104,10 @@ public class AnimalStrategy : IRoleStrategy
     {
         if (!CanReportCorpse()) return;
         
-        // 시체 또는 재판소집 오브젝트 근처 확인
+        // 시체근처 확인
         if (HasCorpseNearby())
         {
             _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
-        }
-        if(HasTrialConvocationNearby()){
-            _playerPresenter.TryTrialServerRpc(_playerPresenter.OwnerClientId);
         }
     }
     private bool HasCorpseNearby()

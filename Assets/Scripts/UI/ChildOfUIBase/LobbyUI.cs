@@ -5,12 +5,9 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine;
-using Unity.Netcode;
-using Unity.Services.Lobbies.Models;
 
 public class LobbyUI : UIHUD
 {
-    private bool isReady = false;
     private TMP_Dropdown colorDropdown;
     
     enum Dropdowns

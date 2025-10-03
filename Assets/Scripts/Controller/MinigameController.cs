@@ -220,7 +220,7 @@ public class MinigameController : MonoBehaviour
     {
         var tagged = GameObject.FindWithTag("MainCanvas");
         if (tagged && tagged.TryGetComponent(out Canvas c)) return c;
-        return GameObject.FindObjectOfType<Canvas>();
+        return GameObject.FindAnyObjectByType<Canvas>();
     }
 
     private bool IsPointerOverUI()

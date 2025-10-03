@@ -22,7 +22,7 @@ public class HomeUI : UIHUD
     private bool buttonLock = false;
     private bool isPrivate = false;
     private Color buttonLockColor;
-    private int maxPlayerNum=0;
+    private int maxPlayerNum=6;
     
     
     enum Buttons
@@ -114,6 +114,7 @@ public class HomeUI : UIHUD
         
         Bind<TextMeshProUGUI>(typeof(Texts));
         Text_MaxPlayerNum = Get<TextMeshProUGUI>((int)Texts.Text_MaxPlayerNum);
+        Text_MaxPlayerNum.text = maxPlayerNum.ToString();
 
     }
     

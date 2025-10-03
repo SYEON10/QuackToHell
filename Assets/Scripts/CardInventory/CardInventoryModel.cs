@@ -13,7 +13,6 @@ public class CardInventoryModel : NetworkBehaviour
     // 로컬 클라이언트의 인벤토리가 소유하는 카드 정보
     private NetworkList<CardItemData> ownedCards = new NetworkList<CardItemData>();
     public NetworkList<CardItemData> OwnedCards => ownedCards;
-    const int maxCardCount = 20;
     private ulong myClientId;
     private InventorySotringOption _sortingOption = InventorySotringOption.RecentlyAcquired;
     public InventorySotringOption SortingOption => _sortingOption;
@@ -34,7 +33,7 @@ public class CardInventoryModel : NetworkBehaviour
     [ServerRpc]
     public void AddOwnedCardServerRpc(CardItemData card)
     {  
-        if (ownedCards.Count >= maxCardCount)
+        if (ownedCards.Count >= GameConstants.Card.maxCardCount)
         {
             return;
         }

@@ -87,6 +87,16 @@ public class CardInventoryPresenter : MonoBehaviour
         }
         return false;
     }
+
+    public bool IsInventoryMaximum()
+    {
+        if (_cardInventoryModel.OwnedCards.Count == GameConstants.Card.maxCardCount)
+        {
+            return true;
+        }
+
+        return false;
+    }
     
     #endregion
 }

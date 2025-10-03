@@ -54,6 +54,9 @@ public class FarmerStrategy : IRoleStrategy
             case GameInputs.Actions.Report:
                 TryReportCorpse();
                 break;
+            case GameInputs.Actions.Savotage:
+                TrySabotage();
+                break;
         }
     }
     
@@ -86,7 +89,7 @@ public class FarmerStrategy : IRoleStrategy
         // 벤트 근처 확인
         if (HasVentNearby())
         {
-            _playerPresenter.TryVentServerRpc();
+            _playerPresenter.TryVent();
         }
     }
     public bool CanVent()
@@ -121,7 +124,7 @@ public class FarmerStrategy : IRoleStrategy
         if (!CanSabotage()) return;
         
         // TODO: 사보타지 액션 구현
-        Debug.Log("다른 상호작용 범위에 없어서, defult키가 사보타지로 세팅됩니다: 사보타지 시도");
+        Debug.Log("사보타지기능 아직 없듬");
         
     }
     
@@ -133,11 +136,6 @@ public class FarmerStrategy : IRoleStrategy
         if (HasInteractableObjectsNearby())
         {
             _playerPresenter.TryInteractServerRpc(); // 기존 로직
-        }
-        else
-        {
-            // 2단계: 상호작용 오브젝트 없음 → 사보타지
-            TrySabotage(); 
         }
     }
 
@@ -163,14 +161,12 @@ public class FarmerStrategy : IRoleStrategy
     {
         if (!CanReportCorpse()) return;
         
-        // 시체 또는 재판소집 오브젝트 근처 확인
+        // 시체 오브젝트 근처 확인
         if (HasCorpseNearby())
         {
             _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
         }
-        if(HasTrialConvocationNearby()){
-            _playerPresenter.TryTrialServerRpc(_playerPresenter.OwnerClientId);
-        }
+        
     }
     
 

@@ -50,6 +50,20 @@ public class PlayerPresenter : NetworkBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (!IsOwner)
+        {
+            //내 오너캐릭터만 입력받기
+            PlayerInput playerInput = GetComponent<PlayerInput>();
+            if (playerInput != null)
+            {
+                playerInput.enabled = false;
+            }
+        }
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode){
         if(scene.name==GameScenes.Village){
             GameObject interactionHUD = GameObject.FindGameObjectWithTag(GameTags.UI_InteractionHUD);
@@ -80,7 +94,7 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         // 네트워크 이벤트 구독 해제
         if (NetworkManager.Singleton != null)
@@ -88,6 +102,7 @@ public class PlayerPresenter : NetworkBehaviour
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
+        base.OnDestroy();
     }
 
     /// <summary>
@@ -140,6 +155,7 @@ public class PlayerPresenter : NetworkBehaviour
         playerView.OnInteractInput += HandleInteractInput;
         playerView.OnCorpseReported += HandleCorpseReported;
         playerView.OnVentTryInput += HandleVentInput;
+        playerView.OnSavotageTryInput += HandleSavotageInput;
 
         // Model -> Presenter -> View
         playerModel.PlayerStatusData.OnValueChanged += HandleStatusChanged;
@@ -375,6 +391,18 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
     /// <summary>
+    /// View에서 받은 사보타지 입력을 RoleStrategy에 전달
+    /// </summary>
+    private void HandleSavotageInput()
+    {
+        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
+            return;
+        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        
+        _roleController.CurrentStrategy?.TrySabotage();
+    }
+    
+    /// <summary>
     /// Model에서 받은 상태 변경을 View에 전달
     /// </summary>
     private void HandleStatusChanged(PlayerStatusData previousValue, PlayerStatusData newValue)
@@ -408,8 +436,8 @@ public class PlayerPresenter : NetworkBehaviour
     }
 
 
-    [ServerRpc]
-    public void TryVentServerRpc()
+  
+    public void TryVent()
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
         foreach (Collider2D collider in colliders)
@@ -453,6 +481,11 @@ public class PlayerPresenter : NetworkBehaviour
                 PlayerPresenter targetPlayer = collider.GetComponent<PlayerPresenter>();
                 if (targetPlayer != null && targetPlayer.GetPlayerAliveState() == PlayerLivingState.Alive)
                 {
+                    if (targetPlayer.GetPlayerJob() != PlayerJob.Animal)
+                    {
+                        Debug.Log("Animal이 아니어서 못 죽임");
+                        return;
+                    }
                     // 대상 플레이어를 죽임
                     targetPlayer.HandlePlayerDeathServerRpc();
                     Debug.Log($"[Server] Player {OwnerClientId} killed Player {targetPlayer.OwnerClientId}");
@@ -468,7 +501,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// 상호작용 시도 서버 RPC
     /// </summary>
     [ServerRpc]
-    public void TryInteractServerRpc()
+    public void TryInteractServerRpc(ServerRpcParams serverRpcParams = default)
     {
         // 서버 검증
         if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
@@ -484,6 +517,10 @@ public class PlayerPresenter : NetworkBehaviour
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
         foreach (Collider2D collider in colliders)
         {
+            if (collider.CompareTag(GameTags.Player))
+            {
+                continue;
+            }
             // 기존 패턴: IInteractable 인터페이스 활용
             IInteractable interactable = collider.GetComponent<IInteractable>();
             if (interactable != null && interactable.CanInteract(gameObject))
@@ -521,6 +558,19 @@ public class PlayerPresenter : NetworkBehaviour
                 HandleTrialConvocationInteraction(collider);
                 return;
             }
+
+            if (collider.CompareTag(GameTags.Vent))
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new[] { serverRpcParams.Receive.SenderClientId }
+                    }
+                };
+                HandleVentInteractionClientRpc(clientRpcParams);
+                return;
+            }
             
         }
         
@@ -530,7 +580,8 @@ public class PlayerPresenter : NetworkBehaviour
     /// <summary>
     /// 벤트 상호작용 처리 (농장주 전용)
     /// </summary>
-    private void HandleVentInteraction(Collider2D ventCollider)
+    [ClientRpc]
+    private void HandleVentInteractionClientRpc( ClientRpcParams  clientRpcParams)
     {
         // 역할 검증
         PlayerJob currentRole = GetPlayerJob();

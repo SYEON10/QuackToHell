@@ -58,7 +58,7 @@ public class PlayerModel : NetworkBehaviour
         // 상태 변경 이벤트 등록 - 개별 처리
         PlayerStateData.OnValueChanged += (oldValue, newValue) =>
         {
-            Debug.Log($"PlayerStateData.OnValueChanged!!{oldValue.AliveState} to {newValue.AliveState}");
+           
             // AliveState가 변경된 경우만 처리
             if (oldValue.AliveState != newValue.AliveState)
             {
