@@ -238,5 +238,6 @@ public class InteractionHUDController : MonoBehaviour
         reportButton.SetActive(true);
         interactButton.SetActive(true);
     }
+    
    #endregion
 }

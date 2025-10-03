@@ -16,7 +16,7 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     [Header("Interaction")]
     [SerializeField] private bool enableSpacebar = true;
-    [SerializeField, Range(0.5f, 5f)] private float interactionRadius = 4f;
+    [SerializeField, Range(0.5f, 5f)] private float interactionRadius = 6f;
     [SerializeField, Range(0f, 2f)] private float cooldownSec = 0.5f;
     [SerializeField] private Vector2 exitOffset = new(0f, 0.5f);
 
