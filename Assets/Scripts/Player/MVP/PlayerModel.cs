@@ -55,6 +55,10 @@ public class PlayerModel : NetworkBehaviour
         ApplyAliveStateChange();
         ApplyAnimationStateChange();
 
+        PlayerStateData.OnValueChanged += OnPlayerStateDataChanged;
+        
+        // note cba0898: MVP 규칙 위반 - PlayerPresenter에서 PlayerModel을 참조 할 것
+        /*
         // 상태 변경 이벤트 등록 - 개별 처리
         PlayerStateData.OnValueChanged += (oldValue, newValue) =>
         {
@@ -77,7 +81,8 @@ public class PlayerModel : NetworkBehaviour
                 ApplyAnimationStateChange();
             }
         };
-
+        
+        // note cba0898: MVP 규칙 위반 - CardInventoryPresenter에서 PlayerModel을 참조 할 
         PlayerStatusData.OnValueChanged += (oldValue, newValue) =>
         {
             //골드 띄우기
@@ -88,8 +93,18 @@ public class PlayerModel : NetworkBehaviour
             }
             
         };
+        */
     }
 
+    private void OnDestroy()
+    {
+        // 이벤트 구독 취소
+        if (PlayerStateData != null)
+        {
+            PlayerStateData.OnValueChanged -= OnPlayerStateDataChanged;
+        }
+    }
+    
     private void Update()
     {
         if (curAliveState != null)
@@ -315,5 +330,31 @@ public class PlayerModel : NetworkBehaviour
         PlayerStatusData.Value = newStatusData;
     }
     #endregion
+
+    /// <summary>
+    /// 플레이어 상태 데이터 변경 시 호출되는 메서드
+    /// </summary>
+    private void OnPlayerStateDataChanged(PlayerStateData oldValue, PlayerStateData newValue)
+    {
+        // AliveState가 변경된 경우만 처리
+        if (oldValue.AliveState != newValue.AliveState)
+        {
+            SetAliveStateByEnum(newValue.AliveState);
+            ApplyAliveStateChange();
+            
+            // note cba0898: MVP 규칙 위반 - PlayerPresenter에서 이 변경사항을 감지하도록 수정 필요
+            // if (newValue.AliveState == PlayerLivingState.Dead)
+            // {
+            //     GetComponent<PlayerPresenter>().UpdateVisibilityForAllPlayers();
+            // }
+        }
+
+        // AnimationState가 변경된 경우만 처리
+        if (oldValue.AnimationState != newValue.AnimationState)
+        {
+            SetAnimationStateByEnum(newValue.AnimationState);
+            ApplyAnimationStateChange();
+        }
+    }
 
 }

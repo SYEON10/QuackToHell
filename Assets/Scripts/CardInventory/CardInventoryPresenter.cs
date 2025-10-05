@@ -33,6 +33,20 @@ public class CardInventoryPresenter : MonoBehaviour
             default:
                 break;
         }*/
+
+        PlayerModel playerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId);
+        Debug.Assert(playerModel != null);
+
+        playerModel.PlayerStatusData.OnValueChanged += OnPlayerStatusChanged;
+
+    }
+
+    private void OnDestroy()
+    {
+        PlayerModel playerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId);
+        Debug.Assert(playerModel != null);
+
+        playerModel.PlayerStatusData.OnValueChanged -= OnPlayerStatusChanged;
     }
 
     private void CardInventoryModel_OwnedCardsOnListChanged(NetworkListEvent<CardItemData> changeEvent)
@@ -99,6 +113,19 @@ public class CardInventoryPresenter : MonoBehaviour
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 플레이어 상태 변경 시 호출되는 메서드
+    /// </summary>
+    private void OnPlayerStatusChanged(PlayerStatusData previousValue, PlayerStatusData newValue)
+    {
+        // 골드가 실제로 변경되었을 때만 UI 업데이트
+        if (previousValue.gold != newValue.gold)
+        {
+            Debug.Assert(_cardInventoryView != null);
+            _cardInventoryView.UpdatePlayerGold(newValue.gold);
+        }
     }
     
     #endregion

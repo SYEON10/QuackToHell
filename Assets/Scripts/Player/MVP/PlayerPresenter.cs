@@ -42,13 +42,6 @@ public class PlayerPresenter : NetworkBehaviour
         
         // 초기 설정
         SetupInitialState();
-
-        // Start()에서 네트워크 이벤트 구독
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-    
-        //씬 로드 이벤트 구독
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public override void OnNetworkSpawn()
@@ -97,12 +90,8 @@ public class PlayerPresenter : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        // 네트워크 이벤트 구독 해제
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-        }
+        UnbindEvents();
+        
         base.OnDestroy();
     }
 
@@ -150,6 +139,11 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void BindEvents()
     {
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         // View -> Presenter -> Model
         playerView.OnMovementInput += HandleMovementInput;
         playerView.OnKillTryInput += HandleKillInput;
@@ -161,6 +155,7 @@ public class PlayerPresenter : NetworkBehaviour
         // Model -> Presenter -> View
         playerModel.PlayerStatusData.OnValueChanged += HandleStatusChanged;
         playerModel.PlayerAppearanceData.OnValueChanged += HandleAppearanceChanged;
+        playerModel.PlayerStateData.OnValueChanged += HandleStateChanged;
     
         // View -> Presenter
         playerView.onPlayerDetected += PlayerView_OnPlayerDetected;
@@ -171,6 +166,41 @@ public class PlayerPresenter : NetworkBehaviour
         //model -> presenter
         playerModel.PlayerTag.OnValueChanged += HandleTagChanged;
     }
+
+    private void UnbindEvents()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+
+        // static event는 null 체크 필요 없음
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (playerView != null)
+        {
+            playerView.OnMovementInput -= HandleMovementInput;
+            playerView.OnKillTryInput -= HandleKillInput;
+            playerView.OnInteractInput -= HandleInteractInput;
+            playerView.OnCorpseReported -= HandleCorpseReported;
+            playerView.OnVentTryInput -= HandleVentInput;
+            playerView.OnSavotageTryInput -= HandleSavotageInput;
+        }
+
+        if (playerModel != null)
+        {
+            playerModel.PlayerStatusData.OnValueChanged -= HandleStatusChanged;
+            playerModel.PlayerAppearanceData.OnValueChanged -= HandleAppearanceChanged;
+            playerModel.PlayerStateData.OnValueChanged -= HandleStateChanged;
+        }
+
+        if (playerModel.PlayerTag != null)
+        {
+            playerModel.PlayerTag.OnValueChanged -= HandleTagChanged;
+        }
+    }
+
     private void HandleObjectEntered(Collider2D collision)
     {
         if(interactionHUDController == null) return;
@@ -429,6 +459,19 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleAppearanceChanged(PlayerAppearanceData previousValue, PlayerAppearanceData newValue)
     {
         playerView.ChangeApprearence(newValue);
+    }
+    
+    /// <summary>
+    /// Model에서 받은 상태 변경 처리 (MVP 패턴 준수)
+    /// </summary>
+    private void HandleStateChanged(PlayerStateData previousValue, PlayerStateData newValue)
+    {
+        // 사망 상태로 변경되었을 때 가시성 업데이트
+        if (previousValue.AliveState != newValue.AliveState && 
+            newValue.AliveState == PlayerLivingState.Dead)
+        {
+            UpdateVisibilityForAllPlayers();
+        }
     }
     
     #endregion
