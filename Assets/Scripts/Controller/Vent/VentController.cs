@@ -181,11 +181,10 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         if (!IsClient) return;
 
         NetworkManager nm = NetworkManager.Singleton;
+        if (nm == null) return;
         
-        GameObject localPlayerObj = null;
-        localPlayerObj = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).gameObject;
-        
-        
+        GameObject localPlayerObj = PlayerHelperManager.Instance?.GetPlayerGameObjectByClientId(nm.LocalClientId);
+
         if (localPlayerObj == null)
         {
             if (nm != null)
