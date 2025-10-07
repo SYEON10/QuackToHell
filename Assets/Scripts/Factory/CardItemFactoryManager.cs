@@ -96,13 +96,13 @@ public class CardItemFactoryManager : NetworkBehaviour
 
             cardItemForSale.transform.SetParent(cardForSaleParent.transform);
 
-            // CardShopPresenter 참조 설정
             CardItemPresenter cardItemPresenter = cardItemForSale.GetComponent<CardItemPresenter>();
-            if (DebugUtils.AssertNotNull(cardItemPresenter, "CardItemPresenter", this))
-            {
-                CardShopPresenter cardShopPresenter = FindFirstObjectByType<CardShopPresenter>();
-                cardItemPresenter.CardShopPresenter = cardShopPresenter;
-            }
+            DebugUtils.AssertNotNull(cardItemPresenter, "CardItemPresenter", this);
+            
+            CardShopPresenter cardShopPresenter = FindFirstObjectByType<CardShopPresenter>();
+            //cardItemPresenter.CardShopPresenter = cardShopPresenter;
+            DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this);
+            cardItemPresenter.OnPurchaseRequested += cardShopPresenter.TryPurchaseCard;
 
             //비활성화
             cardItemForSale.SetActive(false);
