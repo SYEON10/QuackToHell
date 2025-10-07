@@ -43,10 +43,14 @@ public class CardInventoryPresenter : MonoBehaviour
 
     private void OnDestroy()
     {
-        PlayerModel playerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId);
-        Debug.Assert(playerModel != null);
-
-        playerModel.PlayerStatusData.OnValueChanged -= OnPlayerStatusChanged;
+        if (NetworkManager.Singleton != null && PlayerHelperManager.Instance != null)
+        {
+            PlayerModel playerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId);
+            if (playerModel != null)
+            {
+                playerModel.PlayerStatusData.OnValueChanged -= OnPlayerStatusChanged;
+            }
+        }
     }
 
     private void CardInventoryModel_OwnedCardsOnListChanged(NetworkListEvent<CardItemData> changeEvent)
