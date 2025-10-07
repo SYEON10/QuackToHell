@@ -122,8 +122,7 @@ public class GameManager : NetworkBehaviour
         
         //플레이어 골드차감
         PlayerModel player = PlayerHelperManager.Instance.GetPlayerModelByClientId(clientId);
-        if (!DebugUtils.AssertNotNull(player, "PlayerModel", this))
-            return;
+        DebugUtils.AssertNotNull(player, "PlayerModel", this);
             
         PlayerStatusData currentStatus = player.PlayerStatusData.Value;
         currentStatus.gold -= amount;

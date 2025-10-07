@@ -95,10 +95,8 @@ public class PlayerView : NetworkBehaviour
     protected void Start()
     {
         Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
-        if (DebugUtils.AssertNotNull(canvas, "Canvas", this))
-        {
-            nicknameText = canvas.GetComponentInChildren<TextMeshProUGUI>();
-        }
+        DebugUtils.AssertNotNull(canvas, "Canvas", this);
+        nicknameText = canvas.GetComponentInChildren<TextMeshProUGUI>();
 
         SceneManager.sceneLoaded += OnSceneLoaded;
         if (IsOwner)
@@ -111,47 +109,36 @@ public class PlayerView : NetworkBehaviour
     
     private void SetupInputSystem()
     {
-        if (!DebugUtils.AssertNotNull(playerInput, "PlayerInput", this))
-            return;
-
-        if (!DebugUtils.AssertNotNull(playerInput.actions, "PlayerInput.actions", this))
-            return;
+        DebugUtils.AssertNotNull(playerInput, "PlayerInput", this);
+        DebugUtils.AssertNotNull(playerInput.actions, "PlayerInput.actions", this);
 
         InputAction moveAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Move}"];
-        if (DebugUtils.AssertNotNull(moveAction, "MoveAction", this))
-        {
-            moveAction.performed += OnMoveInput;
-            moveAction.canceled += OnMoveInput;
-        }
+        DebugUtils.AssertNotNull(moveAction, "MoveAction", this);
+        moveAction.performed += OnMoveInput;
+        moveAction.canceled += OnMoveInput;
 
         InputAction interactAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Interact}"];
-        if (DebugUtils.AssertNotNull(interactAction, "InteractAction", this))
-        {
-            interactAction.performed += OnInteractInputHandler;
-        }
+        DebugUtils.AssertNotNull(interactAction, "InteractAction", this);
+        interactAction.performed += OnInteractInputHandler;
 
         InputAction reportAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Report}"];
-        if (DebugUtils.AssertNotNull(reportAction, "ReportAction", this))
-        {
-            reportAction.performed += OnReportInput;
-        }
+        DebugUtils.AssertNotNull(reportAction, "ReportAction", this);
+        reportAction.performed += OnReportInput;
 
         InputAction killAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Kill}"];
-        if (DebugUtils.AssertNotNull(killAction, "KillAction", this))
-        {
-            killAction.performed += OnKillInput;
-        }
+        DebugUtils.AssertNotNull(killAction, "KillAction", this);
+        killAction.performed += OnKillInput;
         // 사보타지 입력 추가 (e키)
         InputAction savotageAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Savotage}"];
-        if (DebugUtils.AssertNotNull(savotageAction, "SavotageAction", this))
-        {
-            savotageAction.performed += OnSavotageInput;
-        }
+        DebugUtils.AssertNotNull(savotageAction, "SavotageAction", this);
+        savotageAction.performed += OnSavotageInput;
 
     }
     
     public override void OnDestroy()
     {
+        // note cba0898: OnDestroy() 시점에는 다른 오브젝트가 삭제되었을 수 있으므로, AssertNotNull 말고 if문으로 처리하시는 것을 추천드립니다.
+        // ex) if (playerInput != null && playerInput.actions != null) { ... }
         if (DebugUtils.AssertNotNull(playerInput, "PlayerInput", this) && 
             DebugUtils.AssertNotNull(playerInput.actions, "PlayerInput.actions", this))
         {
@@ -179,8 +166,6 @@ public class PlayerView : NetworkBehaviour
             {
                 killAction.performed -= OnKillInput;
             }
-
-            
         }
         
         base.OnDestroy();

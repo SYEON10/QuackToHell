@@ -23,14 +23,11 @@ public class CardInventoryView : MonoBehaviour
         if (SceneManager.GetActiveScene().name == GameScenes.Village)
         {
             GameObject cardShopCanvas = GameObject.FindGameObjectWithTag(GameTags.UI_CardShopCanvas);
-            if (DebugUtils.AssertNotNull(cardShopCanvas, "UI_CardShopCanvas", this))
-            {
-                cardShopPanel = cardShopCanvas.transform.GetChild(0).gameObject;
-            }
-            if (DebugUtils.AssertNotNull(cardShopPanel,"cardShopPanel", this))
-            {
-                cardShopPanelAnimator = cardShopPanel.GetComponent<Animator>();
-            }
+            DebugUtils.AssertNotNull(cardShopCanvas, "UI_CardShopCanvas", this);
+            cardShopPanel = cardShopCanvas.transform.GetChild(0).gameObject;
+            DebugUtils.AssertNotNull(cardShopPanel,"cardShopPanel", this);
+            cardShopPanelAnimator = cardShopPanel.GetComponent<Animator>();
+            DebugUtils.AssertNotNull(cardShopPanelAnimator,"cardShopPanelAnimator", this);
         }
 
         clientId = NetworkManager.Singleton.LocalClientId;

@@ -748,11 +748,12 @@ public class DeckManager : NetworkBehaviour
             return;
         }
         
+        // note cba0898: cardShopPresenter 체크는 왜...? 이 함수에서 쓰이지 않아서 체크를 안해도 될 것 같아요
+        /*
         if (!DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
             return;
+        */
         
-        
-
         ClientRpcParams clientRpcParams = new ClientRpcParams
         {
             Send = new ClientRpcSendParams
@@ -1012,10 +1013,8 @@ public class DeckManager : NetworkBehaviour
         if (NetworkManager.Singleton.LocalClientId == targetClientId)
         {
             // CardShopModel에게 진열 결과 전달
-            if (DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
-            {
-                cardShopPresenter.OnDisplayCardsResult(displayedCards);
-            }
+            DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this);
+            cardShopPresenter.OnDisplayCardsResult(displayedCards);
         }
     }
 

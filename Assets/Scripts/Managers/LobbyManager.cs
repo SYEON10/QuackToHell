@@ -94,6 +94,7 @@ public class LobbyManager : NetworkBehaviour
             return;
         }
 
+        // note cba0898: Assert를 조건처럼 쓰는 형태는 지양해주세요
         // DeckManager가 초기화될 때까지 대기
         while (!DebugUtils.AssertNotNull(DeckManager.Instance, "DeckManager.Instance", this))
         {
@@ -434,6 +435,8 @@ public class LobbyManager : NetworkBehaviour
     private void PlayerSpawn()
     {
         PlayerFactoryManager playerFactory = PlayerFactoryManager.Instance;
+        // note cba0898: PlayerFactoryManager는 싱글톤이라 null체크 상황이 어색합니다.
+        // 그리고 PlayerSpawn() 함수를 쓰기보단 PlayerFactoryManager.Instance.SpawnPlayerServerRpc() 처럼 싱글톤 인스턴스를 쓰는게 좋을 것 같아요.
         if (DebugUtils.AssertNotNull(playerFactory, "PlayerFactoryManager", this))
         {
             playerFactory.SpawnPlayerServerRpc();

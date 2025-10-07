@@ -46,14 +46,11 @@ public class InteractionHUDController : MonoBehaviour
         if (!string.IsNullOrEmpty(spritePath))
         {
             Sprite interactionSprite = Resources.Load<Sprite>(spritePath);
-            if (DebugUtils.AssertNotNull(interactionSprite, $"interactionSprite for {objectTag}", this))
-            {
-                Image interactButtonImage = interactButton.GetComponent<Image>();
-                if (DebugUtils.AssertNotNull(interactButtonImage, "interactButtonImage", this))
-                {
-                    interactButtonImage.sprite = interactionSprite;
-                }
-            }
+            DebugUtils.AssertNotNull(interactionSprite, $"interactionSprite for {objectTag}", this);
+
+            Image interactButtonImage = interactButton.GetComponent<Image>();
+            DebugUtils.AssertNotNull(interactButtonImage, "interactButtonImage", this);
+            interactButtonImage.sprite = interactionSprite;
         }   
     }
     public enum ButtonName{
@@ -215,12 +212,10 @@ public class InteractionHUDController : MonoBehaviour
     public void SetInteractionButtonDefault()
     {
         Sprite defaultSprite = Resources.Load<Sprite>("Sprites/InteractionButtons/InteractionButtonDefault");
-        if(DebugUtils.AssertNotNull(defaultSprite, "defaultSprite", this)){
-            Image interactButtonImage = interactButton.GetComponent<Image>();
-            if(DebugUtils.AssertNotNull(interactButtonImage, "interactButtonImage", this)){
-                interactButtonImage.sprite = defaultSprite;
-            }
-        }
+        DebugUtils.AssertNotNull(defaultSprite, "defaultSprite", this);
+        Image interactButtonImage = interactButton.GetComponent<Image>();
+        DebugUtils.AssertNotNull(interactButtonImage, "interactButtonImage", this);
+        interactButtonImage.sprite = defaultSprite;
     }
 
     private void SetupFarmerButtons()

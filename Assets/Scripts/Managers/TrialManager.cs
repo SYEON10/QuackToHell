@@ -67,11 +67,7 @@ public class TrialManager : NetworkBehaviour
         
         // 2. 서버에서 리포터가 실제로 살아있는 플레이어인지 검증
         PlayerModel reporterModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(reporterClientId);
-        if (!DebugUtils.AssertNotNull(reporterModel, "ReporterModel", this))
-        {
-            Debug.LogError($"Server: Reporter {reporterClientId} not found");
-            return;
-        }
+        DebugUtils.AssertNotNull(reporterModel, "ReporterModel", this);
         
         if (reporterModel.PlayerStateData.Value.AliveState == PlayerLivingState.Dead)
         {
@@ -146,6 +142,7 @@ public class TrialManager : NetworkBehaviour
                 }
             }
             
+            // note cba0898: 이것은 무엇..? 그때그때 검증하는 것으로 바꾸시긔.. convocationOfTrialCanvas는 왜 두번..?
             // 검증
             if (DebugUtils.AssertNotNull(convocationOfTrialCanvas, "ConvocationOfTrialCanvas", this))
             {
