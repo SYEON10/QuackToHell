@@ -10,15 +10,16 @@ public class CardInventoryPresenter : MonoBehaviour
     private void Awake()
     {
         _cardInventoryModel = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(NetworkManager.Singleton.LocalClientId).GetComponent<CardInventoryModel>();
-        _cardInventoryView = GetComponent<CardInventoryView>();
-            
         DebugUtils.AssertComponent(_cardInventoryModel, "CardInventoryModel", this);
+        _cardInventoryView = GetComponent<CardInventoryView>();
         DebugUtils.AssertComponent(_cardInventoryView, "CardInventoryView", this);
     }
 
     private void Start()
     {
-        _cardInventoryModel.OwnedCards.OnListChanged += CardInventoryModel_OwnedCardsOnListChanged;
+        DebugUtils.AssertNotNull(_cardInventoryModel, "CardInventoryModel", this);
+        DebugUtils.AssertNotNull(_cardInventoryView, "CardInventoryView", this);
+
         //초기 뷰 업데이트
         _cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards);
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
@@ -36,9 +37,12 @@ public class CardInventoryPresenter : MonoBehaviour
 
         PlayerModel playerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId);
         Debug.Assert(playerModel != null);
-
         playerModel.PlayerStatusData.OnValueChanged += OnPlayerStatusChanged;
 
+        _cardInventoryModel.OwnedCards.OnListChanged += CardInventoryModel_OwnedCardsOnListChanged;
+
+        _cardInventoryView.OnShowCardShopClicked += OnClickShowCardShop;
+        _cardInventoryView.OnCloseInventoryClicked += OnClickCloseInventory;
     }
 
     private void OnDestroy()
@@ -51,13 +55,44 @@ public class CardInventoryPresenter : MonoBehaviour
                 playerModel.PlayerStatusData.OnValueChanged -= OnPlayerStatusChanged;
             }
         }
+
+        if (_cardInventoryModel != null)
+        {
+            _cardInventoryModel.OwnedCards.OnListChanged -= CardInventoryModel_OwnedCardsOnListChanged;
+        }
+
+        if (_cardInventoryView != null)
+        {
+            _cardInventoryView.OnShowCardShopClicked -= OnClickShowCardShop;
+            _cardInventoryView.OnCloseInventoryClicked -= OnClickCloseInventory;
+        }
     }
 
     private void CardInventoryModel_OwnedCardsOnListChanged(NetworkListEvent<CardItemData> changeEvent)
     {
+        // note cba0898: 가지고 있는 _cardInventoryView를 써도 될 것 같습니다
         //view 업데이트 함수 호출
         CardInventoryView cardInventoryView = gameObject.GetComponent<CardInventoryView>();
         cardInventoryView?.UpdateInventoryView(_cardInventoryModel.OwnedCards);
+    }
+
+    private void OnClickShowCardShop()
+    {
+        if (SceneManager.GetActiveScene().name != GameScenes.Village)
+        {
+            Debug.Log("CardShop not available in this scene");
+            return;
+        }
+
+        CardShopPresenter cardShop = FindFirstObjectByType<CardShopPresenter>();
+        DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
+        cardShop.RequestShowCardShop();
+    }
+
+    private void OnClickCloseInventory()
+    {
+        DebugUtils.AssertNotNull(_cardInventoryView, "CardInventoryView", this);
+        _cardInventoryView.CloseInventory();
     }
 
     #region 외부 인터페이스 (메시지 기반)

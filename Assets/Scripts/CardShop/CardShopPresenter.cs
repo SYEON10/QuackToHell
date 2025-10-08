@@ -160,4 +160,11 @@ public class CardShopPresenter : NetworkBehaviour
     }
 
     #endregion
+
+    public void RequestShowCardShop()
+    {
+        _view.ShowCardShopUI();
+        
+        RequestDisplayCards(NetworkManager.Singleton.LocalClientId);
+    }
 }

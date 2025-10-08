@@ -38,6 +38,14 @@ public class CardShopView : MonoBehaviour
         if (rerollButton) rerollButton.interactable = interactable;
     }
 
+    public void ShowCardShopUI()
+    {
+        DebugUtils.AssertNotNull(cardShopPanel, "cardShopPanel", this);
+        DebugUtils.AssertNotNull(cardShopPanelAnimator, "cardShopPanelAnimator", this);
+        
+        cardShopPanel.SetActive(true);
+        cardShopPanelAnimator.SetBool("Active", true);
+    }
 
     #region x버튼 바인딩 함수
 

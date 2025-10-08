@@ -2,6 +2,8 @@ using TMPro;
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using System;
 
 public class CardInventoryView : MonoBehaviour
 {
@@ -14,12 +16,28 @@ public class CardInventoryView : MonoBehaviour
     [Header("인벤토리 UI의 하위 오브젝트: Gold Text를 넣어주세요.")]
     [SerializeField]
     private TextMeshProUGUI goldText;
+    [Header("인벤토리 UI의 하위 오브젝트: Show Card Shop Button을 넣어주세요.")]
+    [SerializeField]
+    private Button showCardShopButton;
+    [Header("인벤토리 UI의 하위 오브젝트: Close Inventory Button을 넣어주세요.")]
+    [SerializeField] 
+    private Button closeButton; 
+    /*
     [Header("UI References")]
     private GameObject cardShopPanel;
     private Animator cardShopPanelAnimator;
-    private ulong clientId = 0;
+    //private ulong clientId = 0;
+    */
+    public event Action OnShowCardShopClicked;
+    public event Action OnCloseInventoryClicked;
+
     private void Start()
     {
+        DebugUtils.AssertNotNull(showCardShopButton, "showCardShopButton", this);
+        DebugUtils.AssertNotNull(closeButton, "closeButton", this);
+        showCardShopButton.onClick.AddListener(ShowCardShopButton_OnClick);
+        closeButton.onClick.AddListener(CloseInventoryButton_OnClick);
+        /*
         if (SceneManager.GetActiveScene().name == GameScenes.Village)
         {
             GameObject cardShopCanvas = GameObject.FindGameObjectWithTag(GameTags.UI_CardShopCanvas);
@@ -29,10 +47,22 @@ public class CardInventoryView : MonoBehaviour
             cardShopPanelAnimator = cardShopPanel.GetComponent<Animator>();
             DebugUtils.AssertNotNull(cardShopPanelAnimator,"cardShopPanelAnimator", this);
         }
-
+        
         clientId = NetworkManager.Singleton.LocalClientId;
+        */
     }
 
+    private void OnDestroy()
+    {
+        if (showCardShopButton != null)
+        {
+            showCardShopButton.onClick.RemoveListener(ShowCardShopButton_OnClick);
+        }
+        if (closeButton != null)
+        {
+            closeButton.onClick.RemoveListener(CloseInventoryButton_OnClick);
+        }
+    }
     
     public void UpdateInventoryView(NetworkList<CardItemData> ownedCards)
     {
@@ -59,11 +89,25 @@ public class CardInventoryView : MonoBehaviour
     
     #endregion
 
-    #region 버튼
-    public void XButton_OnClick()
+    public void CloseInventory()
     {
         gameObject.SetActive(false);
     }
+
+    #region 버튼
+
+    private void ShowCardShopButton_OnClick()
+    {
+        OnShowCardShopClicked?.Invoke();
+    }
+
+    private void CloseInventoryButton_OnClick()
+    {
+        OnCloseInventoryClicked?.Invoke();
+    }
+
+    // note cba0898: MVP 패턴 위반 - CardShopPresenter에서 카드 표시 요청
+    /*
     public void PlusButton_OnClick()
     {
         // 카드샵 패널 켜기
@@ -86,6 +130,6 @@ public class CardInventoryView : MonoBehaviour
         {
             cardShopPresenter.RequestDisplayCards(clientId);
         }
-    }
+    }*/
     #endregion
 }

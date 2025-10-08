@@ -120,19 +120,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4929894956947228112}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3164846918959706073}
-        m_TargetAssemblyTypeName: CardInventoryView, Assembly-CSharp
-        m_MethodName: PlusButton_OnClick
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &308373736995239027
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,6 +404,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   content: {fileID: 2719623556653404859}
   goldText: {fileID: 3172700243350043697}
+  showCardShopButton: {fileID: 6662124824493929530}
+  closeButton: {fileID: 1883201549402953997}
 --- !u!114 &5020916991026981847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -461,7 +451,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00044558817}
+  m_AnchoredPosition: {x: 0, y: -0.000024160228}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7995220654925194300
@@ -644,19 +634,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 9020369164432832972}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3164846918959706073}
-        m_TargetAssemblyTypeName: CardInventoryView, Assembly-CSharp
-        m_MethodName: XButton_OnClick
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &3864237505605209347
 GameObject:
   m_ObjectHideFlags: 0
