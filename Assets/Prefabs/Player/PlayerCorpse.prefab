@@ -187,6 +187,7 @@ GameObject:
   - component: {fileID: 7305585849208563331}
   - component: {fileID: 5880382601569244856}
   - component: {fileID: 3950698970805665462}
+  - component: {fileID: 6525231655966057569}
   m_Layer: 0
   m_Name: PlayerCorpse
   m_TagString: PlayerCorpse
@@ -284,7 +285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60cdefc7371d160438f08736395a87a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  circleCollider2D: {fileID: 7305585849208563331}
+  playerReference: {fileID: 0}
   detectionRadius: 1
 --- !u!114 &3950698970805665462
 MonoBehaviour:
@@ -300,3 +301,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _spriteRenderer: {fileID: 5226947850742423554}
+--- !u!210 &6525231655966057569
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7030858896494600802}
+  m_Enabled: 1
+  m_SortingLayerID: -1096241079
+  m_SortingLayer: 3
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
