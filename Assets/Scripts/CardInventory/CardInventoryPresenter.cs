@@ -78,15 +78,7 @@ public class CardInventoryPresenter : MonoBehaviour
 
     private void OnClickShowCardShop()
     {
-        if (SceneManager.GetActiveScene().name != GameScenes.Village)
-        {
-            Debug.Log("CardShop not available in this scene");
-            return;
-        }
-
-        CardShopPresenter cardShop = FindFirstObjectByType<CardShopPresenter>();
-        DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
-        cardShop.RequestShowCardShop();
+        UIManager.Instance.ShowCardShopUI();
     }
 
     private void OnClickCloseInventory()

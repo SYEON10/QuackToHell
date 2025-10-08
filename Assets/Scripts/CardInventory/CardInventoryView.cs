@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 using Unity.Netcode;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System;
 

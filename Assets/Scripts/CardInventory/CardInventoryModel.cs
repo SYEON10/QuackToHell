@@ -18,8 +18,6 @@ public class CardInventoryModel : NetworkBehaviour
     public InventorySotringOption SortingOption => _sortingOption;
     // TODO: 필요하면, cardCount 추가
 
-
-
     #endregion
 
     #region 초기화
