@@ -36,6 +36,8 @@ public class LobbyManager : NetworkBehaviour
     [SerializeField] string stringCsvUrl;   // String_Table
     [SerializeField] string resourceCsvUrl; // Resource_Table
 
+    [SerializeField] bool ToggleForcedAllFarmer = false;
+
     private bool isCardDataLoaded = false;
     private CancellationTokenSource _cancellationTokenSource;
 
@@ -384,7 +386,12 @@ public class LobbyManager : NetworkBehaviour
 
         //역할 부여
         for(int i=0;i<allPlayers.Length;i++){
-            if(i<farmerCount){
+            if(ToggleForcedAllFarmer)
+            {
+                allPlayers[i].ChangeRole(PlayerJob.Farmer);
+                continue;
+            }
+            if (i<farmerCount){
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
             }
             else{
