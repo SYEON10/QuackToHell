@@ -24,7 +24,7 @@ public class CardShopPresenter : NetworkBehaviour
             
         DebugUtils.AssertComponent(_view, "CardShopView", this);
         DebugUtils.AssertComponent(_model, "CardShopModel", this);
-        clientId = NetworkManager.Singleton.LocalClientId;
+        //clientId = NetworkManager.Singleton.LocalClientId;
     }
 
     private void Start()
@@ -33,17 +33,29 @@ public class CardShopPresenter : NetworkBehaviour
         {
             _view.OnClickLock += OnClickLock;
             _view.OnClickReRoll += OnClickReRoll;
+            _view.OnClickX += OnClickX;
         }
 
+        // note cba0898: 이거 왜 있는지 모르겠어영..
+        /*
         if (IsServer)
         {
             s_serverByClient[OwnerClientId] = this;
             // 서버에서 카드 표시
-            RequestDisplayCards(clientId);
+            RequestDisplayCards(NetworkManager.Singleton.LocalClientId);
         }
+        */
     }
 
-
+    private void OnDestroy()
+    {
+        if (_view != null)
+        {
+            _view.OnClickLock -= OnClickLock;
+            _view.OnClickReRoll -= OnClickReRoll;
+            _view.OnClickX -= OnClickX;
+        }
+    }
 
     public override void OnNetworkDespawn()
     {
@@ -81,6 +93,7 @@ public class CardShopPresenter : NetworkBehaviour
         _model.IsLocked = !_model.IsLocked;
         _view.SetRefreshInteractable(!_model.IsLocked);
     }
+    
     private void OnClickReRoll()
     {
         
@@ -89,7 +102,12 @@ public class CardShopPresenter : NetworkBehaviour
 
         StartCoroutine(RerollCooldown());
         
-        _model.TryReRoll(clientId);
+        _model.TryReRoll(NetworkManager.Singleton.LocalClientId);
+    }
+
+    private void OnClickX()
+    {
+        RequestCloseCardShop();
     }
 
     /// <summary>
@@ -163,8 +181,13 @@ public class CardShopPresenter : NetworkBehaviour
 
     public void RequestShowCardShop()
     {
-        _view.ShowCardShopUI();
+        _view.ToggleCardShopUI(true);
         
         RequestDisplayCards(NetworkManager.Singleton.LocalClientId);
+    }
+
+    public void RequestCloseCardShop()
+    {
+        _view.ToggleCardShopUI(false);
     }
 }

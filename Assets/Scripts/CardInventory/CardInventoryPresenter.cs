@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 public class CardInventoryPresenter : MonoBehaviour
 {
@@ -78,13 +79,28 @@ public class CardInventoryPresenter : MonoBehaviour
 
     private void OnClickShowCardShop()
     {
-        UIManager.Instance.ShowCardShopUI();
+        if (SceneManager.GetActiveScene().name != GameScenes.Village)
+        {
+            Debug.Log("CardShop not available in this scene");
+            return;
+        }
+
+        CardShopPresenter cardShop = FindFirstObjectByType<CardShopPresenter>(FindObjectsInactive.Include);
+        DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
+        cardShop.RequestShowCardShop();
     }
 
     private void OnClickCloseInventory()
     {
         DebugUtils.AssertNotNull(_cardInventoryView, "CardInventoryView", this);
         _cardInventoryView.CloseInventory();
+
+        if (SceneManager.GetActiveScene().name == GameScenes.Village)
+        {
+            CardShopPresenter cardShop = FindFirstObjectByType<CardShopPresenter>(FindObjectsInactive.Include);
+            DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
+            cardShop.RequestCloseCardShop();
+        }
     }
 
     #region 외부 인터페이스 (메시지 기반)

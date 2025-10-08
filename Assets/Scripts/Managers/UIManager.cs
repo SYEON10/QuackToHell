@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class UIManager:MonoBehaviour
 {
@@ -128,19 +127,5 @@ public class UIManager:MonoBehaviour
     {
         while (_popupStack.Count > 0)
             ClosePopupUI();
-    }
-
-    public void ShowCardShopUI()
-    {
-        if (SceneManager.GetActiveScene().name != GameScenes.Village)
-        {
-            Debug.Log("CardShop not available in this scene");
-            return;
-        }
-
-        CardShopPresenter cardShop = FindFirstObjectByType<CardShopPresenter>(FindObjectsInactive.Include);
-        DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
-        cardShop.gameObject.SetActive(true);
-        cardShop.RequestShowCardShop();
     }
 }
