@@ -42,13 +42,6 @@ public class PlayerPresenter : NetworkBehaviour
         
         // 초기 설정
         SetupInitialState();
-
-        // Start()에서 네트워크 이벤트 구독
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-    
-        //씬 로드 이벤트 구독
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public override void OnNetworkSpawn()
@@ -97,12 +90,8 @@ public class PlayerPresenter : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        // 네트워크 이벤트 구독 해제
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-        }
+        UnbindEvents();
+        
         base.OnDestroy();
     }
 
@@ -150,6 +139,11 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void BindEvents()
     {
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         // View -> Presenter -> Model
         playerView.OnMovementInput += HandleMovementInput;
         playerView.OnKillTryInput += HandleKillInput;
@@ -161,6 +155,7 @@ public class PlayerPresenter : NetworkBehaviour
         // Model -> Presenter -> View
         playerModel.PlayerStatusData.OnValueChanged += HandleStatusChanged;
         playerModel.PlayerAppearanceData.OnValueChanged += HandleAppearanceChanged;
+        playerModel.PlayerStateData.OnValueChanged += HandleStateChanged;
     
         // View -> Presenter
         playerView.onPlayerDetected += PlayerView_OnPlayerDetected;
@@ -171,6 +166,41 @@ public class PlayerPresenter : NetworkBehaviour
         //model -> presenter
         playerModel.PlayerTag.OnValueChanged += HandleTagChanged;
     }
+
+    private void UnbindEvents()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+
+        // static event는 null 체크 필요 없음
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (playerView != null)
+        {
+            playerView.OnMovementInput -= HandleMovementInput;
+            playerView.OnKillTryInput -= HandleKillInput;
+            playerView.OnInteractInput -= HandleInteractInput;
+            playerView.OnCorpseReported -= HandleCorpseReported;
+            playerView.OnVentTryInput -= HandleVentInput;
+            playerView.OnSavotageTryInput -= HandleSavotageInput;
+        }
+
+        if (playerModel != null)
+        {
+            playerModel.PlayerStatusData.OnValueChanged -= HandleStatusChanged;
+            playerModel.PlayerAppearanceData.OnValueChanged -= HandleAppearanceChanged;
+            playerModel.PlayerStateData.OnValueChanged -= HandleStateChanged;
+        }
+
+        if (playerModel.PlayerTag != null)
+        {
+            playerModel.PlayerTag.OnValueChanged -= HandleTagChanged;
+        }
+    }
+
     private void HandleObjectEntered(Collider2D collision)
     {
         if(interactionHUDController == null) return;
@@ -347,8 +377,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleKillInput()
     {
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         
         _roleController.CurrentStrategy?.TryKill();
     }
@@ -359,8 +388,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleInteractInput()
     {
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         _roleController.CurrentStrategy?.TryInteract();
@@ -375,8 +403,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleCorpseReported(ulong reporterClientId)
     {
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
 
         _roleController.CurrentStrategy?.TryReportCorpse();
@@ -387,8 +414,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleVentInput()
     {
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         _roleController.CurrentStrategy?.TryVent();
@@ -399,8 +425,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleSavotageInput()
     {
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         _roleController.CurrentStrategy?.TrySabotage();
@@ -429,6 +454,19 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleAppearanceChanged(PlayerAppearanceData previousValue, PlayerAppearanceData newValue)
     {
         playerView.ChangeApprearence(newValue);
+    }
+    
+    /// <summary>
+    /// Model에서 받은 상태 변경 처리 (MVP 패턴 준수)
+    /// </summary>
+    private void HandleStateChanged(PlayerStateData previousValue, PlayerStateData newValue)
+    {
+        // 사망 상태로 변경되었을 때 가시성 업데이트
+        if (previousValue.AliveState != newValue.AliveState && 
+            newValue.AliveState == PlayerLivingState.Dead)
+        {
+            UpdateVisibilityForAllPlayers();
+        }
     }
     
     #endregion
@@ -467,8 +505,7 @@ public class PlayerPresenter : NetworkBehaviour
     public void TryKillServerRpc()
     {
         // 서버 검증
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         
         if (_roleController.CurrentStrategy?.CanKill() != true)
         {
@@ -508,8 +545,7 @@ public class PlayerPresenter : NetworkBehaviour
     public void TryInteractServerRpc(ServerRpcParams serverRpcParams = default)
     {
         // 서버 검증
-        if (!DebugUtils.AssertNotNull(_roleController, "RoleManager", this))
-            return;
+        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
         
         if (_roleController.CurrentStrategy?.CanInteract() != true)
         {
@@ -676,8 +712,9 @@ public class PlayerPresenter : NetworkBehaviour
             return;
         }
         
+        // note cba0898: Assert 상황에서 코드 실행 사유 체크 필요. Assert가 아니라 일반적인 if문으로 변경하는게 맞아 보임.
         // 2. 서버에서 플레이어 상태 검증 (유령은 시체 리포트 불가)
-        if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
+        if (!DebugUtils.AssertNotNull(playerModel != null, "playerModel", this))
         {
             ReportCorpseResultClientRpc(false, "PlayerModel not found", requesterClientId);
             return;
@@ -774,11 +811,7 @@ public class PlayerPresenter : NetworkBehaviour
     public void HandlePlayerDeathServerRpc(ServerRpcParams rpcParams=default)
     {
         // 1. 서버에서 플레이어 상태 검증 (이미 죽었는지 확인)
-        if (!DebugUtils.AssertNotNull(playerModel, "playerModel", this))
-        {
-            Debug.LogError("Server: PlayerModel not found");
-            return;
-        }
+        DebugUtils.AssertNotNull(playerModel, "playerModel", this);
         
         if (playerModel.PlayerStateData.Value.AliveState == PlayerLivingState.Dead)
         {
@@ -817,28 +850,27 @@ public class PlayerPresenter : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void ChangeToGhostStateServerRpc()
     {
-        if (DebugUtils.AssertNotNull(playerModel, "playerModel", this))
+        DebugUtils.AssertNotNull(playerModel, "playerModel", this);
+
+        PlayerStatusData statusData = playerModel.PlayerStatusData.Value;
+        // 서버에서 속도 변경 (NetworkVariable로 동기화됨)
+        statusData.moveSpeed = statusData.moveSpeed * GameConstants.Player.GhostSpeedMultiplier; // 유령 속도로 설정
+        // 서버에서 job변경
+        statusData.job =  PlayerJob.Ghost;
+        playerModel.PlayerStatusData.Value = statusData;
+        // 서버에서 상태 변경
+        PlayerStateData newState = new PlayerStateData
         {
-            PlayerStatusData statusData = playerModel.PlayerStatusData.Value;
-            // 서버에서 속도 변경 (NetworkVariable로 동기화됨)
-            statusData.moveSpeed = statusData.moveSpeed * GameConstants.Player.GhostSpeedMultiplier; // 유령 속도로 설정
-            // 서버에서 job변경
-            statusData.job =  PlayerJob.Ghost;
-            playerModel.PlayerStatusData.Value = statusData;
-            // 서버에서 상태 변경
-            PlayerStateData newState = new PlayerStateData
-            {
-                AliveState = PlayerLivingState.Dead,
-                AnimationState = playerModel.PlayerStateData.Value.AnimationState  // 기존 값 유지
-            };
-            playerModel.PlayerStateData.Value = newState;
-            // 서버에서 태그 변경 (NetworkVariable로 동기화됨)
-            playerModel.PlayerTag.Value = GameTags.PlayerGhost;
-            // 서버에서 투명도 변경
-            PlayerAppearanceData currentAppearanceData = playerModel.PlayerAppearanceData.Value;
-            currentAppearanceData.AlphaValue = GameConstants.Player.GhostTransparency;
-            playerModel.PlayerAppearanceData.Value = currentAppearanceData;
-        }
+            AliveState = PlayerLivingState.Dead,
+            AnimationState = playerModel.PlayerStateData.Value.AnimationState  // 기존 값 유지
+        };
+        playerModel.PlayerStateData.Value = newState;
+        // 서버에서 태그 변경 (NetworkVariable로 동기화됨)
+        playerModel.PlayerTag.Value = GameTags.PlayerGhost;
+        // 서버에서 투명도 변경
+        PlayerAppearanceData currentAppearanceData = playerModel.PlayerAppearanceData.Value;
+        currentAppearanceData.AlphaValue = GameConstants.Player.GhostTransparency;
+        playerModel.PlayerAppearanceData.Value = currentAppearanceData;
     }
 
     /// <summary>
@@ -858,9 +890,7 @@ public class PlayerPresenter : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void CreateCorpseServerRpc(Vector3 position, int colorIndex)
     {
-        // 시체 프리팹을 Resources에서 로드
-        if (!DebugUtils.AssertNotNull(corpsePrefab, "CorpsePrefab", this))
-            return;
+        DebugUtils.AssertNotNull(corpsePrefab, "CorpsePrefab", this);
 
         GameObject corpse = Instantiate(corpsePrefab, position, Quaternion.identity);
         // 시체를 네트워크에 스폰
@@ -964,11 +994,9 @@ public class PlayerPresenter : NetworkBehaviour
         }
         
         // 닉네임 텍스트도 함께 처리
-        if (DebugUtils.AssertNotNull(playerView, "playerView", this))
-        {
-            playerView.SetNicknameVisibility(visible);
-        }
-        
+        DebugUtils.AssertNotNull(playerView, "playerView", this);
+        playerView.SetNicknameVisibility(visible);
+
         // 콜라이더는 항상 활성화 (충돌 감지용)
         Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
         foreach (Collider2D collider in colliders)
@@ -987,14 +1015,17 @@ public class PlayerPresenter : NetworkBehaviour
         PlayerView[] allPlayers = FindObjectsByType<PlayerView>(FindObjectsSortMode.None);
         foreach (PlayerView player in allPlayers)
         {
-            if (DebugUtils.AssertNotNull(player, "PlayerView", this))
-            {
-                player.SetIgnoreAllPlayerMoveInputServerRpc(true);
-            }
+            DebugUtils.AssertNotNull(player, "PlayerView", this);
+            player.SetIgnoreAllPlayerMoveInputServerRpc(true);
         }
     }
 
     #region 외부 인터페이스 (메시지 기반)
+
+    public int GetGold()
+    {
+        return playerModel.PlayerStatusData.Value.gold;
+    }
     public void OnOffNickname(bool onOff)
     {
         playerView.SetNicknameVisibility(onOff);

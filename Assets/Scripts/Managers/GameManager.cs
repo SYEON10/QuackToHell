@@ -108,7 +108,7 @@ public class GameManager : NetworkBehaviour
     /// </summary>
     /// <param name="clientId">골드를 차감할 클라이언트 ID</param>
     /// <param name="amount">차감할 골드 양</param>
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void DeductPlayerGoldServerRpc(ulong clientId, int amount, ServerRpcParams rpcParams = default)
     {
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
@@ -122,8 +122,7 @@ public class GameManager : NetworkBehaviour
         
         //플레이어 골드차감
         PlayerModel player = PlayerHelperManager.Instance.GetPlayerModelByClientId(clientId);
-        if (!DebugUtils.AssertNotNull(player, "PlayerModel", this))
-            return;
+        DebugUtils.AssertNotNull(player, "PlayerModel", this);
             
         PlayerStatusData currentStatus = player.PlayerStatusData.Value;
         currentStatus.gold -= amount;

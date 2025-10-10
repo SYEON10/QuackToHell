@@ -10,11 +10,10 @@ public class PlayerDeadState : NetworkStateBase
 
     public override void OnStateEnter()
     {
-        // PlayerPresenter.ChangeToGhostVisualState()에서 처리하므로 제거
-        // 투명화, 태그 변경, 레이어 변경, 가시성 업데이트는 모두 PlayerPresenter에서 처리
-        
-        // 이 State는 더 이상 사용하지 않음
-        // 모든 유령 관련 처리는 PlayerPresenter에서 통합 관리
+        //죽으면 이펙트 
+        //Assets/Resources/Prefabs/FX_PF_Electricity_AreaExplosion_Blue.prefab
+        GameObject effect = Resources.Load<GameObject>("Prefabs/FX_PF_Electricity_AreaExplosion_Blue");
+        Instantiate(effect,transform.position,Quaternion.identity);
     }
 
     public override void OnStateExit()

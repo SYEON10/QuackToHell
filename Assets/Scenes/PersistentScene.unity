@@ -945,6 +945,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 884513523452094522, guid: 8a084362adda15b4abc38696769474f6, type: 3}
+      propertyPath: ToggleForcedAllFarmer
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2950312464360048249, guid: 8a084362adda15b4abc38696769474f6, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 679597395

@@ -6,20 +6,22 @@ public class HUDController : MonoBehaviour
 {
     [SerializeField]
     private GameObject inventoryPrefab;
+
+    private GameObject inventoryCanvas;
     #region 버튼 바인딩
     public void InventoryButton_OnClick()
     {
-        // 비활성화된 오브젝트도 포함해서 찾기
-        CardInventoryView[] existingInventories = FindObjectsByType<CardInventoryView>(FindObjectsSortMode.None);
-    
-        //인벤토리 오브젝트가 없을 때만 생성
-        if (existingInventories.Length > 0)
+        //CardInventoryCanvas찾아서 저장
+        inventoryCanvas = GameObject.Find("CardInventoryCanvas");
+        if (inventoryCanvas == null)
         {
-            existingInventories[0].gameObject.SetActive(true);
-            return;
+            Instantiate(inventoryPrefab, Vector3.zero, Quaternion.identity);    
+        }
+        else
+        {
+            inventoryCanvas.transform.GetChild(0).gameObject.SetActive(true);
         }
         
-        Instantiate(inventoryPrefab, Vector3.zero, Quaternion.identity);
         
     }
     #endregion

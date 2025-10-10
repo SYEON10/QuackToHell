@@ -52,17 +52,14 @@ public class CardItemFactoryManager : NetworkBehaviour
         #endregion
 
         #region 카드 생성 
-        if (!DebugUtils.AssertNotNull(cardItemPrefab, "cardItemPrefab", this))
-            return null;
-            
+        DebugUtils.AssertNotNull(cardItemPrefab, "cardItemPrefab", this);
+        
         GameObject cardItemForInventory = Instantiate(cardItemPrefab, Vector3.zero, Quaternion.identity);
 
         //데이터 주입 (읽기 전용으로 서버 데이터 사용)
         CardItemModel cardItemModel = cardItemForInventory.GetComponent<CardItemModel>();
-        if (DebugUtils.AssertNotNull(cardItemModel, "CardItemModel", this))
-        {
-            cardItemModel.UpdateCardStateFromServer(cardItemData);
-        }
+        DebugUtils.AssertNotNull(cardItemModel, "CardItemModel", this);
+        cardItemModel.UpdateCardStateFromServer(cardItemData);
 
         //태그 부여
         cardItemForInventory.tag = GameTags.CardForInventory;
@@ -82,6 +79,8 @@ public class CardItemFactoryManager : NetworkBehaviour
   
     public void CreateTotalCardForSale(GameObject cardForSaleParent)
     {
+        DebugUtils.AssertNotNull(cardForSaleParent, "CardForSaleParent", this);
+
         // 모든 클라이언트에서 UI 생성 (데이터는 서버에서 읽기)
         #region 카드생성
         for(int i=0;i < DeckManager.Instance.AllCardsOnGameData.Count; i++)
@@ -91,28 +90,23 @@ public class CardItemFactoryManager : NetworkBehaviour
 
             GameObject cardItemForSale = Instantiate(cardItemPrefab, Vector3.zero, Quaternion.identity);
             
-            if (!DebugUtils.AssertNotNull(cardForSaleParent, "CardForSaleParent", this))
-                continue;
-
             cardItemForSale.transform.SetParent(cardForSaleParent.transform);
 
-            // CardShopPresenter 참조 설정
             CardItemPresenter cardItemPresenter = cardItemForSale.GetComponent<CardItemPresenter>();
-            if (DebugUtils.AssertNotNull(cardItemPresenter, "CardItemPresenter", this))
-            {
-                CardShopPresenter cardShopPresenter = FindFirstObjectByType<CardShopPresenter>();
-                cardItemPresenter.CardShopPresenter = cardShopPresenter;
-            }
+            DebugUtils.AssertNotNull(cardItemPresenter, "CardItemPresenter", this);
+            
+            CardShopPresenter cardShopPresenter = FindFirstObjectByType<CardShopPresenter>();
+            //cardItemPresenter.CardShopPresenter = cardShopPresenter;
+            DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this);
+            cardItemPresenter.OnPurchaseRequested += cardShopPresenter.TryPurchaseCard;
 
             //비활성화
             cardItemForSale.SetActive(false);
 
             // 데이터 주입 (읽기 전용으로 서버 데이터 사용)
             CardItemModel cardItemModel = cardItemForSale.GetComponent<CardItemModel>();
-            if (DebugUtils.AssertNotNull(cardItemModel, "CardItemModel", this))
-            {
-                cardItemModel.UpdateCardStateFromServer(cardItemData);
-            }
+            DebugUtils.AssertNotNull(cardItemModel, "CardItemModel", this);
+            cardItemModel.UpdateCardStateFromServer(cardItemData);
 
             //태그 부여
             cardItemForSale.tag = GameTags.CardForSale;

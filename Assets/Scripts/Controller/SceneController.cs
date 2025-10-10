@@ -14,6 +14,15 @@ public class SceneController :MonoBehaviour
     /// <param name="sceneName">로드할 씬 이름</param>
     public void LoadNetworkScene(string sceneName)
     {
+        // note cba0898: return이 필요해서 놔둠. 그러나 추후 수정 필요.
+        /*
+        // 임시 변경 추천 코드
+        if(NetworkManager.Singleton.IsHost == false)
+        {
+            Debug.LogError("Only host can load network scenes");
+            return;
+        }
+        */
         if (!DebugUtils.Assert(NetworkManager.Singleton.IsHost, "Only host can load network scenes", this))
             return;
 

@@ -748,11 +748,12 @@ public class DeckManager : NetworkBehaviour
             return;
         }
         
+        // note cba0898: cardShopPresenter 체크는 왜...? 이 함수에서 쓰이지 않아서 체크를 안해도 될 것 같아요
+        /*
         if (!DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
             return;
+        */
         
-        
-
         ClientRpcParams clientRpcParams = new ClientRpcParams
         {
             Send = new ClientRpcSendParams
@@ -763,20 +764,24 @@ public class DeckManager : NetworkBehaviour
         
         //로컬클라이언트의 인벤토리를 조회해서, 인벤의 개수가 max인지 확인. max면 구매 못 함. 로그도 찍기.
         CardInventoryPresenter myLocalInventoryPresenter = FindAnyObjectByType<CardInventoryPresenter>();
-        if (myLocalInventoryPresenter.IsInventoryMaximum())
+        if (myLocalInventoryPresenter)
         {
-            Debug.Log($"인벤토리 한도를 초과해서 구매 못 합니다. 인벤토리 한도: {GameConstants.Card.maxCardCount}");
-            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
-            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
-            return;
+            if (myLocalInventoryPresenter.IsInventoryMaximum())
+            {
+                Debug.Log($"인벤토리 한도를 초과해서 구매 못 합니다. 인벤토리 한도: {GameConstants.Card.maxCardCount}");
+                PurchaseResultToCardShopClientRpc(false, clientId);
+                PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
+                return;
+            }
         }
+        
         
         // 해당 카드가 존재하는지 확인
         int cardItemIdKey = card.cardItemStatusData.cardItemID;
         if (!IsValidCardItemIdKey(cardItemIdKey))
         {
             Debug.Log($"카드가 존재하지 않습니다.");
-            PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
+            PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
         }
@@ -1008,10 +1013,8 @@ public class DeckManager : NetworkBehaviour
         if (NetworkManager.Singleton.LocalClientId == targetClientId)
         {
             // CardShopModel에게 진열 결과 전달
-            if (DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this))
-            {
-                cardShopPresenter.OnDisplayCardsResult(displayedCards);
-            }
+            DebugUtils.AssertNotNull(cardShopPresenter, "CardShopPresenter", this);
+            cardShopPresenter.OnDisplayCardsResult(displayedCards);
         }
     }
 

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7dc4f517fa69bdf49a26e4954ec84b1b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 274090
+  packageName: Electricity- Assets for VFX 04
+  packageVersion: 1.0
+  assetPath: Assets/SrRubfish_VFX_04/DemoScene/Timeline/FX_TL_Electric_Lightning.playable
+  uploadId: 636742

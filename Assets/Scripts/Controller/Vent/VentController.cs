@@ -94,6 +94,9 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         NetworkManager nm = NetworkManager.Singleton;
 
         GameObject localPlayerObj = null;
+        // note cba0898: 싱글톤은 변수에 저장하지 말고 직접 호출하는 것이 좋습니다. 그것이 싱글톤이니까...
+        // NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject() 처럼 바로 사용하시는 것을 추천드립니다.
+        // 그리고 싱글톤인데 NotNull 체크는 어색합니다. 없을 수 있다면(파괴되었을 수 있다면) ?. 혹은 if문으로 처리하시는 것을 추천드립니다.
         if (DebugUtils.EnsureNotNull(nm, "NetworkManager", this) && 
             DebugUtils.EnsureNotNull(nm.SpawnManager, "SpawnManager", this))
         {
@@ -181,11 +184,10 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         if (!IsClient) return;
 
         NetworkManager nm = NetworkManager.Singleton;
+        if (nm == null) return;
         
-        GameObject localPlayerObj = null;
-        localPlayerObj = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).gameObject;
-        
-        
+        GameObject localPlayerObj = PlayerHelperManager.Instance?.GetPlayerGameObjectByClientId(nm.LocalClientId);
+
         if (localPlayerObj == null)
         {
             if (nm != null)

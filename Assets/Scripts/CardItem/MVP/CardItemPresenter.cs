@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CardItem.MVP
@@ -7,13 +8,17 @@ namespace CardItem.MVP
         [Header("Components")]
         private CardItemModel cardItemModel;
         private CardItemView cardItemView;
-        
+        /*
         [Header("References")]
         private CardShopPresenter _cardShopPresenter;
         public CardShopPresenter CardShopPresenter
         {
             set { _cardShopPresenter = value; }
         }
+        */
+        
+        [Header("Events")]
+        public Action<CardItemData, ulong> OnPurchaseRequested;
 
         private void Awake()
         {
@@ -37,6 +42,18 @@ namespace CardItem.MVP
             UpdateCardAppearance(cardItemModel.CardItemData);
         }
 
+        private void OnDestroy()
+        {    
+            if (cardItemView != null)
+            {
+                cardItemView.OnPurchaseClicked -= CardItemView_OnPurchaseClicked;
+            }
+    
+            if (cardItemModel != null)
+            {
+                cardItemModel.OnCardDataChanged -= OnCardItemDataChanged;
+            }
+        }
 
         #region 외향
         /// <summary>
@@ -79,11 +96,14 @@ namespace CardItem.MVP
         private void CardItemView_OnPurchaseClicked(ulong inputClientId)
         {
             CardItemData myCardItemData = cardItemModel.CardItemData;
+            /*
             // CardShop에게 카드 구매 요청
             if (DebugUtils.AssertNotNull(_cardShopPresenter, "CardShopPresenter", this))
             {
                 _cardShopPresenter.TryPurchaseCard(myCardItemData, inputClientId);
             }
+            */
+            OnPurchaseRequested?.Invoke(myCardItemData, inputClientId);
         }
 
         /// <summary>

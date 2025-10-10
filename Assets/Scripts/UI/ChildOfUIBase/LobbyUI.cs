@@ -9,7 +9,8 @@ using UnityEngine;
 public class LobbyUI : UIHUD
 {
     private TMP_Dropdown colorDropdown;
-    
+    private TMP_Text codeText;
+
     enum Dropdowns
     {
         Dropdown_Color,
@@ -24,7 +25,8 @@ public class LobbyUI : UIHUD
     enum Buttons
     {
         Button_Back,
-        Button_StartGame
+        Button_StartGame,
+        Button_CopyCode
     }
 
     private void Start()
@@ -36,7 +38,9 @@ public class LobbyUI : UIHUD
         colorDropdown.onValueChanged.AddListener(OnColorDropdownButton);
         
         Bind<TextMeshProUGUI>(typeof(Texts));
-        Get<TextMeshProUGUI>((int)Texts.Text_Code).text = LobbyManager.Instance.HostLobbyCode;
+        codeText = Get<TextMeshProUGUI>((int)Texts.Text_Code);
+        codeText.text = LobbyManager.Instance.HostLobbyCode;
+
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost)
         {
             Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame).text = "Game Start";
@@ -46,14 +50,14 @@ public class LobbyUI : UIHUD
             Get<TextMeshProUGUI>((int)Texts.Text_Button_StartGame).text = "Ready";
         }
         
-        
         Bind<Button>(typeof(Buttons));
         GameObject Button_Back_gameObject =  Get<Button>((int)Buttons.Button_Back).gameObject;
         BindEvent(Button_Back_gameObject, OnClick_Button_Back, GameEvents.UIEvent.Click);
         GameObject Button_StartGame_gameObject = Get<Button>((int)Buttons.Button_StartGame).gameObject;
         BindEvent(Button_StartGame_gameObject, OnClick_Button_StartGame, GameEvents.UIEvent.Click);
+        GameObject Button_CopyCode_gameObject = Get<Button>((int)Buttons.Button_CopyCode).gameObject;
+        BindEvent(Button_CopyCode_gameObject, OnClick_Button_CopyCode, GameEvents.UIEvent.Click);
 
-        
         //플레이어가 생성된 후에 바인드하기.
         PlayerFactoryManager.Instance.onPlayerSpawned += () =>
         {
@@ -135,5 +139,9 @@ public class LobbyUI : UIHUD
     {
         PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).ChangeColorServerRpc(colorIndex, NetworkManager.Singleton.LocalClientId);
     }
-    
+
+    private void OnClick_Button_CopyCode(PointerEventData data)
+    {
+        GUIUtility.systemCopyBuffer = codeText.text;
+    }
 }

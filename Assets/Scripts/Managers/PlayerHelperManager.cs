@@ -59,6 +59,7 @@ public class PlayerHelperManager : MonoBehaviour
         
         foreach (PlayerModel player in _cachedPlayers)
         {
+            // note cba0898: Assert 는 배포 빌드에서 해당 상황이 없어야 한다는 가정입니다. 조건문의 일부로 포함하지 말아주세요.
             if (DebugUtils.AssertNotNull(player.NetworkObject, "Player NetworkObject", this) && 
                 player.NetworkObject.OwnerClientId == clientId)
             {
@@ -78,6 +79,7 @@ public class PlayerHelperManager : MonoBehaviour
     public int GetPlayerGoldByClientId(ulong clientId)
     {
         PlayerModel player = GetPlayerModelByClientId(clientId);
+        // note cba0898: Assert 사용 후 바로 return 혹은 일반 if문 사용 후 실패 사유 리포트 형태 추천. 
         if (DebugUtils.AssertNotNull(player, "Player", this))
         {
             return player.PlayerStatusData.Value.gold;
@@ -93,6 +95,7 @@ public class PlayerHelperManager : MonoBehaviour
     public GameObject GetPlayerGameObjectByClientId(ulong clientId)
     {
         PlayerModel player = GetPlayerModelByClientId(clientId);
+        // note cba0898: Assert 사용 후 바로 return 혹은 일반 if문 사용 후 실패 사유 리포트 형태 추천. 
         if (DebugUtils.AssertNotNull(player, "Player", this))
         {
             return player.gameObject;
@@ -118,10 +121,8 @@ public class PlayerHelperManager : MonoBehaviour
         PlayerView[] allPlayers = FindObjectsByType<PlayerView>(FindObjectsSortMode.None);
         foreach (PlayerView player in allPlayers)
         {
-            if (DebugUtils.AssertNotNull(player, "PlayerView", this))
-            {
-                player.IgnoreMoveInput = true;
-            }
+            DebugUtils.AssertNotNull(player, "PlayerView", this);
+            player.IgnoreMoveInput = true;
         }
     }
     /// <summary>

@@ -22,6 +22,7 @@ public class PlayerFactoryManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SpawnPlayerServerRpc(ServerRpcParams rpcParams = default)
     {
+        // note cba0898: Assert 상황에서 코드 실행 사유 체크 필요. Assert가 아니라 일반적인 if문으로 변경하는게 맞아 보임.
         if (!DebugUtils.AssertNotNull(playerPrefab, "playerPrefab", this))
         {
             SpawnPlayerResultClientRpc(false);
@@ -31,6 +32,7 @@ public class PlayerFactoryManager : NetworkBehaviour
             
         GameObject player = Instantiate(playerPrefab, _playerSpawnPoint);
         PlayerModel playerModel = player.GetComponent<PlayerModel>();
+        // note cba0898: Assert 상황에서 코드 실행 사유 체크 필요. Assert가 아니라 일반적인 if문으로 변경하는게 맞아 보임.
         if (!DebugUtils.AssertNotNull(playerModel, "PlayerModel", this))
         {
             SpawnPlayerResultClientRpc(false);
@@ -38,6 +40,7 @@ public class PlayerFactoryManager : NetworkBehaviour
         }
 
         NetworkObject networkObject = player.GetComponent<NetworkObject>();
+        // note cba0898: Assert 상황에서 코드 실행 사유 체크 필요. Assert가 아니라 일반적인 if문으로 변경하는게 맞아 보임.
         if (!DebugUtils.AssertNotNull(networkObject, "NetworkObject", this))
         {
             SpawnPlayerResultClientRpc(false);
