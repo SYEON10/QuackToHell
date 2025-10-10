@@ -8,6 +8,9 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Collider2D))]
 public class MinigameController : MonoBehaviour
 {
+
+    [SerializeField] private GameObject existingUiInstance;
+
     [Header("Binding (Designer)")]
     [Tooltip("클라이언트(로컬) 화면에만 뜨는 UI 프리팹")]
     [SerializeField] private GameObject clientUiPrefab;
@@ -33,7 +36,7 @@ public class MinigameController : MonoBehaviour
     [SerializeField] private List<Renderer> highlightRenderers = new();
 
     [SerializeField, Min(1.0f)] private float outlineScale = 1.08f;   // 복제본 확대 배율
-    [SerializeField] private int outlineSortingOffset = 10;            // 정렬순서 오프셋(앞에 나오게 +값)
+    [SerializeField] private int outlineSortingOffset = -500;            // 정렬순서 오프셋
     [SerializeField] private float outlineAlpha = 1f;                  // 노란색 불투명도(0~1)
 
     [Header("UX")]
@@ -44,6 +47,7 @@ public class MinigameController : MonoBehaviour
     private bool _isLocalEligible;
     private GameObject _spawnedLocalUi;
     private readonly List<GameObject> _outlineClones = new();
+    private bool _spawnedFromPrefab;
 
     // Unity
     private void Awake()
@@ -85,7 +89,11 @@ public class MinigameController : MonoBehaviour
         }
         _outlineClones.Clear();
 
-        if (_spawnedLocalUi) Destroy(_spawnedLocalUi);
+        if (_spawnedLocalUi)
+        {
+            if (_spawnedFromPrefab) Destroy(_spawnedLocalUi);
+            else _spawnedLocalUi.SetActive(false); // 씬 원본은 보존
+        }
     }
 
     // === Eligibility / Highlight ===
@@ -191,28 +199,97 @@ public class MinigameController : MonoBehaviour
     // === UI Open/Close ===
     public void OpenUi()
     {
-        if (!clientUiPrefab) return;
-
+        // 이미 열려 있으면 무시
         if (_spawnedLocalUi && _spawnedLocalUi.activeSelf) return;
 
-        Transform parent = uiRootOverride;
-        if (parent == null && attachUiToMainCanvas)
+        // 1) 씬에 있는 원본 우선 사용
+        if (existingUiInstance != null)
         {
-            var canvas = FindMainCanvas();
-            if (canvas) parent = canvas.transform;
+            _spawnedLocalUi = existingUiInstance;
+            _spawnedFromPrefab = false;
+            _spawnedLocalUi.SetActive(true);
+
+            var p1 = _spawnedLocalUi.GetComponentInChildren<AreaClickGame>(true);
+            var p2 = _spawnedLocalUi.GetComponentInChildren<ClickOncePointsGame>(true);
+            Component playable2 = (Component)p1 ?? (Component)p2;
+            if (playable2 != null) playable2.gameObject.SetActive(true);
+
+            var rt2 = _spawnedLocalUi.GetComponent<RectTransform>();
+            if (rt2 != null) rt2.SetAsLastSibling(); // 최상단으로
+        }
+        else
+        {
+            // 2) 프리팹 생성
+            if (!clientUiPrefab)
+            {
+                Debug.LogError("[MG] clientUiPrefab is NULL");
+                return;
+            }
+
+            Transform parent = uiRootOverride;
+            if (parent == null && attachUiToMainCanvas)
+            {
+                var canvas = FindMainCanvas();
+                if (canvas == null)
+                {
+                    Debug.LogError("[MG] No Canvas found while attachUiToMainCanvas=ON");
+                    return;
+                }
+                parent = canvas.transform;
+            }
+
+            _spawnedLocalUi = Instantiate(clientUiPrefab, parent);
+            _spawnedFromPrefab = true;
+
+            // 캔버스 하위면 전체 스트레치
+            var rt = _spawnedLocalUi.GetComponent<RectTransform>();
+            if (rt != null && parent != null && parent.GetComponentInParent<Canvas>())
+            {
+                rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+                rt.anchoredPosition3D = Vector3.zero;
+                rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+                rt.localScale = Vector3.one;
+            }
+
+            _spawnedLocalUi.SetActive(true);
         }
 
-        _spawnedLocalUi = Instantiate(clientUiPrefab, parent);
-        _spawnedLocalUi.SetActive(true);
-    }
+        // 3) 자동 닫기 이벤트 연결 (클리어/취소 → CloseUi)
+        {
+            var g1 = _spawnedLocalUi.GetComponentInChildren<AreaClickGame>(true);
+            if (g1 != null)
+            {
+                g1.OnCleared.RemoveListener(CloseUi);
+                g1.OnCanceled.RemoveListener(CloseUi);
+                g1.OnCleared.AddListener(CloseUi);
+                g1.OnCanceled.AddListener(CloseUi);
+            }
+            var g2 = _spawnedLocalUi.GetComponentInChildren<ClickOncePointsGame>(true);
+            if (g2 != null)
+            {
+                g2.OnCleared.RemoveListener(CloseUi);
+                g2.OnCanceled.RemoveListener(CloseUi);
+                g2.OnCleared.AddListener(CloseUi);
+                g2.OnCanceled.AddListener(CloseUi);
+            }
+        }
 
+        Debug.Log("UI Opened");
+    }
     public void CloseUi()
     {
-        if (_spawnedLocalUi)
+        if (_spawnedLocalUi == null) return;
+
+        if (_spawnedFromPrefab)
         {
             Destroy(_spawnedLocalUi);
-            _spawnedLocalUi = null;
         }
+        else
+        {
+            _spawnedLocalUi.SetActive(false); // 씬 원본은 파괴 X
+        }
+
+        _spawnedLocalUi = null;
     }
 
     // === Helpers ===
