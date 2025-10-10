@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -28,6 +29,15 @@ public class MinigameController : MonoBehaviour
     [Tooltip("상호작용 키(기본: Space)")]
     public KeyCode interactionKey = KeyCode.Space;
 
+    [SerializeField] private float cooldownSeconds = 10f;
+
+    [SerializeField] private GameObject cooldownToastRoot; // 씬의 CooldownToast (비활성)
+    [SerializeField] private TextMeshProUGUI cooldownToastTMP;
+
+    [SerializeField] private float toastFadeIn = 0.15f;
+    [SerializeField] private float toastHold = 1.2f;
+    [SerializeField] private float toastFadeOut = 0.25f;
+
     [Tooltip("로컬 플레이어 Transform(비우면 자동 탐색: Netcode Local Player → tag==\"Player\" → Camera.main)")]
     [SerializeField] private Transform overrideLocalPlayer;
 
@@ -39,6 +49,9 @@ public class MinigameController : MonoBehaviour
     [SerializeField] private int outlineSortingOffset = -500;            // 정렬순서 오프셋
     [SerializeField] private float outlineAlpha = 1f;                  // 노란색 불투명도(0~1)
 
+    [SerializeField] private Renderer[] dimTargets;
+    [SerializeField] private float dimAmount = 0.35f; // 0(그대로)~1(완전 검은색) 사이, 0.35~0.5 추천
+
     [Header("UX")]
     [Tooltip("UI가 떠 있는 동안 ESC로 닫기 허용")]
     [SerializeField] private bool closeWithEscape = true;
@@ -48,6 +61,14 @@ public class MinigameController : MonoBehaviour
     private GameObject _spawnedLocalUi;
     private readonly List<GameObject> _outlineClones = new();
     private bool _spawnedFromPrefab;
+    private float _localCooldownUntil = 0f;
+    private Coroutine _toastCo;
+    private CanvasGroup _toastCg;
+
+    // 밝기 복원용 원본 색상 캐시
+    private Color[] _originalColors;
+    private bool _dimmed;
+
 
     // Unity
     private void Awake()
@@ -66,7 +87,14 @@ public class MinigameController : MonoBehaviour
         UpdateLocalEligibilityAndHighlight();
 
         if (_isLocalEligible && Input.GetKeyDown(interactionKey))
-            OpenUi();
+            if (IsLocalOnCooldown(out var remain))
+            {
+                ShowCooldownPopup(remain);
+            }
+            else
+            {
+                OpenUi();
+            }
 
         if (closeWithEscape && _spawnedLocalUi && _spawnedLocalUi.activeSelf && Input.GetKeyDown(KeyCode.Escape))
             CloseUi();
@@ -196,6 +224,132 @@ public class MinigameController : MonoBehaviour
         }
     }
 
+    private bool IsLocalOnCooldown(out int remainSec)
+    {
+        float remain = _localCooldownUntil - Time.unscaledTime;
+        if (remain > 0f)
+        {
+            remainSec = Mathf.CeilToInt(remain);
+            return true;
+        }
+        remainSec = 0;
+        return false;
+    }
+
+    private void BeginLocalCooldown()
+    {
+        _localCooldownUntil = Time.unscaledTime + cooldownSeconds;
+        ApplyDim(true);
+    }
+
+    // 매 프레임 쿨타임 끝났는지 확인해서 자동 복구
+    private void LateUpdate()
+    {
+        if (_localCooldownUntil > 0f && Time.unscaledTime >= _localCooldownUntil)
+        {
+            _localCooldownUntil = 0f;
+            ApplyDim(false);
+        }
+    }
+
+    // 명도 낮추기 / 복원
+    private void ApplyDim(bool on)
+    {
+        // 대상 없으면 자동 수집(한 번만)
+        if (dimTargets == null || dimTargets.Length == 0)
+            dimTargets = GetComponentsInChildren<Renderer>(true);
+
+        if (dimTargets == null || dimTargets.Length == 0) return;
+
+        // 원본 색상 캐시는 처음 어둡게 만들 때 확보
+        if (_originalColors == null || _originalColors.Length != dimTargets.Length)
+            _originalColors = new Color[dimTargets.Length];
+
+        for (int i = 0; i < dimTargets.Length; i++)
+        {
+            var r = dimTargets[i];
+            if (!r) continue;
+
+            // 개별 머티리얼 인스턴스 사용(공유 머티리얼 색 변조 방지)
+            var mat = r.material;
+            if (!mat.HasProperty("_Color")) continue;
+
+            if (on)
+            {
+                // 아직 캐시 안 했으면 저장
+                if (!_dimmed)
+                    _originalColors[i] = mat.color;
+
+                float k = Mathf.Clamp01(1f - dimAmount); // 0.35 → 약 65% 밝기
+                var c0 = (_dimmed ? _originalColors[i] : mat.color);
+                mat.color = new Color(c0.r * k, c0.g * k, c0.b * k, c0.a);
+            }
+            else
+            {
+                // 복원
+                if (_originalColors != null)
+                    mat.color = _originalColors[i];
+            }
+        }
+
+        _dimmed = on;
+    }
+
+    // 쿨타임 팝업 간단 버전
+    private void ShowCooldownPopup(int remainSec)
+    {
+        if (cooldownToastRoot == null)
+        {
+            Debug.Log($"[MG] Cooldown: {remainSec}s (toast root not assigned)");
+            return;
+        }
+
+        // 초기 캐시
+        if (_toastCg == null) _toastCg = cooldownToastRoot.GetComponent<CanvasGroup>();
+        if (_toastCg == null) _toastCg = cooldownToastRoot.AddComponent<CanvasGroup>();
+        _toastCg.interactable = false;
+        _toastCg.blocksRaycasts = false;
+
+        // 텍스트 세팅
+        string msg = $"미니게임을 플레이 할 수 없습니다.\n미니게임 쿨타임이 {remainSec}초 남았습니다!";
+        if (cooldownToastTMP != null) cooldownToastTMP.text = msg;
+
+        // 중복 재생 시 이전 코루틴 중단
+        if (_toastCo != null) StopCoroutine(_toastCo);
+        _toastCo = StartCoroutine(CoShowCooldownToast());
+    }
+
+    private System.Collections.IEnumerator CoShowCooldownToast()
+    {
+        cooldownToastRoot.SetActive(true);
+        _toastCg.alpha = 0f;
+
+        // Fade In
+        float t = 0f;
+        while (t < toastFadeIn)
+        {
+            t += Time.unscaledDeltaTime;
+            _toastCg.alpha = Mathf.SmoothStep(0f, 1f, t / toastFadeIn);
+            yield return null;
+        }
+        _toastCg.alpha = 1f;
+
+        // Hold
+        yield return new WaitForSecondsRealtime(toastHold);
+
+        // Fade Out
+        t = 0f;
+        while (t < toastFadeOut)
+        {
+            t += Time.unscaledDeltaTime;
+            _toastCg.alpha = Mathf.SmoothStep(1f, 0f, t / toastFadeOut);
+            yield return null;
+        }
+        _toastCg.alpha = 0f;
+        cooldownToastRoot.SetActive(false);
+        _toastCo = null;
+    }
+
     // === UI Open/Close ===
     public void OpenUi()
     {
@@ -263,6 +417,9 @@ public class MinigameController : MonoBehaviour
                 g1.OnCanceled.RemoveListener(CloseUi);
                 g1.OnCleared.AddListener(CloseUi);
                 g1.OnCanceled.AddListener(CloseUi);
+
+                g1.OnCleared.RemoveListener(BeginLocalCooldown);
+                g1.OnCleared.AddListener(BeginLocalCooldown);
             }
             var g2 = _spawnedLocalUi.GetComponentInChildren<ClickOncePointsGame>(true);
             if (g2 != null)
@@ -271,6 +428,9 @@ public class MinigameController : MonoBehaviour
                 g2.OnCanceled.RemoveListener(CloseUi);
                 g2.OnCleared.AddListener(CloseUi);
                 g2.OnCanceled.AddListener(CloseUi);
+
+                g2.OnCleared.RemoveListener(BeginLocalCooldown);
+                g2.OnCleared.AddListener(BeginLocalCooldown);
             }
         }
 
