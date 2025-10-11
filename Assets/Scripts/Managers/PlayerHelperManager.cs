@@ -123,6 +123,11 @@ public class PlayerHelperManager : MonoBehaviour
         {
             DebugUtils.AssertNotNull(player, "PlayerView", this);
             player.IgnoreMoveInput = true;
+            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
         }
     }
     /// <summary>
