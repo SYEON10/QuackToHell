@@ -356,5 +356,13 @@ public class PlayerModel : NetworkBehaviour
             ApplyAnimationStateChange();
         }
     }
-
+    
+    //-----------public---------
+    [ServerRpc]
+    public void SetGoldServerRpc(int gold)
+    {
+        PlayerStatusData temp =  _playerStatusData.Value;
+        temp.gold = gold;
+        PlayerStatusData.Value = temp;
+    }
 }

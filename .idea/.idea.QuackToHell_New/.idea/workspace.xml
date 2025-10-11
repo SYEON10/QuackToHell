@@ -6,11 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopModel.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopPresenter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopPresenter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CardShop/CardShopView.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Controller/HUDController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Controller/HUDController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,7 +214,9 @@
       <workItem from="1759482015594" duration="393000" />
       <workItem from="1760142999441" duration="189000" />
       <workItem from="1760143637417" duration="1396000" />
-      <workItem from="1760145306027" duration="2182000" />
+      <workItem from="1760145306027" duration="2639000" />
+      <workItem from="1760172435147" duration="342000" />
+      <workItem from="1760172794669" duration="1000" />
     </task>
     <servers />
   </component>
