@@ -97,7 +97,6 @@ public class CardShopPresenter : NetworkBehaviour
     private void OnClickReRoll()
     {
         
-        if (_model.IsLocked) return;
         if (_cooldown) return;
 
         StartCoroutine(RerollCooldown());
@@ -127,15 +126,6 @@ public class CardShopPresenter : NetworkBehaviour
         _cooldown = false;
     }
 
-    public static void ServerSendResultTo(ulong clientId, bool success)
-    {
-        if (!NetworkManager.Singleton || !NetworkManager.Singleton.IsServer) return;
-        if (s_serverByClient.TryGetValue(clientId, out CardShopPresenter presenter))
-        {
-            ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } };
-            presenter.OnPurchaseResult(success);
-        }
-    }
 
     #region 외부 인터페이스 (메시지 기반)
     
@@ -147,31 +137,15 @@ public class CardShopPresenter : NetworkBehaviour
         OnClickLock();
     }
     
-    /// <summary>
-    /// 카드샵 상태 조회
-    /// </summary>
-    public bool IsShopLocked()
-    {
-        return _model?.IsLocked ?? false;
-    }
-    
-    /// <summary>
-    /// 카드 표시 요청 (외부에서 호출)
-    /// </summary>
-    public void RequestDisplayCards(ulong clientId)
-    {
-        if (_model?.IsLocked == false)  
-        {
-            DeckManager.Instance.RequestDisplayCardsServerRpc(clientId);
-        }
-    }
+
+   
     
     /// <summary>
     /// 리롤 요청 (외부에서 호출)
     /// </summary>
     public void RequestReroll()
     {
-        if (!_cooldown && _model != null && !_model.IsLocked)
+        if (!_cooldown)
         {
             OnClickReRoll();
         }
@@ -182,8 +156,10 @@ public class CardShopPresenter : NetworkBehaviour
     public void RequestShowCardShop()
     {
         _view.ToggleCardShopUI(true);
-        
-        RequestDisplayCards(NetworkManager.Singleton.LocalClientId);
+        if(_model!=null && !_model.HasDisplayedCards()){
+            // 리롤 버튼과 동일한 검증 로직 사용하되, 쿨다운은 적용하지 않음
+            _model.TryReRoll(NetworkManager.Singleton.LocalClientId);
+        }
     }
 
     public void RequestCloseCardShop()

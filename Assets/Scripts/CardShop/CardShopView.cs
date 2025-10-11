@@ -74,19 +74,6 @@ public class CardShopView : MonoBehaviour
         cardShopPanel.SetActive(isActive);
         cardShopPanelAnimator.SetBool("Active", isActive);
     }
-    
-/*
-    #region x버튼 바인딩 함수
 
-    /// <summary>
-    /// X버튼 바인딩 함수
-    /// </summary>
-    public void XButton_OnClick()
-    {
-        OnClickX?.Invoke();
-    }    
-
-    #endregion
-*/
 
 }
