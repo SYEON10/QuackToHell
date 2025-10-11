@@ -29,6 +29,13 @@ public class MinigameController : MonoBehaviour
     [Tooltip("상호작용 키(기본: Space)")]
     public KeyCode interactionKey = KeyCode.Space;
 
+    // 보상
+    [SerializeField] private int rewardGold = 100;
+    [SerializeField] private GameObject rewardUIRoot;
+    [SerializeField] private TextMeshProUGUI rewardUITMP;
+    [SerializeField] private float rewardUIDuration = 2f;          // 요구: 2초
+
+    // 쿨다운
     [SerializeField] private float cooldownSeconds = 10f;
 
     [SerializeField] private GameObject cooldownToastRoot; // 씬의 CooldownToast (비활성)
@@ -64,6 +71,9 @@ public class MinigameController : MonoBehaviour
     private float _localCooldownUntil = 0f;
     private Coroutine _toastCo;
     private CanvasGroup _toastCg;
+    private Coroutine _rewardUICo;
+    private CanvasGroup _rewardUICg;
+    private bool _rewardGrantedThisRun;
 
     // 밝기 복원용 원본 색상 캐시
     private Color[] _originalColors;
@@ -224,6 +234,91 @@ public class MinigameController : MonoBehaviour
         }
     }
 
+    // 성공 시 호출
+    private void HandleMinigameClearedReward()
+    {
+        if (_rewardGrantedThisRun) return;
+        _rewardGrantedThisRun = true;
+
+        // 서버에 보상(골드) 지급을 요청
+        GrantGoldServerRpc(rewardGold);
+    }
+
+    // 보상 지급(골드) + 해당 클라에 팝업 알림
+    [Unity.Netcode.ServerRpc(RequireOwnership = false)]
+    private void GrantGoldServerRpc(int amount, Unity.Netcode.ServerRpcParams rpcParams = default)
+    {
+        var senderId = rpcParams.Receive.SenderClientId;
+
+        // PlayerHelperManager 싱글톤 접근
+        var model = PlayerHelperManager.Instance.GetPlayerModelByClientId(senderId);
+        if (model == null)
+        {
+            UnityEngine.Debug.LogWarning($"Player model not found for client {senderId}");
+            return;
+        }
+
+        // 현재 골드 읽고 누적값 계산
+        int current = PlayerHelperManager.Instance.GetPlayerGoldByClientId(senderId);
+        int newGold = current + amount;
+
+        model.SetGoldServerRpc(newGold);
+
+        // 해당 클라에만 보상 팝업
+        var target = new Unity.Netcode.ClientRpcParams
+        {
+            Send = new Unity.Netcode.ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { senderId }
+            }
+        };
+        ShowRewardPopupClientRpc(amount, target);
+    }
+
+    // 클라이언트에서(해당 클라만) 2초 팝업
+    [Unity.Netcode.ClientRpc]
+    private void ShowRewardPopupClientRpc(int amount, Unity.Netcode.ClientRpcParams target = default)
+    {
+        ShowRewardPopup(amount);
+    }
+
+    private void ShowRewardPopup(int gold)
+    {
+        if (rewardUIRoot == null)
+        {
+            Debug.Log($"[MG] Reward +{gold} (RewardUI not assigned)");
+            return;
+        }
+
+        if (_rewardUICg == null)
+            _rewardUICg = rewardUIRoot.GetComponent<CanvasGroup>() ?? rewardUIRoot.AddComponent<CanvasGroup>();
+
+        _rewardUICg.interactable = false;
+        _rewardUICg.blocksRaycasts = false;
+
+        // 텍스트 자동 탐색
+        if (rewardUITMP == null)
+        {
+            rewardUITMP = rewardUIRoot.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+
+        string msg = $"미니게임 클리어! {gold}골드 획득";
+        if (rewardUITMP != null) rewardUITMP.text = msg;
+
+        if (_rewardUICo != null) StopCoroutine(_rewardUICo);
+        _rewardUICo = StartCoroutine(CoShowRewardUI());
+    }
+
+    private System.Collections.IEnumerator CoShowRewardUI()
+    {
+        rewardUIRoot.SetActive(true);
+        _rewardUICg.alpha = 1f;
+        yield return new WaitForSecondsRealtime(rewardUIDuration);
+        _rewardUICg.alpha = 0f;
+        rewardUIRoot.SetActive(false);
+        _rewardUICo = null;
+    }
+
     private bool IsLocalOnCooldown(out int remainSec)
     {
         float remain = _localCooldownUntil - Time.unscaledTime;
@@ -295,7 +390,7 @@ public class MinigameController : MonoBehaviour
         _dimmed = on;
     }
 
-    // 쿨타임 팝업 간단 버전
+    // 쿨타임 팝업
     private void ShowCooldownPopup(int remainSec)
     {
         if (cooldownToastRoot == null)
@@ -418,6 +513,9 @@ public class MinigameController : MonoBehaviour
                 g1.OnCleared.AddListener(CloseUi);
                 g1.OnCanceled.AddListener(CloseUi);
 
+                g1.OnCleared.RemoveListener(HandleMinigameClearedReward);
+                g1.OnCleared.AddListener(HandleMinigameClearedReward);
+
                 g1.OnCleared.RemoveListener(BeginLocalCooldown);
                 g1.OnCleared.AddListener(BeginLocalCooldown);
             }
@@ -429,9 +527,14 @@ public class MinigameController : MonoBehaviour
                 g2.OnCleared.AddListener(CloseUi);
                 g2.OnCanceled.AddListener(CloseUi);
 
+                g2.OnCleared.RemoveListener(HandleMinigameClearedReward);
+                g2.OnCleared.AddListener(HandleMinigameClearedReward);
+
                 g2.OnCleared.RemoveListener(BeginLocalCooldown);
                 g2.OnCleared.AddListener(BeginLocalCooldown);
             }
+
+            _rewardGrantedThisRun = false;
         }
 
         Debug.Log("UI Opened");
