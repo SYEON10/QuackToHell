@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -217,6 +215,7 @@
       <workItem from="1760145306027" duration="2639000" />
       <workItem from="1760172435147" duration="342000" />
       <workItem from="1760172794669" duration="1000" />
+      <workItem from="1760172808330" duration="32000" />
     </task>
     <servers />
   </component>
