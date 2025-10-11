@@ -5,6 +5,9 @@ using TMPro;
 using System.Collections;
 using UnityEngine.UI;
 using System;
+using System.Threading.Tasks;
+using System.Linq;
+using Unity.Multiplayer.Playmode;
 
 /// <summary>
 /// 게임 전체를 관리하는 중앙 매니저
@@ -22,6 +25,14 @@ public class GameManager : NetworkBehaviour
 {
 
     #region 변수들
+
+    [Header("Put on your mouse to hosttag to view explaination")]
+    [SerializeField] private bool skipLobby = true;
+    public bool SkipLobby { get => skipLobby; }
+    [Tooltip("multiplay play mode에 들어가면 창마다 태그부여가 가능함. 태그부여 후, 호스트를 부여할 태그를 입력하기.(skipLobby체크했으면 레디여부 체크 안 합니다. 호스트에서 바로 startgame버튼 누르시면 됩니다.)")]
+
+    [SerializeField] private string hostTag = "0";
+    //-------------- ----
     [Header("AssignRole UI")]
     private GameObject assignRoleCanvas;
     private RoleAssignUIReferences roleAssignUIReferences;
@@ -49,7 +60,25 @@ public class GameManager : NetworkBehaviour
     private void Start()
     {
         //persistent씬에서 시작해서 바로 홈씬으로 전환
-        SceneManager.LoadScene(GameScenes.Home, LoadSceneMode.Single);
+        if (skipLobby)
+        {
+            SceneManager.LoadScene(GameScenes.Lobby, LoadSceneMode.Single);
+            string[] myTags = CurrentPlayer.ReadOnlyTags();
+            bool isHost = myTags.Contains(hostTag);
+            if (isHost)
+            {
+                LobbyManager.Instance.JoinAsHost();
+            }
+            else
+            {
+                LobbyManager.Instance.JoinAsClient();
+            }
+        }
+        else
+        {
+            SceneManager.LoadScene(GameScenes.Home, LoadSceneMode.Single);
+        }
+        
         //씬 로드 이벤트 구독
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -58,6 +87,8 @@ public class GameManager : NetworkBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
         base.OnDestroy();
     }
+    
+   
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {

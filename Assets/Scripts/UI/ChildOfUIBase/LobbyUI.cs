@@ -120,9 +120,6 @@ public class LobbyUI : UIHUD
             //ready 변수 켜기
             ToggleReadyState();
         }
-
-        
-        
     }
     private void ToggleReadyState(){
         ulong localClientId = NetworkManager.Singleton.LocalClientId;

@@ -348,9 +348,12 @@ public class LobbyManager : NetworkBehaviour
         }
         
         //전부 레디해야 시작함
-        if(!AreAllPlayersReady()){
-            Debug.LogError("Not all players are ready!");
-            return;
+        if (!GameManager.Instance.SkipLobby)
+        {
+            if(!AreAllPlayersReady()){
+                Debug.LogError("Not all players are ready!");
+                return;
+            }
         }
 
         //플레이어 역할 부여

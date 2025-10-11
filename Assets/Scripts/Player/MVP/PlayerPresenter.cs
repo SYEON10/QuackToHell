@@ -1135,9 +1135,8 @@ public class PlayerPresenter : NetworkBehaviour
 
     public void ToggleReady(){
         if(!IsOwner) return;
-        ulong myClientId = NetworkManager.Singleton.LocalClientId;
-        ToggleReadyServerRpc(myClientId);
-        
+       
+        ToggleReadyServerRpc();
     }
 
     public bool IsReady(){
@@ -1145,13 +1144,11 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
     [ServerRpc]
-    private void ToggleReadyServerRpc(ulong clientId)
+    private void ToggleReadyServerRpc()
     {
-        PlayerPresenter requestPlayer = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(clientId);
-        PlayerStatusData statusDataCopy = requestPlayer.GetPlayerStatusData();
+        PlayerStatusData statusDataCopy = GetPlayerStatusData();
         statusDataCopy.IsReady = !statusDataCopy.IsReady;
-        requestPlayer.playerModel.PlayerStatusData.Value = statusDataCopy;
-
+        playerModel.PlayerStatusData.Value = statusDataCopy;
     }
     public PlayerStatusData GetPlayerStatusData()
     {
