@@ -41,7 +41,7 @@ private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVaria
                         _spriteRenderer.color = Color.red;
                         break;
                     case 1:
-                        _spriteRenderer.color = Color.orange;
+                        _spriteRenderer.color = new Color(1f, 0.647f, 0f);
                         break;
                     case 2:
                         _spriteRenderer.color = Color.yellow;
@@ -53,7 +53,7 @@ private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVaria
                         _spriteRenderer.color = Color.blue;
                         break;
                     case 5:
-                        _spriteRenderer.color = Color.purple;
+                        _spriteRenderer.color =new Color(0.502f, 0f, 0.502f); 
                         break;
                 }
 

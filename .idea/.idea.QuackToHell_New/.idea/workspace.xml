@@ -5,7 +5,114 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/Character/Char_MT_Dummy_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/Character/Char_MT_Dummy_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/DemoSceneAssets/Character/Char_MT_Dummy_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/DemoSceneAssets/Character/Char_MT_Dummy_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/DemoSceneAssets/Materials/Env_MT_Ground.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/DemoSceneAssets/Materials/Env_MT_Ground.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/Materials/Env_MT_Ground.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/Materials/Env_MT_Ground.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/Materials/MT_Sphere_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/DemoScene/DemoSceneAssets/Materials/MT_Sphere_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_CircleSpark_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_CircleSpark_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Circle_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Circle_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ConnectionLoop_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ConnectionLoop_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ConnectionLoop_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ConnectionLoop_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Crackground_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Crackground_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Crackground_02_Glow.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Crackground_02_Glow.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Distort_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Distort_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Distort_01_ReadZ.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Distort_01_ReadZ.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Distort_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Distort_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Core.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Core.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Glow.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Glow.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Glow_AB.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Glow_AB.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Refraction.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ElectricSlash_Base_01_Refraction.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_Alpha_AB.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_Alpha_AB.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_Alpha_Add.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_EmptyFresnel_Alpha_Add.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_FlamesSphere 1.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_FlamesSphere 1.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_AB_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_AB_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_AB_01_Soft.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_AB_01_Soft.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_AB_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_AB_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_Additive_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_Additive_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_Additive_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Glow_Additive_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_02_Inverted.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_02_Inverted.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_03_Inverted.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_GroundLightning_03_Inverted.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_HeadLoop_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_HeadLoop_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_HeadLoop_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_HeadLoop_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirection_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirection_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirection_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirection_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirectional_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirectional_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirectional_04.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactDirectional_04.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactElectric_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactElectric_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactLight.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactLight.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactShapes_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactShapes_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactShapes_01_Back.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactShapes_01_Back.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactShapes_01_Front.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactShapes_01_Front.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactSimple_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_ImpactSimple_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LateralImpact_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LateralImpact_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LensImpact_01_3x3.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LensImpact_01_3x3.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightSparks_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightSparks_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_01_3x4.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_01_3x4.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_02_4x4.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_02_4x4.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_03_3x4.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_03_3x4.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_04.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_04.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_04_Alpha.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_04_Alpha.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_05.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_05.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_06.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_06.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Direct_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Direct_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Direct_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Direct_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_ForCircle_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_ForCircle_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_ForCircle_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_ForCircle_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Ground_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Ground_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Slash.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningBolt_Slash.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningChain_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningChain_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningChain_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningChain_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningCircle_01_Lerp.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningCircle_01_Lerp.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningCircle_01_LerpInverted.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningCircle_01_LerpInverted.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningCircle_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningCircle_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningImpact_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningImpact_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningLaser_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningLaser_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_01_Inverted.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_01_Inverted.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_LightningSpark_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_NoiseShapes_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_NoiseShapes_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_NoiseShapes_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_NoiseShapes_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Orb_LightningAround_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Orb_LightningAround_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Orb_LightningAround_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Orb_LightningAround_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialDissolve_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialDissolve_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialElectricity_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialElectricity_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialElectricity_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialElectricity_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialElectricity_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_RadialElectricity_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleGlow_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleGlow_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleGlow_07.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleGlow_07.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleImpact_01_3x3.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleImpact_01_3x3.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleSmoke_Compo.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SimpleSmoke_Compo.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SmokeDirectionalGround_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SmokeDirectionalGround_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SmokeDirectional_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SmokeDirectional_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SmokeMovement_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SmokeMovement_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Smoke_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Smoke_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SparkLinger_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_SparkLinger_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_AB_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_AB_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_AB_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_AB_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_Add.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_Add.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_Add_NoZ.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_Add_NoZ.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_Add_Soft.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StandardGlow_Add_Soft.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StormLightning_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_StormLightning_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Trails_01.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Trails_01.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Trails_02.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Trails_02.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Trails_03.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/SrRubfish_VFX_04/Materials/FX_MT_Trails_03.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Player/Player.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/Player/Player.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Player/PlayerCorpse.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/Player/PlayerCorpse.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/URPProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/URPProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +193,7 @@
 }</component>
   <component name="RunManager" selected="Unity 에디터에 연결.Unity 에디터에 연결">
     <configuration name="유닛 테스트(배치 모드)" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.1.9f1\Editor\Unity.exe" />
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.0.55f1\Editor\Unity.exe" />
       <option name="PROGRAM_PARAMETERS" value="-runTests -batchmode -projectPath C:\Users\swu\Documents\GitHub\QuackToHell_New -testResults Logs/results.xml -logFile Logs/Editor.log -testPlatform EditMode -debugCodeOptimization" />
       <option name="WORKING_DIRECTORY" value="C:\Users\swu\Documents\GitHub\QuackToHell_New" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -110,7 +217,7 @@
       <method v="2" />
     </configuration>
     <configuration name="Unity 시작" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.1.9f1\Editor\Unity.exe" />
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\6000.0.55f1\Editor\Unity.exe" />
       <option name="PROGRAM_PARAMETERS" value="-projectPath C:\Users\swu\Documents\GitHub\QuackToHell_New -debugCodeOptimization" />
       <option name="WORKING_DIRECTORY" value="C:\Users\swu\Documents\GitHub\QuackToHell_New" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -121,15 +228,13 @@
       <option name="MIXED_MODE_DEBUG" value="0" />
       <method v="2" />
     </configuration>
-    <configuration name="Unity 에디터에 연결" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="21396">
+    <configuration name="Unity 에디터에 연결" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="21396" />
+      <option name="pid" />
       <option name="projectPathOnTarget" />
       <option name="runtimes">
-        <list>
-          <MonoRuntime />
-        </list>
+        <list />
       </option>
       <option name="selectedOptions">
         <list />
@@ -214,6 +319,8 @@
       <workItem from="1759425739025" duration="3390000" />
       <workItem from="1759459528898" duration="3106000" />
       <workItem from="1759482015594" duration="393000" />
+      <workItem from="1760142999441" duration="189000" />
+      <workItem from="1760143637417" duration="1396000" />
     </task>
     <servers />
   </component>
@@ -258,32 +365,6 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/Managers/DeckManager.cs</url>
-          <line>827</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\Managers\DeckManager.cs" containingFunctionPresentation="메서드 'PurchaseCardResultClientRpc'">
-            <startOffsets>
-              <option value="27033" />
-            </startOffsets>
-            <endOffsets>
-              <option value="27121" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/Assets/Scripts/Managers/DeckManager.cs</url>
-          <line>812</line>
-          <properties documentPath="C:\Users\swu\Documents\GitHub\QuackToHell_New\Assets\Scripts\Managers\DeckManager.cs" containingFunctionPresentation="메서드 'TryPurchaseCardServerRpc'">
-            <startOffsets>
-              <option value="26678" />
-            </startOffsets>
-            <endOffsets>
-              <option value="26745" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="14" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
