@@ -389,11 +389,80 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 6635343058577117863, guid: 3fbd15ed375778047b4e67d54131fd63, type: 3}
+      propertyPath: skipLobby
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3fbd15ed375778047b4e67d54131fd63, type: 3}
+--- !u!1001 &1484936894
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566773458680886220, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8619445199672286168, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: m_Name
+      value: ChatModel
+      objectReference: {fileID: 0}
+    - target: {fileID: 8729115181282849688, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3932159021
+      objectReference: {fileID: 0}
+    - target: {fileID: 8729115181282849688, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 1346910416
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2a10ae8044c29f84da946df41e2fad97, type: 3}
 --- !u!1 &1727853090 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7438426754794206379, guid: 97f754163219984488aee2b09c9ffbda, type: 3}
@@ -735,8 +804,8 @@ PrefabInstance:
       value: NetworkManager
       objectReference: {fileID: 0}
     - target: {fileID: 6276231727013454868, guid: a6e5352f49ca26242a10c262bc9d92a0, type: 3}
-      propertyPath: NetworkConfig.PlayerPrefab
-      value: 
+      propertyPath: LogLevel
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -947,7 +1016,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 884513523452094522, guid: 8a084362adda15b4abc38696769474f6, type: 3}
       propertyPath: ToggleForcedAllFarmer
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2950312464360048249, guid: 8a084362adda15b4abc38696769474f6, type: 3}
       propertyPath: GlobalObjectIdHash
@@ -1022,3 +1091,4 @@ SceneRoots:
   - {fileID: 73510062}
   - {fileID: 684515778036949200}
   - {fileID: 8781772228825312577}
+  - {fileID: 1484936894}
