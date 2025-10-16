@@ -29,6 +29,10 @@ public class MinigameController : MonoBehaviour
     [Tooltip("상호작용 키(기본: Space)")]
     public KeyCode interactionKey = KeyCode.Space;
 
+    [Header("Mouse Click")]
+    [SerializeField] private bool allowMouseClick = true;
+    [SerializeField] private bool ignoreUIRaycastBlockers = false;
+
     // 보상
     [SerializeField] private int rewardGold = 100;
     [SerializeField] private GameObject rewardUIRoot;
@@ -105,6 +109,38 @@ public class MinigameController : MonoBehaviour
             {
                 OpenUi();
             }
+
+        if (allowMouseClick && _isLocalEligible && Input.GetMouseButtonUp(0))
+        {
+            // UI가 가리는 경우 막을지 선택
+            if (!ignoreUIRaycastBlockers && IsPointerOverUI())
+                return;
+
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                Vector3 wp3 = cam.ScreenToWorldPoint(Input.mousePosition);
+                Vector2 wp = new Vector2(wp3.x, wp3.y);
+
+                // 이 포인트에 겹치는 2D 콜라이더 전부 확인
+                var hits = Physics2D.OverlapPointAll(wp);
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    var h = hits[i];
+                    if (!h) continue;
+
+                    // 이 미니게임 오브젝트 자신(또는 자식)인지 확인
+                    if (h.transform == transform || h.transform.IsChildOf(transform))
+                    {
+                        if (IsLocalOnCooldown(out var remain))
+                            ShowCooldownPopup(remain);
+                        else
+                            OpenUi();
+                        break;
+                    }
+                }
+            }
+        }
 
         if (closeWithEscape && _spawnedLocalUi && _spawnedLocalUi.activeSelf && Input.GetKeyDown(KeyCode.Escape))
             CloseUi();

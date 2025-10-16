@@ -2488,7 +2488,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10000
   m_TargetDisplay: 0
 --- !u!224 &350448155
 RectTransform:
@@ -2969,6 +2969,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6197699376449231210, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6808907348449827939, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6808907348449827939, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6808907348449827939, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
+      propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7048663370304227301, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
@@ -5506,7 +5518,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -668, y: 360}
+  m_AnchoredPosition: {x: 665, y: 360}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &993143978
@@ -6759,6 +6771,8 @@ MonoBehaviour:
   uiRootOverride: {fileID: 0}
   interactionRadius: 1
   interactionKey: 32
+  allowMouseClick: 1
+  ignoreUIRaycastBlockers: 0
   rewardGold: 100
   rewardUIRoot: {fileID: 0}
   rewardUITMP: {fileID: 0}
@@ -9695,6 +9709,8 @@ MonoBehaviour:
   uiRootOverride: {fileID: 0}
   interactionRadius: 1.5
   interactionKey: 32
+  allowMouseClick: 1
+  ignoreUIRaycastBlockers: 0
   rewardGold: 100
   rewardUIRoot: {fileID: 1099196983}
   rewardUITMP: {fileID: 847343040}
