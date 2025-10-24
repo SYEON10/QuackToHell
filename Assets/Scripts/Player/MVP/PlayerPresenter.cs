@@ -70,7 +70,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void PlayerView_OnPlayerExited()
     {
         //현재 역할 확인
-        PlayerJob playerJob = GetPlayerJob();
+        PlayerJob playerJob = playerModel.GetPlayerJob();
         if(interactionHUDController!=null)
         {
             interactionHUDController.SetPlayerInteractionUI(playerJob, false);
@@ -80,7 +80,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void PlayerView_OnPlayerDetected(GameObject player)
     {
         //현재 역할 확인
-        PlayerJob playerJob = GetPlayerJob();
+        PlayerJob playerJob = playerModel.GetPlayerJob();
         if(interactionHUDController!=null)
         {
             interactionHUDController.SetPlayerInteractionUI(playerJob, true);
@@ -209,7 +209,7 @@ public class PlayerPresenter : NetworkBehaviour
         {   
             if (IsOwner)
             {
-                if(GetPlayerJob()==PlayerJob.Ghost){
+                if(playerModel.GetPlayerJob()==PlayerJob.Ghost){
                     return;
                 }
                 interactionHUDController.EnableButton(InteractionHUDController.ButtonName.CorpseReport);
@@ -231,7 +231,7 @@ public class PlayerPresenter : NetworkBehaviour
             {
                 interactionHUDController.SetInteractionButtonImageByObject(GameTags.Vent);
 
-                PlayerJob playerJob = GetPlayerJob(); // 현재 역할 확인
+                PlayerJob playerJob = playerModel.GetPlayerJob(); // 현재 역할 확인
                 
                 if(playerJob == PlayerJob.Animal)
                 {
@@ -389,7 +389,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleInteractInput()
     {
         DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
-        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         _roleController.CurrentStrategy?.TryInteract();
     }
@@ -404,7 +404,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleCorpseReported(ulong reporterClientId)
     {
         DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
-        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
 
         _roleController.CurrentStrategy?.TryReportCorpse();
     }
@@ -415,7 +415,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleVentInput()
     {
         DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
-        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         _roleController.CurrentStrategy?.TryVent();
     }
@@ -426,7 +426,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleSavotageInput()
     {
         DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
-        if (GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
         _roleController.CurrentStrategy?.TrySabotage();
     }
@@ -520,9 +520,9 @@ public class PlayerPresenter : NetworkBehaviour
             if (collider.CompareTag(GameTags.Player) && collider.gameObject != gameObject)
             {
                 PlayerPresenter targetPlayer = collider.GetComponent<PlayerPresenter>();
-                if (targetPlayer != null && targetPlayer.GetPlayerAliveState() == PlayerLivingState.Alive)
+                if (targetPlayer != null && targetPlayer.playerModel.GetPlayerAliveState() == PlayerLivingState.Alive)
                 {
-                    if (targetPlayer.GetPlayerJob() != PlayerJob.Animal)
+                    if (targetPlayer.playerModel.GetPlayerJob() != PlayerJob.Animal)
                     {
                         Debug.Log("Animal이 아니어서 못 죽임");
                         return;
@@ -624,7 +624,7 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleVentInteractionClientRpc( ClientRpcParams  clientRpcParams)
     {
         // 역할 검증
-        PlayerJob currentRole = GetPlayerJob();
+        PlayerJob currentRole = playerModel.GetPlayerJob();
         if (currentRole != PlayerJob.Farmer)
         {
             Debug.LogWarning($"[Server] Only Farmer can use vents. Current role: {currentRole}");
@@ -789,20 +789,7 @@ public class PlayerPresenter : NetworkBehaviour
     }
     
  
-
-    /// <summary>
-    /// 농장주 UI 표시
-    /// </summary>
-    public void ShowFarmerUI()
-    {
-    }
-
-    /// <summary>
-    /// 동물 UI 표시
-    /// </summary>
-    public void ShowAnimalUI()
-    {
-    }
+    
 
     /// <summary>
     /// 플레이어 사망 처리 (죽은 플레이어의 presenter에서 실행)
@@ -946,8 +933,8 @@ public class PlayerPresenter : NetworkBehaviour
         //죽은애의 오브젝트에서 실행되는 함수임.
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
         PlayerPresenter playerPresenter =  PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
-        PlayerLivingState localPlayerLivingState = playerPresenter.GetPlayerAliveState();
-        PlayerPresenter[] players= PlayerHelperManager.Instance.GetAllPlayers();
+        PlayerLivingState localPlayerLivingState = playerPresenter.playerModel.GetPlayerAliveState();
+        PlayerPresenter[] players= PlayerHelperManager.Instance.GetAllPlayers<PlayerPresenter>();
         
         //내가 죽었는지 체크
         if (localPlayerLivingState == PlayerLivingState.Dead)
@@ -1022,42 +1009,10 @@ public class PlayerPresenter : NetworkBehaviour
 
     #region 외부 인터페이스 (메시지 기반)
 
-    public int GetGold()
-    {
-        return playerModel.PlayerStatusData.Value.gold;
-    }
+    
     public void OnOffNickname(bool onOff)
     {
-        playerView.SetNicknameVisibility(onOff);
-    }
-    
-    /// <summary>
-    /// 플레이어 상태 변경 요청
-    /// </summary>
-    public void RequestStatusChange(PlayerStatusData newStatus)
-    {
-        // TODO: PlayerModel에 상태 변경 RPC 메서드 추가 필요
-        Debug.Log($"[PlayerPresenter] RequestStatusChange: {newStatus.Nickname}");
-    }
-    
-    /// <summary>
-    /// 플레이어 외형 변경 요청
-    /// </summary>
-    public void RequestAppearanceChange(PlayerAppearanceData newAppearance)
-    {
-        // TODO: PlayerModel에 외형 변경 RPC 메서드 추가 필요
-        Debug.Log($"[PlayerPresenter] RequestAppearanceChange: {newAppearance.ColorIndex}");
-    }
-    
-    /// <summary>
-    /// 플레이어 이동 요청
-    /// </summary>
-    public void RequestMovement(float xDirection, float yDirection)
-    {
-        if (playerModel != null)
-        {
-            playerModel.MovePlayerServerRpc((int)xDirection, (int)yDirection);
-        }
+        playerView.SetNicknameVisibility(false);
     }
     
     /// <summary>
@@ -1103,63 +1058,7 @@ public class PlayerPresenter : NetworkBehaviour
             _roleController.CurrentStrategy.TryReportCorpse();
         }
     }
-    
-    /// <summary>
-    /// 플레이어 생존 상태 조회
-    /// </summary>
-    public PlayerLivingState GetPlayerAliveState()
-    {
-        return playerModel.PlayerStateData.Value.AliveState;
-    }
-    
-    /// <summary>
-    /// 플레이어 닉네임 조회
-    /// </summary>
-    public string GetPlayerNickname()
-    {
-        return playerModel?.PlayerStatusData.Value.Nickname ?? "";
-    }
 
-    public int GetPlayerColorIndex()
-    {
-        return  playerModel?.PlayerAppearanceData.Value.ColorIndex ?? 0;
-    }
-    
-    /// <summary>
-    /// 플레이어 역할 조회
-    /// </summary>
-    public PlayerJob GetPlayerJob()
-    {
-        return playerModel?.PlayerStatusData.Value.job ?? PlayerJob.None;
-    }
-
-    public void ToggleReady(){
-        if(!IsOwner) return;
-       
-        ToggleReadyServerRpc();
-    }
-
-    public bool IsReady(){
-        return playerModel?.PlayerStatusData.Value.IsReady??false;
-    }
-    
-    [ServerRpc]
-    private void ToggleReadyServerRpc()
-    {
-        PlayerStatusData statusDataCopy = GetPlayerStatusData();
-        statusDataCopy.IsReady = !statusDataCopy.IsReady;
-        playerModel.PlayerStatusData.Value = statusDataCopy;
-    }
-    public PlayerStatusData GetPlayerStatusData()
-    {
-        return playerModel.PlayerStatusData.Value;
-    }
-
-    public void SubscribeToPlayerReadyStatusChanges(NetworkVariable<PlayerStatusData>.OnValueChangedDelegate handler){
-        playerModel.PlayerStatusData.OnValueChanged += handler;
-        Debug.Log($"바인딩된 플레이어의 id는 {NetworkManager.Singleton.LocalClientId}");
-        Debug.Log($"바인딩된 함수는 {handler.Method.Name}, 타겟 = {handler.Target}");
-    }
     
     #endregion
 }

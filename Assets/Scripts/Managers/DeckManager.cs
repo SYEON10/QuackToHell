@@ -763,10 +763,10 @@ public class DeckManager : NetworkBehaviour
         };
         
         //로컬클라이언트의 인벤토리를 조회해서, 인벤의 개수가 max인지 확인. max면 구매 못 함. 로그도 찍기.
-        CardInventoryPresenter myLocalInventoryPresenter = FindAnyObjectByType<CardInventoryPresenter>();
-        if (myLocalInventoryPresenter)
+        CardInventoryModel myLocalInventoryModel = FindAnyObjectByType<CardInventoryModel>();
+        if (myLocalInventoryModel)
         {
-            if (myLocalInventoryPresenter.IsInventoryMaximum())
+            if (myLocalInventoryModel.IsInventoryMaximum())
             {
                 Debug.Log($"인벤토리 한도를 초과해서 구매 못 합니다. 인벤토리 한도: {GameConstants.Card.maxCardCount}");
                 PurchaseResultToCardShopClientRpc(false, clientId);

@@ -130,18 +130,15 @@ public class CardShopPresenter : NetworkBehaviour
     #region 외부 인터페이스 (메시지 기반)
     
     /// <summary>
-    /// 카드샵 잠금 요청
+    /// 카드샵 잠금 요청 (에디터에서 마우스이벤트 연결)
     /// </summary>
     public void RequestLockShop()
     {
         OnClickLock();
     }
     
-
-   
-    
     /// <summary>
-    /// 리롤 요청 (외부에서 호출)
+    /// 리롤 요청 (에디터에서 마우스이벤트 연결)
     /// </summary>
     public void RequestReroll()
     {

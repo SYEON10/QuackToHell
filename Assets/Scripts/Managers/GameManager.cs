@@ -179,7 +179,7 @@ public class GameManager : NetworkBehaviour
         showRole.SetActive(true);
             //2-1. 역할공개 text 세팅하기
             //로컬플레이어 역할에 따라 텍스트 세팅
-            PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+            PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
             TextMeshProUGUI showRoleText = this.showRoleText;
             switch(playerJob){
                 case PlayerJob.Farmer:
@@ -197,9 +197,9 @@ public class GameManager : NetworkBehaviour
             }
             //2-2. PlayerSlot에 PlayerUIPrefab 생성하기
             //플레이어 수만큼 플레이어 프리팹 생성
-            PlayerPresenter[] players = PlayerHelperManager.Instance.GetAllPlayers();
+            PlayerModel[] players = PlayerHelperManager.Instance.GetAllPlayers<PlayerModel>();
             int i = 0;
-            foreach(PlayerPresenter player in players){
+            foreach(PlayerModel player in players){
                 if (playerJob == PlayerJob.Farmer)
                 {
                     if (playerJob != player.GetPlayerJob())

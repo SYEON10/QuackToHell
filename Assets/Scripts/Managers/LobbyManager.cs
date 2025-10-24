@@ -363,7 +363,7 @@ public class LobbyManager : NetworkBehaviour
         
     }
     private bool AreAllPlayersReady(){
-        PlayerPresenter[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers();
+        PlayerModel[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers<PlayerModel>();
         foreach(var player in allPlayers){
             if(player.IsOwner && IsHost) continue;
             if(!player.IsReady()){
@@ -379,7 +379,7 @@ public class LobbyManager : NetworkBehaviour
     private void AssignPlayerRolesServerRpc()
     {
         //모든 플레이어 가져오기
-        PlayerPresenter[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers();
+        PlayerModel[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers<PlayerModel>();
         int totalPlayers = allPlayers.Length;
         //농장 수 결정
         int farmerCount = GetFarmerCountByPlayerCount(totalPlayers);

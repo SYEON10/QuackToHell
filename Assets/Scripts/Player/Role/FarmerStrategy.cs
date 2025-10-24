@@ -11,12 +11,14 @@ using System;
 public class FarmerStrategy : IRoleStrategy
 {
     private PlayerPresenter _playerPresenter;
+    private PlayerModel _playerModel;
     private PlayerInput _playerInput;
     private InputActionMap _farmerActionMap;
     private InputActionMap _commonActionMap;
     
-    public FarmerStrategy(PlayerPresenter playerPresenter, PlayerInput playerInput)
+    public FarmerStrategy(PlayerModel playerModel , PlayerPresenter playerPresenter, PlayerInput playerInput)
     {
+        _playerModel = playerModel;
         _playerPresenter = playerPresenter;
         _playerInput = playerInput;
     }
@@ -30,8 +32,6 @@ public class FarmerStrategy : IRoleStrategy
         if (_commonActionMap != null) _commonActionMap.Enable();
         if (_farmerActionMap != null) _farmerActionMap.Enable();
         
-        // 농장주 전용 UI 활성화
-        _playerPresenter.ShowFarmerUI();
     }
     
     /// <summary>
@@ -95,7 +95,7 @@ public class FarmerStrategy : IRoleStrategy
     public bool CanVent()
     {
         // 농장주만 벤트 사용 가능
-        return _playerPresenter.GetPlayerAliveState() == PlayerLivingState.Alive;
+        return _playerModel.GetPlayerAliveState() == PlayerLivingState.Alive;
     }
 
     private bool HasVentNearby()
@@ -219,7 +219,7 @@ public class FarmerStrategy : IRoleStrategy
     public bool CanReportCorpse()
     {
         // 유령이 아닌 경우에만 시체 리포트 가능
-        return _playerPresenter.GetPlayerAliveState() == PlayerLivingState.Alive;
+        return _playerModel.GetPlayerAliveState() == PlayerLivingState.Alive;
     }
     
     #endregion

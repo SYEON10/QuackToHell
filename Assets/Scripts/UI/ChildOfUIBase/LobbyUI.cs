@@ -70,7 +70,7 @@ public class LobbyUI : UIHUD
         //컴포넌트가 초기화 될 떄까지 기다리기
         yield return new WaitForEndOfFrame();
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
-        PlayerPresenter localPlayer = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+        PlayerModel localPlayer = PlayerHelperManager.Instance.GetPlayerModelByClientId(localClientId);
         if (localPlayer!=null)
         {
             localPlayer.SubscribeToPlayerReadyStatusChanges(HandlePlayerStatusChanged);
@@ -123,7 +123,7 @@ public class LobbyUI : UIHUD
     }
     private void ToggleReadyState(){
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
-        PlayerPresenter localPlayer = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
+        PlayerModel localPlayer = PlayerHelperManager.Instance.GetPlayerModelByClientId(localClientId);
         if(localPlayer!=null){
             localPlayer.ToggleReady();
         }

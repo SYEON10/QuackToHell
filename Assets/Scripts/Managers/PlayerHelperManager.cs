@@ -133,12 +133,12 @@ public class PlayerHelperManager : MonoBehaviour
     /// <summary>
     /// 모든 플레이어를 가져오는 함수
     /// </summary>
-    public PlayerPresenter[] GetAllPlayers(){
-        return FindObjectsByType<PlayerPresenter>(FindObjectsSortMode.None);
+    public T[] GetAllPlayers<T> ()where T : Component{
+        return FindObjectsByType<T>(FindObjectsSortMode.None);
     }
 
     public PlayerPresenter GetPlayerPresenterByClientId(ulong clientId){
-        PlayerPresenter[] allPlayers = GetAllPlayers();
+        PlayerPresenter[] allPlayers = GetAllPlayers<PlayerPresenter>();
         foreach (PlayerPresenter player in allPlayers)
         {
             if (player.NetworkObject.OwnerClientId == clientId)

@@ -32,7 +32,7 @@ public class InteractionHUDController : MonoBehaviour
     public void SetInteractionButtonImageByObject(string objectTag ){
         //현재 플레이어 역할을 확인하고 적절한 이미지로 변경
         //Resources/Sprites/InteractionButtons/ 에서 이미지를 찾아서 변경
-        PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+        PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
         string spritePath = GetSpritePathByTag(objectTag);
         if(spritePath.Contains("Vent")){
             if(playerJob == PlayerJob.Farmer){
@@ -174,7 +174,7 @@ public class InteractionHUDController : MonoBehaviour
     }
     private void SetUpButtons(){
     //로컬플레이어의 역할에 따라 다르게 버튼을 활성화
-    PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+    PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
     
     // 모든 버튼 기본 설정
     SetAllButtonsActiveState();
@@ -198,7 +198,7 @@ public class InteractionHUDController : MonoBehaviour
         killButtonButton.interactable = false;
         reportButtonButton.interactable = false;
         interactButtonButton.interactable = false; 
-        PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerPresenterByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+        PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
         if(playerJob == PlayerJob.Farmer)
         {
             savotageButtonButton.interactable = true; // 항상 활성화
