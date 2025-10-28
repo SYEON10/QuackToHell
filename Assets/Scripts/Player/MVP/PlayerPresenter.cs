@@ -8,6 +8,13 @@ using Unity.Collections;
 using UnityEngine.InputSystem;
 using Unity.Services.Lobbies.Models;
 
+//NOTE: 민수님
+//hudCONTROLLER관련->uiMANAGER로 빼기, 
+//STATEGY관련된거중에 MODEL 이나 뷰를 변경하지않는거 (혹은 호출하지 않는 거) : 따로 클래스 빼기
+//TAG는 자체가 mvp관련이 아니니까 다른 클래스로 뺴기
+//mvp는 유아이와 모델간의 소통이다
+//MVP는 유니티코리아의 영상보면 개념이해될듯. 
+
 /// <summary>
 /// View와 Model 간 중개자 역할
 /// - View의 이벤트를 받아서 Model에 전달
@@ -19,7 +26,7 @@ public class PlayerPresenter : NetworkBehaviour
     [Header("Components")]
     private PlayerModel playerModel;
     private PlayerView playerView;
-    private RoleController _roleController;
+    private RoleController roleController;
     private PlayerInput playerInput;
     [Header("")]
     [SerializeField]    
@@ -125,12 +132,12 @@ public class PlayerPresenter : NetworkBehaviour
     {
         playerModel = GetComponent<PlayerModel>();
         playerView = GetComponent<PlayerView>();
-        _roleController = GetComponent<RoleController>();
+        roleController = GetComponent<RoleController>();
         playerInput = GetComponent<PlayerInput>();
         
         DebugUtils.AssertComponent(playerModel, "PlayerModel", this);
         DebugUtils.AssertComponent(playerView, "PlayerView", this);
-        DebugUtils.AssertComponent(_roleController, "RoleManager", this);
+        DebugUtils.AssertComponent(roleController, "RoleManager", this);
         DebugUtils.AssertComponent(playerInput, "PlayerInput", this);
     }
     
@@ -157,6 +164,11 @@ public class PlayerPresenter : NetworkBehaviour
         playerModel.PlayerAppearanceData.OnValueChanged += HandleAppearanceChanged;
         playerModel.PlayerStateData.OnValueChanged += HandleStateChanged;
     
+        //note: 민수님
+        //프레젠터가 view / model끝까지 토스할필요없이, 중간에서 끊겨도됨
+        //프레젠터는 모델이랑 뷰를 이어주는거니까, 모델 / 뷰에 갱신 필요없는데 여기있을 이유x
+        //이 4개 함수 관련해서 이벤트(뷰에있던거)랑, 구독함수 character같은 컴포넌트로 통째로 빼기
+        
         // View -> Presenter
         playerView.onPlayerDetected += PlayerView_OnPlayerDetected;
         playerView.onPlayerExited += PlayerView_OnPlayerExited;
@@ -164,11 +176,22 @@ public class PlayerPresenter : NetworkBehaviour
         playerView.OnObjectExited += HandleObjectExited;
 
         //model -> presenter
+        //민수님: 얘는 ㄱㅊ
         playerModel.PlayerTag.OnValueChanged += HandleTagChanged;
     }
 
     private void UnbindEvents()
     {
+        //note:민수님: 생명주기관련고민 
+        //메모장에 써놓고 코딩한다거나 , awake(본인거) start(참조할때) enabled disabled 는 기본적으로알아두고, 나머지는 작성해놓고 보기
+        //*awake는 하이어라키 순서 따라도 달라짐.
+        
+        //싱글톤vs스태틱 클래스
+        //note: 민수님
+        //싱글톤: 게임오브젝트 객체로써 필요. 싱글톤안에서 딕셔너리 / 리스트/ 같은 데이터를 관리하고있고 그걸 전역적으로 쓰기위해
+        //static클래스: 유틸같은거. vector 거리 계산같은거..
+        //필드가있는건 싱글톤
+        //*싱글톤은 null체크하는 게 말이안됨. 있다고 가정해서 쓰는거니까
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
@@ -195,6 +218,9 @@ public class PlayerPresenter : NetworkBehaviour
             playerModel.PlayerStateData.OnValueChanged -= HandleStateChanged;
         }
 
+        //note: 민수님
+        //mvp자체가 UI만질라고 하는거니까, ui와 data간 소통있는 게 아니면, 다른 컴포넌트 빼는 게 낫다. 
+        //클래스 새로만들기 너무 별로다 할때만 넣기.(웬만하면 분리추천)
         if (playerModel.PlayerTag != null)
         {
             playerModel.PlayerTag.OnValueChanged -= HandleTagChanged;
@@ -203,17 +229,21 @@ public class PlayerPresenter : NetworkBehaviour
 
     private void HandleObjectEntered(Collider2D collision)
     {
+        if (!IsOwner)
+        {
+            return;
+        }
+
         if(interactionHUDController == null) return;
 
         if (collision.CompareTag(GameTags.PlayerCorpse))
         {   
-            if (IsOwner)
-            {
-                if(playerModel.GetPlayerJob()==PlayerJob.Ghost){
-                    return;
-                }
-                interactionHUDController.EnableButton(InteractionHUDController.ButtonName.CorpseReport);
+            
+            if(playerModel.GetPlayerJob()==PlayerJob.Ghost){
+                return;
             }
+            interactionHUDController.EnableButton(InteractionHUDController.ButtonName.CorpseReport);
+            
         }
 
         //상호작용 오브젝트 감지
@@ -377,9 +407,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleKillInput()
     {
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         
-        _roleController.CurrentStrategy?.TryKill();
+        roleController.CurrentStrategy?.TryKill();
     }
 
     
@@ -388,10 +418,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleInteractInput()
     {
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
-        _roleController.CurrentStrategy?.TryInteract();
+        roleController.CurrentStrategy?.TryInteract();
     }
 
     
@@ -403,10 +433,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleCorpseReported(ulong reporterClientId)
     {
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
 
-        _roleController.CurrentStrategy?.TryReportCorpse();
+        roleController.CurrentStrategy?.TryReportCorpse();
     }
     
     /// <summary>
@@ -414,10 +444,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleVentInput()
     {
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
-        _roleController.CurrentStrategy?.TryVent();
+        roleController.CurrentStrategy?.TryVent();
     }
     
     /// <summary>
@@ -425,10 +455,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleSavotageInput()
     {
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
         
-        _roleController.CurrentStrategy?.TrySabotage();
+        roleController.CurrentStrategy?.TrySabotage();
     }
     
     /// <summary>
@@ -444,7 +474,7 @@ public class PlayerPresenter : NetworkBehaviour
         // 역할 변경 감지
         if (previousValue.job != newValue.job)
         {
-            _roleController?.ChangeRole(newValue.job);
+            roleController?.ChangeRole(newValue.job);
         }
     }
     
@@ -505,9 +535,9 @@ public class PlayerPresenter : NetworkBehaviour
     public void TryKillServerRpc()
     {
         // 서버 검증
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         
-        if (_roleController.CurrentStrategy?.CanKill() != true)
+        if (roleController.CurrentStrategy?.CanKill() != true)
         {
             Debug.LogWarning($"[Server] Player {OwnerClientId} cannot kill");
             return;
@@ -538,6 +568,8 @@ public class PlayerPresenter : NetworkBehaviour
         Debug.LogWarning($"[Server] No valid target found for Player {OwnerClientId}");
     }
     
+    //NOTE: STRATEGY관련된 건 다 밖으로 빼고, MODEL / VIEW 데이터를 겟하는 용도만 가져오기
+    
     /// <summary>
     /// 상호작용 시도 서버 RPC
     /// </summary>
@@ -545,9 +577,9 @@ public class PlayerPresenter : NetworkBehaviour
     public void TryInteractServerRpc(ServerRpcParams serverRpcParams = default)
     {
         // 서버 검증
-        DebugUtils.AssertNotNull(_roleController, "RoleManager", this);
+        DebugUtils.AssertNotNull(roleController, "RoleManager", this);
         
-        if (_roleController.CurrentStrategy?.CanInteract() != true)
+        if (roleController.CurrentStrategy?.CanInteract() != true)
         {
             Debug.LogWarning($"[Server] Player {OwnerClientId} cannot interact");
             return;
@@ -631,7 +663,7 @@ public class PlayerPresenter : NetworkBehaviour
             return;
         }
         
-        _roleController.CurrentStrategy?.TryVent();
+        roleController.CurrentStrategy?.TryVent();
     }
 
     /// <summary>
@@ -700,6 +732,10 @@ public class PlayerPresenter : NetworkBehaviour
     /// <summary>
     /// 시체 리포트 서버 RPC (검증 포함)
     /// </summary>
+    /// NOTE: 민수님
+    /// mvp관련된 게 아니니까(ui관련도 아니고 모델갱신도 아니니까 별도의 컴포넌트로 빼기: CHARACTER)
+    /// mvp는 ui보여주기 위한거라고 생각하기
+    /// VIEW도, MODEL도 안 건드리고 있음= > 따라서 여기있을 이유가 없음
     [ServerRpc]
     public void ReportCorpseServerRpc(ulong reporterClientId, ServerRpcParams rpcParams = default)
     {
@@ -742,6 +778,7 @@ public class PlayerPresenter : NetworkBehaviour
         // 6. 성공 결과 전달
         ReportCorpseResultClientRpc(true, "Corpse reported successfully", requesterClientId);
     }
+    //NOTE: 민수님: hud CONTROLLER 관련된것들 여기있을 이유없음
     
     /// <summary>
     /// 시체 리포트 결과 클라이언트 RPC
@@ -776,16 +813,6 @@ public class PlayerPresenter : NetworkBehaviour
             }
         }
         return false;
-    }
-
-
-    private void PlayerView_OnMovementInput(object sender, EventArgs e)
-    {
-        //이벤트 인자 캐스팅
-        OnMovementInputEventArgs onMovementInputEventArgs = (OnMovementInputEventArgs)e;
-
-        //model에게 방향 이벤트 전달
-        playerModel.MovePlayerServerRpc(onMovementInputEventArgs.XDirection, onMovementInputEventArgs.YDirection);
     }
     
  
@@ -831,6 +858,8 @@ public class PlayerPresenter : NetworkBehaviour
        
 
 
+    //NOTE: 민수님
+    //이거는 MODEL건드리는거니까 여기 있어야하는 거 맞음.
     /// <summary>
     /// 유령 상태로 전환 (서버전용함수)
     /// </summary>
@@ -1020,9 +1049,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestKill()
     {
-        if (_roleController?.CurrentStrategy != null)
+        if (roleController?.CurrentStrategy != null)
         {
-            _roleController.CurrentStrategy.TryKill();
+            roleController.CurrentStrategy.TryKill();
         }
     }
     
@@ -1031,9 +1060,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestSabotage()
     {
-        if (_roleController?.CurrentStrategy != null)
+        if (roleController?.CurrentStrategy != null)
         {
-            _roleController.CurrentStrategy.TrySabotage();
+            roleController.CurrentStrategy.TrySabotage();
         }
     }
     
@@ -1042,9 +1071,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestInteract()
     {
-        if (_roleController?.CurrentStrategy != null)
+        if (roleController?.CurrentStrategy != null)
         {
-            _roleController.CurrentStrategy.TryInteract();
+            roleController.CurrentStrategy.TryInteract();
         }
     }
     
@@ -1053,9 +1082,9 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     public void RequestReportCorpse()
     {
-        if (_roleController?.CurrentStrategy != null)
+        if (roleController?.CurrentStrategy != null)
         {
-            _roleController.CurrentStrategy.TryReportCorpse();
+            roleController.CurrentStrategy.TryReportCorpse();
         }
     }
 

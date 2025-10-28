@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public class ChatModel : NetworkBehaviour
 {
-    // note cba0898: const나 SO, json 등으로 별도 분리 추천
+    // note cba0898: const나 SO(Scriptable Object), json(시트쓸때) 등으로 별도 분리 추천: 값들이 다 분리되어있으니까 const클래스라든지.. 하나로 모으기. 컴포넌트마다 달라지는거면 인스펙터에서 조절 / 모두 동일해야하면 const로 빼는식으로
     [Header("Chat Settings")]
     [SerializeField] private int maxMessageLength = 500; // 최대 메시지 길이
     [SerializeField] private int maxMessages = 300; // 최대 메시지 수
