@@ -1170,19 +1170,45 @@ public class DeckManager : NetworkBehaviour
         s = (s ?? "").Trim().ToLowerInvariant(); 
         return s == "true" || s == "1" || s == "y"; 
     }
-    
+
     private static TierEnum ToTier(string s)
     {
-        if (int.TryParse(s, out var n)) return (TierEnum)n; 
+        if (int.TryParse(s, out var n)) return (TierEnum)n;
         s = (s ?? "").Trim().ToLowerInvariant();
-        return s switch { "common" => TierEnum.Common, "rare" => TierEnum.Rare, "special" => TierEnum.Special, _ => TierEnum.None };
+
+        return s switch
+        {
+            "common" => TierEnum.Common,
+            "rare" => TierEnum.Rare,
+            "special" => TierEnum.Special,
+
+            "none" => TierEnum.None,
+            "bronze" => TierEnum.Common,
+            "silver" => TierEnum.Rare,
+            "sIlver" => TierEnum.Rare,
+            "gold" => TierEnum.Special,
+
+            _ => TierEnum.None
+        };
     }
-    
+
     private static TypeEnum ToType(string s)
     {
-        if (int.TryParse(s, out var n)) return (TypeEnum)n; 
+        if (int.TryParse(s, out var n)) return (TypeEnum)n;
         s = (s ?? "").Trim().ToLowerInvariant();
-        return s switch { "attack" => TypeEnum.Attack, "defense" => TypeEnum.Defense, "special" => TypeEnum.Special, _ => TypeEnum.None };
+
+        return s switch
+        {
+            "attack" => TypeEnum.Attack,
+            "defense" => TypeEnum.Defense,
+            "special" => TypeEnum.Special,
+
+            "number" => TypeEnum.Attack,  
+            "operation" => TypeEnum.Special, 
+
+            _ => TypeEnum.None
+        };
     }
+
     #endregion
 }
