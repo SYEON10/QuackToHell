@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="" />
+    <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonExit.png" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonExit.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonExit.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonExit.png.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonMinigame.png" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonMinigame.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonMinigame.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonMinigame.png.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonRareCardShop.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/Sprites/InteractionButtons/InteractionButtonRareCardShop.png.meta" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
