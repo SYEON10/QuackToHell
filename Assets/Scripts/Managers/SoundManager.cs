@@ -25,8 +25,9 @@ public class SoundManager : MonoBehaviour
     {
         for (int i = 0; i < bgList.Length; i++)
         {
-            if (scene.name == bgList[i].name)
+            if (scene.name == bgList[i].clip.name)
             {
+                bgSound = bgList[i];
                 BgSoundPlay(bgList[i].clip);
             }   
         }
@@ -72,10 +73,17 @@ public class SoundManager : MonoBehaviour
     /// <param name="clip"></param>
     public void BgSoundPlay(AudioClip clip)
     {
+        foreach (var sound in bgList)
+        {
+            sound.Stop();
+        }
+        
         bgSound.outputAudioMixerGroup = mixer.FindMatchingGroups("BGM")[0];
         bgSound.clip = clip;
         bgSound.loop = true;
         bgSound.volume = 0.1f;
         bgSound.Play();
+
+        
     }
 }
