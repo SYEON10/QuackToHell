@@ -103,7 +103,7 @@ public class GameManager : NetworkBehaviour
         }
         if(scene.name == GameScenes.Village)
         {
-            UIManager.Instance.ShowHUDUI<VillageUI>("VillageUI");
+            //UIManager.Instance.ShowHUDUI<VillageUI>("VillageUI");
             //시체 청소하기
             CleanPlayerCorpse();
             //움직임 켜기
