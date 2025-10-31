@@ -161,6 +161,7 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
         serializer.SerializeValue(ref tier);
         serializer.SerializeValue(ref type);
         serializer.SerializeValue(ref subType);
+        serializer.SerializeValue(ref Value);
         serializer.SerializeValue(ref isUniqueCard);
         serializer.SerializeValue(ref isSellableCard);
         serializer.SerializeValue(ref usableClass);
@@ -179,6 +180,7 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
                tier == other.tier && 
                type == other.type && 
                subType == other.subType && 
+               Value == other.Value &&
                isUniqueCard == other.isUniqueCard && 
                isSellableCard == other.isSellableCard && 
                usableClass == other.usableClass && 
@@ -203,6 +205,7 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
         hash.Add(tier);
         hash.Add(type);
         hash.Add(subType);
+        hash.Add(Value);
         hash.Add(isUniqueCard);
         hash.Add(isSellableCard);
         hash.Add(usableClass);
@@ -1100,37 +1103,50 @@ public class DeckManager : NetworkBehaviour
             iClass = Idx("UsableClass"), iMap = Idx("Map_Restriction"),
             iPrice = Idx("BasePrice"), // iCost = Idx("BaseCost"),
             iDesc = Idx("DescriptionKey"), iImg = Idx("ImagePathKey"),
-            iAmount = Idx("AmountOfCardItem");
+            iAmount = Idx("AmountOfCardItem"),
+            iValue = Idx("Value");
+
+        string S(List<string> columns, int i) => (i >= 0 && i < columns.Count) ? (columns[i]?.Trim() ?? "") : "";
 
         for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
         {
-            List<string> columns = SplitCols(rows[rowIndex]);
-            if (columns.Count == 0) continue;
-            if (!int.TryParse((iID >= 0 && iID < columns.Count ? columns[iID].Trim() : ""), out _)) continue;
-            string valueRaw = TryGetHeaderValue(headers, columns, "Value", out var _v) ? _v : "";
-            CardValue value = ToCardValue(valueRaw);
-
-            list.Add(new CardDef
+            try
             {
-                cardID = ToInt(S(columns, iID)),
-                cardNameKey = S(columns, iName),
-                tier = ToTier(S(columns, iTier)),
-                type = ToType(S(columns, iType)),
-                subType = ToInt(S(columns, iSub)),
-                Value = value,
-                isUniqueCard = ToBool(S(columns, iUni)),
-                isSellableCard = ToBool(S(columns, iSell)),
-                usableClass = ToInt(S(columns, iClass)),
-                mapRestriction = ToInt(S(columns, iMap)),
-                basePrice = ToInt(S(columns, iPrice)),
-                // baseCost = ToInt(S(columns, iCost)),
-                descriptionKey = S(columns, iDesc),
-                imagePathKey = S(columns, iImg),
-                amountOfCardItem = ToInt(S(columns, iAmount)),
-            });
+                List<string> columns = SplitCols(rows[rowIndex]);
+                if (columns.Count == 0) continue;
+                
+                string cardIdStr = (iID >= 0 && iID < columns.Count ? columns[iID].Trim() : "");
+                if (!int.TryParse(cardIdStr, out _)) continue;
+                
+                string valueRaw = TryGetHeaderValue(headers, columns, "Value", out var _v) ? _v : "";
+                CardValue value = ToCardValue(valueRaw);
+
+                list.Add(new CardDef
+                {
+                    cardID = ToInt(S(columns, iID)),
+                    cardNameKey = S(columns, iName),
+                    tier = ToTier(S(columns, iTier)),
+                    type = ToType(S(columns, iType)),
+                    subType = ToInt(S(columns, iSub)),
+                    Value = value,
+                    isUniqueCard = ToBool(S(columns, iUni)),
+                    isSellableCard = ToBool(S(columns, iSell)),
+                    usableClass = ToInt(S(columns, iClass)),
+                    mapRestriction = ToInt(S(columns, iMap)),
+                    basePrice = ToInt(S(columns, iPrice)),
+                    // baseCost = ToInt(S(columns, iCost)),
+                    descriptionKey = S(columns, iDesc),
+                    imagePathKey = S(columns, iImg),
+                    amountOfCardItem = ToInt(S(columns, iAmount)),
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[DeckManager] Failed to parse card data at row {rowIndex + 1}: {ex.Message}\nRow data: {rows[rowIndex]}");
+                throw;
+            }
         }
         return list;
-        static string S(List<string> columns, int i) => (i >= 0 && i < columns.Count) ? (columns[i]?.Trim() ?? "") : "";
     }
 
     private static IEnumerable<StringRow> ParseStringTable(string csv)
@@ -1221,9 +1237,26 @@ public class DeckManager : NetworkBehaviour
     
     private static int ToInt(string s) 
     { 
-        s = (s ?? "").Trim(); 
-        if (s == "" || s == "-") return 0; 
-        return int.Parse(s, System.Globalization.CultureInfo.InvariantCulture); 
+        if (string.IsNullOrEmpty(s)) return 0;
+        
+        s = s.Trim(); 
+        if (s == "" || s == "-") return 0;
+        
+        // 소수점이나 특수문자가 포함된 경우 제거하고 숫자만 추출
+        if (s.Contains("."))
+        {
+            if (double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double d))
+            {
+                return (int)d;
+            }
+        }
+        
+        // 천 단위 구분자 제거
+        s = s.Replace(",", "").Replace(" ", "");
+        
+        return int.TryParse(s, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int result) 
+            ? result 
+            : 0;
     }
     
     private static bool ToBool(string s) 
