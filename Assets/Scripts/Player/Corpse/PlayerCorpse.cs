@@ -37,22 +37,25 @@ private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVaria
                 // 모든 클라이언트에서 색상 변경 적용
                 switch (colorIndex)
                 {
-                    case 0:
-                        _spriteRenderer.color = Color.red;
+                     case 0:
+                        _spriteRenderer.color = Color.white;
                         break;
                     case 1:
-                        _spriteRenderer.color = new Color(1f, 0.647f, 0f);
+                        _spriteRenderer.color = Color.red;
                         break;
                     case 2:
-                        _spriteRenderer.color = Color.yellow;
+                        _spriteRenderer.color = new Color(1f, 0.647f, 0f);
                         break;
                     case 3:
-                        _spriteRenderer.color = Color.green;
+                        _spriteRenderer.color = Color.yellow;
                         break;
                     case 4:
-                        _spriteRenderer.color = Color.blue;
+                        _spriteRenderer.color = Color.green;
                         break;
                     case 5:
+                        _spriteRenderer.color = Color.blue;
+                        break;
+                    case 6:
                         _spriteRenderer.color =new Color(0.502f, 0f, 0.502f); 
                         break;
                 }

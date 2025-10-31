@@ -26,6 +26,7 @@ public enum PlayerJob
 
 public enum EPlayerColorIndex
 {
+    Default,
     Red,
     Orange,
     Yellow,
