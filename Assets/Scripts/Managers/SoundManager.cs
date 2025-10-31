@@ -7,7 +7,7 @@ public class SoundManager : MonoBehaviour
 {
     public AudioMixer mixer;
     [Header("each bg source have to be same as scene name")]
-    public AudioClip[] bgList;
+    public AudioSource[] bgList;
     private AudioSource bgSound;
     #region 싱글톤
 
@@ -27,7 +27,7 @@ public class SoundManager : MonoBehaviour
         {
             if (scene.name == bgList[i].name)
             {
-                BgSoundPlay(bgList[i]);
+                BgSoundPlay(bgList[i].clip);
             }   
         }
     }

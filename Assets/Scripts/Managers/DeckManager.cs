@@ -20,6 +20,8 @@ public enum TypeEnum { None = 0, Attack = 1, Defense = 2, Special = 3 }
 // 딕셔너리의 Key와 Value 한 쌍을 담을 컨테이너 struct
 public struct DictionaryCardIdCardDef : INetworkSerializable, IEquatable<DictionaryCardIdCardDef>
 {
+    
+    
     public int key;
     public CardDef value;
 
@@ -313,7 +315,9 @@ public class DeckManager : NetworkBehaviour
     }
 
     #endregion
-
+    public AudioSource soldSuccedSFX;
+    public AudioSource soldFailedSFX;
+    
     #region 데이터
     public Action onAllCardsOnGameDataChanged;
     [Header("확인용 변수 열어두기")]
@@ -745,6 +749,8 @@ public class DeckManager : NetworkBehaviour
         if (clientId != requesterClientId)
         {
             Debug.LogError($"Server: Unauthorized card purchase attempt. Requested: {clientId}, Actual: {requesterClientId}");
+            //효과음 play
+            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
             return;
         }
         
@@ -769,6 +775,8 @@ public class DeckManager : NetworkBehaviour
             if (myLocalInventoryModel.IsInventoryMaximum())
             {
                 Debug.Log($"인벤토리 한도를 초과해서 구매 못 합니다. 인벤토리 한도: {GameConstants.Card.maxCardCount}");
+                //효과음 play
+                SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
                 PurchaseResultToCardShopClientRpc(false, clientId);
                 PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
                 return;
@@ -781,6 +789,8 @@ public class DeckManager : NetworkBehaviour
         if (!IsValidCardItemIdKey(cardItemIdKey))
         {
             Debug.Log($"카드가 존재하지 않습니다.");
+            //효과음 play
+            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
             PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
@@ -790,6 +800,8 @@ public class DeckManager : NetworkBehaviour
         if (!IsCardAvailableForPurchase(card.cardIdKey))
         {
             Debug.Log($"물량이 없습니다.");
+            //효과음 play
+            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
             PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
@@ -800,6 +812,8 @@ public class DeckManager : NetworkBehaviour
         if (playerGold < card.cardItemStatusData.price)
         {
             Debug.Log($"돈이 부족합니다.");
+            //효과음 play
+            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
             //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
             PurchaseResultToCardShopClientRpc(false, clientId);
             //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
@@ -807,6 +821,8 @@ public class DeckManager : NetworkBehaviour
             return;
         }
 
+        //효과음 play
+        SoundManager.Instance.SFXPlay(soldSuccedSFX.name, soldSuccedSFX.clip);
 
         //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
         PurchaseResultToCardShopClientRpc(true, clientId);

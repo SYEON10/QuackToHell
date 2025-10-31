@@ -5,6 +5,9 @@ using UnityEngine.Events;
 
 public class AreaClickGame : MonoBehaviour
 {
+    [Header("SFX")]
+    public AudioSource clickSFX;
+    
     [Header("UI Wiring")]
     [SerializeField] private Button closeButton;        // 우상단 닫기
     [SerializeField] private Transform contentArea;     // 클릭 영역 부모
@@ -82,7 +85,8 @@ public class AreaClickGame : MonoBehaviour
         // 쿨다운: 마지막 유효 클릭 이후 cooldownSeconds 동안 미집계
         if (Time.unscaledTime < _nextAllowedTime)
             return;
-
+        //효과음
+        SoundManager.Instance.SFXPlay(clickSFX.name, clickSFX.clip);
         _count++;
         _nextAllowedTime = Time.unscaledTime + cooldownSeconds;
         UpdateCounterUI();

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class AreaClickRegion : MonoBehaviour, IPointerClickHandler
 {
+    
     [Header("Hit By Image Alpha")]
     [Tooltip("이 값보다 알파가 큰 픽셀만 클릭 판정 (0~1)")]
     [Range(0f, 1f)]

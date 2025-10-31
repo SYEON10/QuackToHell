@@ -27,7 +27,8 @@ public class LobbyManager : NetworkBehaviour
     }
 
     #endregion
-    
+
+    [Header("Mafia role assign sfx")] public AudioSource mafiaAssignSFX;
     
     //카드데이터로드
 
@@ -393,10 +394,12 @@ public class LobbyManager : NetworkBehaviour
         for(int i=0;i<allPlayers.Length;i++){
             if(ToggleForcedAllFarmer)
             {
+                SoundManager.Instance.SFXPlay(mafiaAssignSFX.name,mafiaAssignSFX.clip);
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
                 continue;
             }
             if (i<farmerCount){
+                SoundManager.Instance.SFXPlay(mafiaAssignSFX.name,mafiaAssignSFX.clip);
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
             }
             else{

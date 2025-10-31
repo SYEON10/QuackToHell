@@ -7,6 +7,8 @@ public class PlayerWalkState : NetworkStateBase
     [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private SpriteRenderer head;
+    [Header("SFX")]
+    public AudioSource walkSFX;
     
     private NetworkVariable<bool> headFlipX = new NetworkVariable<bool>();
     
@@ -30,6 +32,8 @@ public class PlayerWalkState : NetworkStateBase
     public override void OnStateEnter()
     {
         TriggerWalkAnimation();
+        walkSFX.loop = true;
+        walkSFX.Play();
     }
 
     // 트리거 방식으로 애니메이션 제어
@@ -47,7 +51,8 @@ public class PlayerWalkState : NetworkStateBase
 
     public override void OnStateExit()
     {
-
+        walkSFX.loop = false;
+        walkSFX.Stop();
     }
 
     public override void OnStateUpdate()
