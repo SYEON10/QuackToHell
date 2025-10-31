@@ -13,7 +13,10 @@ public class PlayerDeadState : NetworkStateBase
         //죽으면 이펙트 
         //Assets/Resources/Prefabs/FX_PF_Electricity_AreaExplosion_Blue.prefab
         GameObject effect = Resources.Load<GameObject>("Prefabs/FX_PF_Electricity_AreaExplosion_Blue");
-        Instantiate(effect,transform.position,Quaternion.identity);
+        if (IsOwner)
+        {
+            Instantiate(effect,transform.position,Quaternion.identity);    
+        }
     }
 
     public override void OnStateExit()

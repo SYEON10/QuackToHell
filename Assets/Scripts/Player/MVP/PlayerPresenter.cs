@@ -558,6 +558,13 @@ public class PlayerPresenter : NetworkBehaviour
                         return;
                     }
                     // 대상 플레이어를 죽임
+                    //죽이면 이펙트 
+                    //Assets/Resources/Prefabs/FX_PF_Electricity_AreaExplosion_Blue.prefab
+                    GameObject effect = Resources.Load<GameObject>("Prefabs/FX_PF_Electricity_AreaExplosion_Blue");
+                    if (IsOwner)
+                    {
+                        Instantiate(effect,transform.position,Quaternion.identity);    
+                    }
                     targetPlayer.HandlePlayerDeathServerRpc();
                     Debug.Log($"[Server] Player {OwnerClientId} killed Player {targetPlayer.OwnerClientId}");
                     return;
