@@ -117,6 +117,7 @@ public class LobbyManager : NetworkBehaviour
             await DeckManager.Instance.WhenDataReadyAsync();
             
             isCardDataLoaded = true;
+            */
         }
         catch (System.Exception ex)
         {
