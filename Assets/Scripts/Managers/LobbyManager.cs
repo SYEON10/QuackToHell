@@ -442,7 +442,7 @@ public class LobbyManager : NetworkBehaviour
 
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void LoadVillageSceneServerRpc()
     {
         // 모든 클라이언트를 VillageScene으로 이동

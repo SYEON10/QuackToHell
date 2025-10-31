@@ -756,7 +756,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  deathSFX: {fileID: 8826910233088569411}
+  head: {fileID: 4383151116304303481}
+  animator: {fileID: 5639819905214187387}
+  deathSFX: {fileID: 6299842185698406083}
   spriteRenderers:
   - {fileID: 2696677760322620458}
   - {fileID: 7388523557917837730}
