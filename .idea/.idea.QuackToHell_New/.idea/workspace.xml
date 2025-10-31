@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player/State/PlayerDeadState.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player/State/PlayerDeadState.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Test/Yujin_VillageScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Test/Yujin_VillageScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Test/Yujin_VillageScene.unity.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Test/Yujin_VillageScene.unity.meta" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
