@@ -7,6 +7,7 @@ public class PlayerWalkState : NetworkStateBase
     [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private SpriteRenderer head;
+    [SerializeField] private SpriteRenderer body;
     [Header("SFX")]
     public AudioSource walkSFX;
     
@@ -18,19 +19,21 @@ public class PlayerWalkState : NetworkStateBase
         headFlipX.OnValueChanged += OnHeadFlipChanged;
         // 초기 값 적용
         OnHeadFlipChanged(false, headFlipX.Value);
+        
     }
 
     private void OnHeadFlipChanged(bool previousValue, bool newValue)
     {
         // 모든 클라이언트에서 머리 플립 적용
-        if (head != null)
+        if (body != null)
         {
-            head.flipX = newValue;
+            body.flipX = newValue;
         }
     }
 
     public override void OnStateEnter()
     {
+        head.gameObject.SetActive(false);
         TriggerWalkAnimation();
         walkSFX.loop = true;
         walkSFX.Play();

@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Resources/UI/HUD/LobbyUI.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/UI/HUD/LobbyUI.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Animations/Anim/Player/Player_Idle.anim" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Animations/Anim/Player/Player_Idle.anim" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

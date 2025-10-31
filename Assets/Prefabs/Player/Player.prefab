@@ -889,6 +889,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   animator: {fileID: 5639819905214187387}
   head: {fileID: 7388523557917837730}
+  body: {fileID: 2696677760322620458}
   walkSFX: {fileID: 8826910233088569411}
 --- !u!114 &6701049050385219470
 MonoBehaviour:
