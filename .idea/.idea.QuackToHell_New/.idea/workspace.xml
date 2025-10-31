@@ -5,15 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15b0384c-003a-44c4-b9b9-6ac45058fc14" name="변경" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Audio/AudioMixer.mixer" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Audio/AudioMixer.mixer.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Prefabs/Manager/SoundManager.prefab" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Prefabs/Manager/SoundManager.prefab.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/SoundManager.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/SoundManager.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.QuackToHell_New/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Chat/ChatTestSample.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/Chat/ChatTestSample.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/UI/HUD/HomeUI.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/UI/HUD/HomeUI.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/UI/HUD/LobbyUI.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/UI/HUD/LobbyUI.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/CourtScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/CourtScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/LobbyScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/LobbyScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/PersistentScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/PersistentScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Test/YujinTestScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Test/YujinTestScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/VillageScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/VillageScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Managers/LobbyManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Managers/LobbyManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/ChildOfUIBase/HomeUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/ChildOfUIBase/HomeUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/ChildOfUIBase/LobbyUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/ChildOfUIBase/LobbyUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -77,7 +80,7 @@
     &quot;Unity 에디터에 연결.Unity 에디터에 연결.executor&quot;: &quot;Debug&quot;,
     &quot;Unity 플레이어에 연결.WindowsPlayer(2,DESKTOP-BA9F2N8).executor&quot;: &quot;Debug&quot;,
     &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.35&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;사운드컨트롤러&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -228,7 +231,8 @@
       <workItem from="1761370601143" duration="3940000" />
       <workItem from="1761381195387" duration="1209000" />
       <workItem from="1761643756339" duration="1194000" />
-      <workItem from="1761650027768" duration="3564000" />
+      <workItem from="1761650027768" duration="3985000" />
+      <workItem from="1761838023133" duration="1985000" />
     </task>
     <servers />
   </component>

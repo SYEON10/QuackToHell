@@ -107,12 +107,14 @@ public class LobbyManager : NetworkBehaviour
 
         try
         {
+            //TODO: 주석해제
+            /*
             // DeckManager를 통해 직접 CSV 데이터 로드
             await DeckManager.Instance.LoadCardDataFromCsv(cardCsvUrl, stringCsvUrl, resourceCsvUrl, _cancellationTokenSource.Token);
             
             // 데이터 로딩 완료까지 대기
             await DeckManager.Instance.WhenDataReadyAsync();
-            
+            */
             isCardDataLoaded = true;
         }
         catch (System.Exception ex)

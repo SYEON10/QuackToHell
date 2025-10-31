@@ -8,6 +8,8 @@ using UnityEngine;
 
 public class LobbyUI : UIHUD
 {
+    public AudioSource buttonClickSFX;
+    
     private TMP_Dropdown colorDropdown;
     private TMP_Text codeText;
 
@@ -111,6 +113,8 @@ public class LobbyUI : UIHUD
 
     private void OnClick_Button_StartGame(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost)
         {
             LobbyManager.Instance.StartGame();    
@@ -130,15 +134,21 @@ public class LobbyUI : UIHUD
     }
     private void OnClick_Button_Back(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         LobbyManager.Instance.CleanUpLobby();
     }
     private void OnColorDropdownButton(Int32 colorIndex)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).ChangeColorServerRpc(colorIndex, NetworkManager.Singleton.LocalClientId);
     }
 
     private void OnClick_Button_CopyCode(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         GUIUtility.systemCopyBuffer = codeText.text;
     }
 }

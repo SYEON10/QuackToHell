@@ -7,6 +7,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 public class HomeUI : UIHUD
 {
+    public AudioSource buttonClickSFX;
+    
     private GameObject GameStartContents_gameObject;
     private GameObject SettingContents_gameObject;
     private GameObject CreateGameContents_gameObject;
@@ -133,6 +135,8 @@ public class HomeUI : UIHUD
     private async void OnClicked_Button_Create(PointerEventData data)
     {
         try{
+            //사운드
+            SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
             await LobbyManager.Instance.CreateLobby(sessionName,isPrivate,maxPlayerNum);
             //로비씬으로 이동
             await SceneManager.LoadSceneAsync(GameScenes.Lobby, LoadSceneMode.Single);
@@ -148,6 +152,8 @@ public class HomeUI : UIHUD
     {
         //방 참가: 코드로
         try{
+            //사운드
+            SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
             bool joinSuccess = await LobbyManager.Instance.JoinLobbyByCode(code);
             if (joinSuccess)
             {
@@ -164,18 +170,24 @@ public class HomeUI : UIHUD
     }
     private void OnClicked_Button_MaxPlayerNumMinus(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         maxPlayerNum--;
         Text_MaxPlayerNum.text = maxPlayerNum.ToString();
     }
 
     private void OnClicked_Button_MaxPlayerNumPlus(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         maxPlayerNum++;
         Text_MaxPlayerNum.text = maxPlayerNum.ToString();
     }
 
     private void OnClicked_ButtonLock(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         buttonLock = !buttonLock;
         isPrivate = buttonLock;
         if (buttonLock)
@@ -191,6 +203,8 @@ public class HomeUI : UIHUD
     }
     private void OnClicked_GameStart(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         GameStartContents_gameObject.SetActive(true);
         SettingContents_gameObject.SetActive(false);
         CreateGameContents_gameObject.SetActive(false);
@@ -199,6 +213,8 @@ public class HomeUI : UIHUD
     }
     private void OnClicked_Option(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         GameStartContents_gameObject.SetActive(false);
         SettingContents_gameObject.SetActive(true);
         CreateGameContents_gameObject.SetActive(false);
@@ -207,6 +223,8 @@ public class HomeUI : UIHUD
     }
     private void OnClicked_CreateGame(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         GameStartContents_gameObject.SetActive(false);
         SettingContents_gameObject.SetActive(false);
         CreateGameContents_gameObject.SetActive(true);
@@ -215,6 +233,8 @@ public class HomeUI : UIHUD
     }
     private void OnClicked_EnterCode(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         GameStartContents_gameObject.SetActive(false);
         SettingContents_gameObject.SetActive(false);
         CreateGameContents_gameObject.SetActive(false);
@@ -223,6 +243,8 @@ public class HomeUI : UIHUD
     }
     private void OnClicked_FindGame(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         GameStartContents_gameObject.SetActive(false);
         SettingContents_gameObject.SetActive(false);
         CreateGameContents_gameObject.SetActive(false);
@@ -232,6 +254,8 @@ public class HomeUI : UIHUD
 
     private void OnClicked_Button_Back(PointerEventData data)
     {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         //TODO: Stack으로 관리해서 이전 화면이 나타나게 Pop 
         GameStartContents_gameObject.SetActive(false);
         SettingContents_gameObject.SetActive(false);
