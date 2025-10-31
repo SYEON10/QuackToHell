@@ -116,8 +116,9 @@ public class LobbyManager : NetworkBehaviour
             
             // 데이터 로딩 완료까지 대기
             await DeckManager.Instance.WhenDataReadyAsync();
-            */
+            
             isCardDataLoaded = true;
+            */
         }
         catch (System.Exception ex)
         {

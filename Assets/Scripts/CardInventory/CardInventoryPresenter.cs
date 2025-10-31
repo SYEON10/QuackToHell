@@ -16,6 +16,16 @@ public class CardInventoryPresenter : MonoBehaviour
         DebugUtils.AssertComponent(_cardInventoryView, "CardInventoryView", this);
     }
 
+    private void OnEnable()
+    {
+        if (SceneManager.GetActiveScene().name == GameScenes.Village)
+        {
+            var cardShop = FindFirstObjectByType<CardShopPresenter>(FindObjectsInactive.Include);
+            DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
+            cardShop.RequestShowCardShop();
+        }
+    }
+
     private void Start()
     {
         DebugUtils.AssertNotNull(_cardInventoryModel, "CardInventoryModel", this);
@@ -36,7 +46,6 @@ public class CardInventoryPresenter : MonoBehaviour
 
         _cardInventoryModel.OwnedCards.OnListChanged += CardInventoryModel_OwnedCardsOnListChanged;
 
-        _cardInventoryView.OnShowCardShopClicked += OnClickShowCardShop;
         _cardInventoryView.OnCloseInventoryClicked += OnClickCloseInventory;
     }
 
@@ -51,7 +60,6 @@ public class CardInventoryPresenter : MonoBehaviour
 
         if (_cardInventoryView != null)
         {
-            _cardInventoryView.OnShowCardShopClicked -= OnClickShowCardShop;
             _cardInventoryView.OnCloseInventoryClicked -= OnClickCloseInventory;
         }
     }
@@ -61,19 +69,6 @@ public class CardInventoryPresenter : MonoBehaviour
         // note cba0898: 가지고 있는 _cardInventoryView를 써도 될 것 같습니다 <= 수정완료
         //view 업데이트 함수 호출
         _cardInventoryView.UpdateInventoryView(_cardInventoryModel.OwnedCards);
-    }
-
-    private void OnClickShowCardShop()
-    {
-        if (SceneManager.GetActiveScene().name != GameScenes.Village)
-        {
-            Debug.Log("CardShop not available in this scene");
-            return;
-        }
-
-        CardShopPresenter cardShop = FindFirstObjectByType<CardShopPresenter>(FindObjectsInactive.Include);
-        DebugUtils.AssertNotNull(cardShop, "CardShopPresenter", this);
-        cardShop.RequestShowCardShop();
     }
 
     private void OnClickCloseInventory()
