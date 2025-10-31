@@ -6,13 +6,14 @@ public class PlayerCorpse : NetworkBehaviour
     [SerializeField]
     private SpriteRenderer _spriteRenderer;
 
-private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVariable<PlayerAppearanceData>();
+    private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVariable<PlayerAppearanceData>();
     public NetworkVariable<PlayerAppearanceData> AppearanceData { get { return _appearanceData; } }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
+        
         // 초기값 적용
         ApplyAppearance();
 
