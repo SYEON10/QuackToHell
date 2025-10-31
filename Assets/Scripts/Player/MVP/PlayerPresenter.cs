@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Unity.Collections;
 using UnityEngine.InputSystem;
-using Unity.Services.Lobbies.Models;
+using System.Collections;
 
 //NOTE: 민수님
 //hudCONTROLLER관련->uiMANAGER로 빼기, 
@@ -23,7 +23,7 @@ using Unity.Services.Lobbies.Models;
 /// </summary>
 public class PlayerPresenter : NetworkBehaviour
 {
-
+    
     [Header("KILL Sfx")]
     public AudioSource playerKillSFX;
     
@@ -523,7 +523,11 @@ public class PlayerPresenter : NetworkBehaviour
                 VentController ventController = collider.GetComponent<VentController>();
                 if (ventController != null)
                 {
-                    ventController.SpaceInput = true;
+                    PlayerStateData newStateData = playerModel.PlayerStateData.Value;
+                    newStateData.animationState = PlayerAnimationState.VentEnter;
+                    playerModel.PlayerStateData.Value = newStateData;
+
+                    StartCoroutine(WaitAndTryVent(ventController));
                     Debug.Log("Space 인풋 들어옴!");
                     return;
                 }
@@ -531,6 +535,11 @@ public class PlayerPresenter : NetworkBehaviour
         }
     }
 
+    IEnumerator WaitAndTryVent(VentController ventController)
+    {
+        yield return new WaitForSeconds(0.5f);
+        ventController.SpaceInput = true;
+    }
 
     /// <summary>
     /// 킬 시도 서버 RPC

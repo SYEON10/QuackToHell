@@ -13,7 +13,8 @@ public enum PlayerLivingState
 public enum PlayerAnimationState
 {
     Idle,
-    Walk
+    Walk,
+    VentEnter
 }
 
 public enum PlayerJob

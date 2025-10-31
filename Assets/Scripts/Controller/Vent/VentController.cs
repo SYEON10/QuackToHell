@@ -264,6 +264,8 @@ public sealed class VentController : NetworkBehaviour, IInteractable
             SpawnArrowsClientRpc(NetworkObjectId, BuildTargetIds(), TargetClient(sender));
 
             PlayEnterAnimation();
+
+            
         }
         else
         {
@@ -280,6 +282,13 @@ public sealed class VentController : NetworkBehaviour, IInteractable
             playerObj.transform.position = _tr.position + (Vector3)exitOffset;
 
             PlayExitAnimation();
+            PlayerModel playerModel = playerObj.GetComponent<PlayerModel>();
+            if (playerModel != null)
+            {
+                PlayerStateData newStateData = playerModel.PlayerStateData.Value;
+                newStateData.animationState = PlayerAnimationState.Idle;
+                playerModel.PlayerStateData.Value = newStateData;
+            }
         }
     }
 

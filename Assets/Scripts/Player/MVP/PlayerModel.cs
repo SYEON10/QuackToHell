@@ -23,6 +23,7 @@ public class PlayerModel : NetworkBehaviour
     private PlayerWalkState walkStateComponent;
     private PlayerDeadState deadStateComponent;
     private PlayerAliveState aliveStateComponent;
+    private PlayerVentEnterState ventEnterStateComponent;
     
     private RoleController _roleController;
 
@@ -53,6 +54,7 @@ public class PlayerModel : NetworkBehaviour
         walkStateComponent = GetComponent<PlayerWalkState>();
         aliveStateComponent = GetComponent<PlayerAliveState>();
         deadStateComponent = GetComponent<PlayerDeadState>();
+        ventEnterStateComponent = GetComponent<PlayerVentEnterState>();
 
         // 초기 상태 설정
         SetAnimationStateByEnum(PlayerStateData.Value.AnimationState);
@@ -216,6 +218,9 @@ public class PlayerModel : NetworkBehaviour
                 break;
             case PlayerAnimationState.Walk:
                 SetAnimationState(walkStateComponent);
+                break;
+            case PlayerAnimationState.VentEnter:
+                SetAnimationState(ventEnterStateComponent);
                 break;
         }
     }
