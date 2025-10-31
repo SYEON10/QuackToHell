@@ -23,6 +23,10 @@ using Unity.Services.Lobbies.Models;
 /// </summary>
 public class PlayerPresenter : NetworkBehaviour
 {
+
+    [Header("KILL Sfx")]
+    public AudioSource playerKillSFX;
+    
     [Header("Components")]
     private PlayerModel playerModel;
     private PlayerView playerView;
@@ -564,6 +568,7 @@ public class PlayerPresenter : NetworkBehaviour
                     if (IsOwner)
                     {
                         Instantiate(effect,transform.position,Quaternion.identity);    
+                        SoundManager.Instance.SFXPlay(playerKillSFX.name, playerKillSFX.clip);
                     }
                     targetPlayer.HandlePlayerDeathServerRpc();
                     Debug.Log($"[Server] Player {OwnerClientId} killed Player {targetPlayer.OwnerClientId}");

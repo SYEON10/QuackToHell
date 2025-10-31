@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerDeadState : NetworkStateBase
 {
+    public AudioSource deathSFX;
     [SerializeField]
     private SpriteRenderer[] spriteRenderers;
     [SerializeField]
@@ -16,6 +17,7 @@ public class PlayerDeadState : NetworkStateBase
         if (IsOwner)
         {
             Instantiate(effect,transform.position,Quaternion.identity);    
+            SoundManager.Instance.SFXPlay(deathSFX.name, deathSFX.clip);
         }
     }
 

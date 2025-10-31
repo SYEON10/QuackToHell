@@ -29,7 +29,8 @@ public class LobbyManager : NetworkBehaviour
     #endregion
 
     [Header("Mafia role assign sfx")] public AudioSource mafiaAssignSFX;
-    
+    [Header("Citizen role assign sfx")] public AudioSource citizenAssignSFX;
+
     //카드데이터로드
 
     [Header("Google Sheets CSV URLs")]
@@ -403,6 +404,7 @@ public class LobbyManager : NetworkBehaviour
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
             }
             else{
+                SoundManager.Instance.SFXPlay(citizenAssignSFX.name,citizenAssignSFX.clip);
                 allPlayers[i].ChangeRole(PlayerJob.Animal);
             }
         }
