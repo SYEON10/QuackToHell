@@ -55,19 +55,15 @@ public class PlayerHelperManager : MonoBehaviour
     /// <returns>플레이어의 PlayerModel, 찾지 못하면 null</returns>
     public PlayerModel GetPlayerModelByClientId(ulong clientId)
     {
-        UpdatePlayerCache();
-        
-        foreach (PlayerModel player in _cachedPlayers)
+        // note cba0898: Assert 는 배포 빌드에서 해당 상황이 없어야 한다는 가정입니다. 조건문의 일부로 포함하지 말아주세요.
+        PlayerModel[] allPlayers = GetAllPlayers<PlayerModel>();
+        foreach (PlayerModel player in allPlayers)
         {
-            // note cba0898: Assert 는 배포 빌드에서 해당 상황이 없어야 한다는 가정입니다. 조건문의 일부로 포함하지 말아주세요.
-            if (DebugUtils.AssertNotNull(player.NetworkObject, "Player NetworkObject", this) && 
-                player.NetworkObject.OwnerClientId == clientId)
+            if (player.NetworkObject.OwnerClientId == clientId)
             {
                 return player;
             }
         }
-        
-        Debug.LogWarning($"Player with ClientId {clientId} not found in scene");
         return null;
     }
 

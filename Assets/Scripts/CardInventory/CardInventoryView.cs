@@ -12,9 +12,7 @@ public class CardInventoryView : MonoBehaviour
     [Header("인벤토리 UI의 하위 오브젝트: Content를 넣어주세요.")]
     [SerializeField]
     private GameObject content;
-    [Header("인벤토리 UI의 하위 오브젝트: Gold Text를 넣어주세요.")]
-    [SerializeField]
-    private TextMeshProUGUI goldText;
+    
     [Header("인벤토리 UI의 하위 오브젝트: Show Card Shop Button을 넣어주세요.")]
     [SerializeField]
     private Button showCardShopButton;
@@ -81,10 +79,7 @@ public class CardInventoryView : MonoBehaviour
         }
     }
 
-    public void UpdatePlayerGold(int gold)
-    {
-        goldText.text = "gold: " + gold.ToString();
-    }
+ 
     
     #endregion
 
