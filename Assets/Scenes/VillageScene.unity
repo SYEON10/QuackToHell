@@ -2783,6 +2783,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChatTest_Village
       objectReference: {fileID: 0}
+    - target: {fileID: 1344360323142469720, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2387670364231813818, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2837,23 +2841,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6808907348449827939, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6808907348449827939, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6808907348449827939, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 7048663370304227301, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7048663370304227301, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7048663370304227301, guid: 1b435a5b9667a924abcadf21222d5520, type: 3}
       propertyPath: m_AnchorMin.y
@@ -4545,7 +4549,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &819381355
 RectTransform:
   m_ObjectHideFlags: 0
