@@ -93,14 +93,63 @@ public class CardShopPresenter : NetworkBehaviour
         _model.IsLocked = !_model.IsLocked;
         _view.SetRefreshInteractable(!_model.IsLocked);
     }
-    
+
     private void OnClickReRoll()
     {
-        
         if (_cooldown) return;
 
+        // 골드 차감 시도
+        ulong senderId = NetworkManager.Singleton.LocalClientId;
+        TryConsumeGoldForRerollServerRpc(senderId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void TryConsumeGoldForRerollServerRpc(ulong senderId, ServerRpcParams rpcParams = default)
+    {
+        var model = PlayerHelperManager.Instance.GetPlayerModelByClientId(senderId);
+        if (model == null)
+        {
+            Debug.LogWarning($"[CardShopPresenter] Player model not found for client {senderId}");
+            return;
+        }
+
+        int currentGold = PlayerHelperManager.Instance.GetPlayerGoldByClientId(senderId);
+
+        if (currentGold >= 2)
+        {
+            int newGold = currentGold - 2;
+            model.SetGoldServerRpc(newGold);
+
+            // 골드 차감 성공
+            var target = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { senderId } }
+            };
+            TryConsumeGoldForRerollClientRpc(true, target);
+        }
+        else
+        {
+            // 골드 부족
+            var target = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { senderId } }
+            };
+            TryConsumeGoldForRerollClientRpc(false, target);
+        }
+    }
+
+    // 클라이언트 쪽 처리
+    [ClientRpc]
+    private void TryConsumeGoldForRerollClientRpc(bool success, ClientRpcParams target = default)
+    {
+        if (!success)
+        {
+            Debug.Log("[CardShopPresenter] 골드가 부족합니다! 리롤 불가.");
+            return;
+        }
+
+        // 리롤 실행
         StartCoroutine(RerollCooldown());
-        
         _model.TryReRoll(NetworkManager.Singleton.LocalClientId);
     }
 
