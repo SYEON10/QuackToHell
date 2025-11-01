@@ -29,11 +29,11 @@ public class PlayerCorpse : NetworkBehaviour
     private void ApplyAppearance()
     {
         //색깔
-        SpriteRenderer[] spriteRenderers = gameObject.GetComponentsInChildren<SpriteRenderer>();
+        /*SpriteRenderer[] spriteRenderers = gameObject.GetComponentsInChildren<SpriteRenderer>();
         foreach (SpriteRenderer spriteRenderer in spriteRenderers)
-        {
-            if (spriteRenderer.gameObject.name.Contains("Body"))
-            {
+        {*/
+            /*if (spriteRenderer.gameObject.name.Contains("Body"))
+            {*/
                 int colorIndex = AppearanceData.Value.ColorIndex;
                 // 모든 클라이언트에서 색상 변경 적용
                 switch (colorIndex)
@@ -61,8 +61,8 @@ public class PlayerCorpse : NetworkBehaviour
                         break;
                 }
 
-            }
-        }
+            //}
+        //}
     }
 
 
