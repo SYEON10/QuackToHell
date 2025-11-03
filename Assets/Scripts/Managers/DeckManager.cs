@@ -866,7 +866,7 @@ public class DeckManager : NetworkBehaviour
             return;
         }
 
-        //효과음 play
+        //TODO: 효과음 play: 해당 클라 사운드에서. (아래의 ClientRPC)
         SoundManager.Instance.SFXPlay(soldSuccedSFX.name, soldSuccedSFX.clip);
 
         //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)

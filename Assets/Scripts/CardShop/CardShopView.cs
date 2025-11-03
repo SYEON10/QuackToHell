@@ -37,7 +37,7 @@ public class CardShopView : MonoBehaviour
 
         lockButton.onClick.AddListener(() => OnClickLock?.Invoke());
         rerollButton.onClick.AddListener(() => OnClickReRoll?.Invoke());
-        xButton.onClick.AddListener(() => OnClickX?.Invoke());
+        xButton?.onClick.AddListener(() => OnClickX?.Invoke());
     }
 
     private void Start()

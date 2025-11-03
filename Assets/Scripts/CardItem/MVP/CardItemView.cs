@@ -84,7 +84,6 @@ namespace CardItem.MVP
         public void OnPointerClick(PointerEventData eventData)
         {
             //만약 오브젝트가 Card for Sale이라면 구매 클릭 이벤트 전달
-
             if (gameObject.CompareTag(GameTags.CardForSale))
             {
                 OnPurchaseClicked?.Invoke(NetworkManager.Singleton.LocalClientId);
