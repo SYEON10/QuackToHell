@@ -439,6 +439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  playerKillSFX: {fileID: 3856955297487974090}
   playerDetectionRadius: 1.5
   playerInput: {fileID: 3855099441482742434}
   nicknameText: {fileID: 4710416165935099427}
@@ -455,7 +456,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  playerKillSFX: {fileID: 3856955297487974090}
   corpsePrefab: {fileID: 7030858896494600802, guid: 270939bbd57433c4da20316d3bf9858e, type: 3}
   playerSpriteRenderer: {fileID: 2696677760322620458}
 --- !u!82 &3856955297487974090

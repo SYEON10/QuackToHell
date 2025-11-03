@@ -28,8 +28,6 @@ public class LobbyManager : NetworkBehaviour
 
     #endregion
 
-    [Header("Mafia role assign sfx")] public AudioSource mafiaAssignSFX;
-    [Header("Citizen role assign sfx")] public AudioSource citizenAssignSFX;
 
     //카드데이터로드
 
@@ -43,6 +41,15 @@ public class LobbyManager : NetworkBehaviour
     private bool isCardDataLoaded = false;
     private CancellationTokenSource _cancellationTokenSource;
 
+    //SFX
+    [Header("SFX")] 
+    [SerializeField] private AudioSource mafiaAssignSFX;
+    [SerializeField] private AudioSource citizenAssignSFX;
+
+    public enum LobbySFX{
+        mafiaAssignSFX,
+        citizenAssignSFX
+    }
     
     //로비
     private Lobby hostLobby;
@@ -380,8 +387,17 @@ public class LobbyManager : NetworkBehaviour
 
 
     [ServerRpc]
-    private void AssignPlayerRolesServerRpc()
+    private void AssignPlayerRolesServerRpc(ServerRpcParams rpcParams = default)
     {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        ClientRpcParams clientRpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new[] { requesterClientId }
+            }
+        };
+        
         //모든 플레이어 가져오기
         PlayerModel[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers<PlayerModel>();
         int totalPlayers = allPlayers.Length;
@@ -395,22 +411,37 @@ public class LobbyManager : NetworkBehaviour
         for(int i=0;i<allPlayers.Length;i++){
             if(ToggleForcedAllFarmer)
             {
-                SoundManager.Instance.SFXPlay(mafiaAssignSFX.name,mafiaAssignSFX.clip);
+                PlaySFXClientRpc(LobbySFX.mafiaAssignSFX, clientRpcParams);
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
                 continue;
             }
             if (i<farmerCount){
-                SoundManager.Instance.SFXPlay(mafiaAssignSFX.name,mafiaAssignSFX.clip);
+                PlaySFXClientRpc(LobbySFX.mafiaAssignSFX, clientRpcParams);
                 allPlayers[i].ChangeRole(PlayerJob.Farmer);
             }
             else{
-                SoundManager.Instance.SFXPlay(citizenAssignSFX.name,citizenAssignSFX.clip);
+                PlaySFXClientRpc(LobbySFX.citizenAssignSFX, clientRpcParams);
                 allPlayers[i].ChangeRole(PlayerJob.Animal);
             }
         }
 
         //연출 시퀀스 시작
         GameManager.Instance.StartRoleRevealSequenceClientRpc();
+    }
+    
+    [ClientRpc]
+    private void PlaySFXClientRpc(LobbySFX sfx, ClientRpcParams rpcParams = default )
+    {
+        switch (sfx)
+        {
+            case LobbySFX.mafiaAssignSFX:
+                SoundManager.Instance.SFXPlay(mafiaAssignSFX.name,mafiaAssignSFX.clip);
+                break;
+            case LobbySFX.citizenAssignSFX:
+                SoundManager.Instance.SFXPlay(citizenAssignSFX.name,citizenAssignSFX.clip);
+                break;
+        }
+        
     }
     
 

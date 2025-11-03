@@ -13,6 +13,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
+
+
+
 #region Data Structs (기획서 타입 반영)
 public enum TierEnum { None = 0, Common = 1, Rare = 2, Special = 3 }
 public enum TypeEnum { None = 0, Attack = 1, Defense = 2, Special = 3 }
@@ -284,6 +287,16 @@ public struct CardDisplay
 /// </summary>
 public class DeckManager : NetworkBehaviour
 {
+    [Header("SFX")]
+    [SerializeField] private AudioSource soldFailSFX;
+    [SerializeField] private AudioSource solSucceedSFX;
+
+    public enum DeckSFX{
+        soldFailSFX,
+        soldSucceedSFX
+    }
+
+    
     #region 싱글톤
     public static DeckManager Instance => SingletonHelper<DeckManager>.Instance;
 
@@ -360,9 +373,7 @@ public class DeckManager : NetworkBehaviour
     }
 
     #endregion
-    public AudioSource soldSuccedSFX;
-    public AudioSource soldFailedSFX;
-    
+
     #region 데이터
     public Action onAllCardsOnGameDataChanged;
     [Header("확인용 변수 열어두기")]
@@ -789,13 +800,18 @@ public class DeckManager : NetworkBehaviour
     public void TryPurchaseCardServerRpc(CardItemData card, ulong clientId, ServerRpcParams rpcParams = default)
     {
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
-        
+        ClientRpcParams clientRpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new[] { clientId }
+            }
+        };
         // 서버에서 권위적 정보로 클라이언트 ID 검증
         if (clientId != requesterClientId)
         {
             Debug.LogError($"Server: Unauthorized card purchase attempt. Requested: {clientId}, Actual: {requesterClientId}");
-            //효과음 play
-            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
+            PlaySFXClientRpc(DeckSFX.soldFailSFX, clientRpcParams);
             return;
         }
         
@@ -805,13 +821,7 @@ public class DeckManager : NetworkBehaviour
             return;
         */
         
-        ClientRpcParams clientRpcParams = new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new[] { clientId }
-            }
-        };
+       
         
         //로컬클라이언트의 인벤토리를 조회해서, 인벤의 개수가 max인지 확인. max면 구매 못 함. 로그도 찍기.
         CardInventoryModel myLocalInventoryModel = FindAnyObjectByType<CardInventoryModel>();
@@ -820,8 +830,7 @@ public class DeckManager : NetworkBehaviour
             if (myLocalInventoryModel.IsInventoryMaximum())
             {
                 Debug.Log($"인벤토리 한도를 초과해서 구매 못 합니다. 인벤토리 한도: {GameConstants.Card.maxCardCount}");
-                //효과음 play
-                SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
+                PlaySFXClientRpc(DeckSFX.soldFailSFX, clientRpcParams);
                 PurchaseResultToCardShopClientRpc(false, clientId);
                 PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
                 return;
@@ -834,8 +843,7 @@ public class DeckManager : NetworkBehaviour
         if (!IsValidCardItemIdKey(cardItemIdKey))
         {
             Debug.Log($"카드가 존재하지 않습니다.");
-            //효과음 play
-            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
+            PlaySFXClientRpc(DeckSFX.soldFailSFX, clientRpcParams);
             PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
@@ -845,8 +853,7 @@ public class DeckManager : NetworkBehaviour
         if (!IsCardAvailableForPurchase(card.cardIdKey))
         {
             Debug.Log($"물량이 없습니다.");
-            //효과음 play
-            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
+            PlaySFXClientRpc(DeckSFX.soldFailSFX, clientRpcParams);
             PurchaseResultToCardShopClientRpc(false, clientId);
             PurchaseCardResultClientRpc(false, card, clientId, clientRpcParams);
             return;
@@ -857,8 +864,7 @@ public class DeckManager : NetworkBehaviour
         if (playerGold < card.cardItemStatusData.price)
         {
             Debug.Log($"돈이 부족합니다.");
-            //효과음 play
-            SoundManager.Instance.SFXPlay(soldFailedSFX.name, soldFailedSFX.clip);
+            PlaySFXClientRpc(DeckSFX.soldFailSFX, clientRpcParams);
             //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
             PurchaseResultToCardShopClientRpc(false, clientId);
             //구매 실패 여부를 클라이언트에게 전달. (ClientRPC, CardItemData값 보내기)
@@ -866,8 +872,7 @@ public class DeckManager : NetworkBehaviour
             return;
         }
 
-        //TODO: 효과음 play: 해당 클라 사운드에서. (아래의 ClientRPC)
-        SoundManager.Instance.SFXPlay(soldSuccedSFX.name, soldSuccedSFX.clip);
+        PlaySFXClientRpc(DeckSFX.soldSucceedSFX, clientRpcParams);
 
         //구매 성공 여부를 CardShop에게 전달. (ClientRPC, bool값 보내기)
         PurchaseResultToCardShopClientRpc(true, clientId);
@@ -876,7 +881,20 @@ public class DeckManager : NetworkBehaviour
 
     }
 
-
+    [ClientRpc]
+    private void PlaySFXClientRpc(DeckSFX sfx, ClientRpcParams rpcParams = default )
+    {
+        switch (sfx)
+        {
+            case DeckSFX.soldFailSFX:
+                SoundManager.Instance.SFXPlay(soldFailSFX.name,soldFailSFX.clip);
+                break;
+            case DeckSFX.soldSucceedSFX:
+                SoundManager.Instance.SFXPlay(solSucceedSFX.name,solSucceedSFX.clip);
+                break;
+        }
+        
+    }
 
     [ClientRpc]
     private void PurchaseCardResultClientRpc(bool success, CardItemData card, ulong clientId, ClientRpcParams sendParams = default)

@@ -73,8 +73,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  soldSuccedSFX: {fileID: 2859481186262414067}
-  soldFailedSFX: {fileID: 8929052410269757637}
+  soldFailSFX: {fileID: 8929052410269757637}
+  solSucceedSFX: {fileID: 2859481186262414067}
   _totalCardCount: 0
   _soldCardCount: 0
   _soldingCardCount: 0

@@ -10,6 +10,15 @@ using System.Collections.Generic;
 /// </summary>
 public class PlayerView : NetworkBehaviour
 {
+    public enum PlayerSFX
+    {
+        playerKillSFX,
+        
+    }
+    [Header("SFX")]
+    [SerializeField] private AudioSource playerKillSFX;
+
+
     // PlayerView.cs에 추가
     [Header("Player Detection")]
     [SerializeField] private float playerDetectionRadius = 2f;
@@ -38,6 +47,17 @@ public class PlayerView : NetworkBehaviour
 
     private InteractionHUDController interactionHUDController;
 
+    [ClientRpc]
+    public void PlaySFXClientRpc(PlayerSFX sfx, ClientRpcParams rpcParams = default )
+    {
+        switch (sfx)
+        {
+            case PlayerSFX.playerKillSFX:
+                SoundManager.Instance.SFXPlay(playerKillSFX.name,playerKillSFX.clip);
+                break;
+        }
+        
+    }
     protected void Awake()
     {
         if (playerInput == null)

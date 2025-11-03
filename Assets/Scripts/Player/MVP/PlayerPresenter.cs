@@ -24,9 +24,7 @@ using System.Collections;
 public class PlayerPresenter : NetworkBehaviour
 {
     
-    [Header("KILL Sfx")]
-    public AudioSource playerKillSFX;
-    
+
     [Header("Components")]
     private PlayerModel playerModel;
     private PlayerView playerView;
@@ -545,7 +543,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// 킬 시도 서버 RPC
     /// </summary>
     [ServerRpc]
-    public void TryKillServerRpc()
+    public void TryKillServerRpc(ServerRpcParams rpcParams = default)
     {
         // 서버 검증
         DebugUtils.AssertNotNull(roleController, "RoleManager", this);
@@ -577,7 +575,16 @@ public class PlayerPresenter : NetworkBehaviour
                     if (IsOwner)
                     {
                         Instantiate(effect,transform.position,Quaternion.identity);    
-                        SoundManager.Instance.SFXPlay(playerKillSFX.name, playerKillSFX.clip);
+                        ulong senderClientId = rpcParams.Receive.SenderClientId;
+                        ClientRpcParams clientRpcParams = new ClientRpcParams
+                        {
+                            Send = new ClientRpcSendParams
+                            {
+                                TargetClientIds = new[] { senderClientId }
+                            }
+                        };
+                        
+                        playerView.PlaySFXClientRpc(PlayerSFX.playerKillSFX, clientRpcParams);
                     }
                     targetPlayer.HandlePlayerDeathServerRpc();
                     Debug.Log($"[Server] Player {OwnerClientId} killed Player {targetPlayer.OwnerClientId}");
@@ -588,6 +595,8 @@ public class PlayerPresenter : NetworkBehaviour
         
         Debug.LogWarning($"[Server] No valid target found for Player {OwnerClientId}");
     }
+    
+    
     
     //NOTE: STRATEGY관련된 건 다 밖으로 빼고, MODEL / VIEW 데이터를 겟하는 용도만 가져오기
     
