@@ -261,6 +261,15 @@ public class PlayerPresenter : NetworkBehaviour
         if(collision.CompareTag(GameTags.Vent)){
             if(IsOwner)
             {
+                //ventcontroller와 같은 트리거 범위 적용
+                
+                VentController ventController = collision.gameObject.GetComponent<VentController>();
+                Debug.Assert(ventController != null, "VentController not found");
+                float dist = Vector3.Distance(transform.position, ventController.transform.position);
+                if(dist > ventController.InteractionRadius){
+                    return;
+                }
+
                 interactionHUDController.SetInteractionButtonImageByObject(GameTags.Vent);
 
                 PlayerJob playerJob = playerModel.GetPlayerJob(); // 현재 역할 확인
@@ -511,33 +520,8 @@ public class PlayerPresenter : NetworkBehaviour
 
 
   
-    public void TryVent()
-    {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f);
-        foreach (Collider2D collider in colliders)
-        {
-            if (collider.CompareTag(GameTags.Vent))
-            {
-                VentController ventController = collider.GetComponent<VentController>();
-                if (ventController != null)
-                {
-                    PlayerStateData newStateData = playerModel.PlayerStateData.Value;
-                    newStateData.animationState = PlayerAnimationState.VentEnter;
-                    playerModel.PlayerStateData.Value = newStateData;
+    
 
-                    StartCoroutine(WaitAndTryVent(ventController));
-                    Debug.Log("Space 인풋 들어옴!");
-                    return;
-                }
-            }
-        }
-    }
-
-    IEnumerator WaitAndTryVent(VentController ventController)
-    {
-        yield return new WaitForSeconds(0.5f);
-        ventController.SpaceInput = true;
-    }
 
     /// <summary>
     /// 킬 시도 서버 RPC
@@ -623,7 +607,29 @@ public class PlayerPresenter : NetworkBehaviour
             {
                 continue;
             }
-            // 기존 패턴: IInteractable 인터페이스 활용
+
+            if (collider.CompareTag(GameTags.Vent))
+            {
+                PlayerJob currentRole = playerModel.GetPlayerJob();
+                if (currentRole != PlayerJob.Farmer)
+                {
+                    Debug.LogWarning($"[Server] Only Farmer can use vents. Current role: {currentRole}");
+                    return;
+                }
+                //오너클라이언트가 벤트 타기
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new[] { OwnerClientId }
+                    }
+                };
+
+                TriggerVentClientRpc(clientRpcParams);
+                return;
+            }
+
+            // IInteractable 인터페이스 활용
             IInteractable interactable = collider.GetComponent<IInteractable>();
             if (interactable != null && interactable.CanInteract(gameObject))
             {
@@ -632,7 +638,7 @@ public class PlayerPresenter : NetworkBehaviour
                 return;
             }
             
-            // 태그별 직접 처리 (기존 방식 유지)
+            
             if (collider.CompareTag(GameTags.Exit))
             {
                 HandleExitInteraction(collider);
@@ -661,38 +667,17 @@ public class PlayerPresenter : NetworkBehaviour
                 return;
             }
 
-            if (collider.CompareTag(GameTags.Vent))
-            {
-                ClientRpcParams clientRpcParams = new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams
-                    {
-                        TargetClientIds = new[] { serverRpcParams.Receive.SenderClientId }
-                    }
-                };
-                HandleVentInteractionClientRpc(clientRpcParams);
-                return;
-            }
+            
             
         }
         
         Debug.LogWarning($"[Server] No interactable object found for Player {OwnerClientId}");
     }
 
-    /// <summary>
-    /// 벤트 상호작용 처리 (농장주 전용)
-    /// </summary>
+    
+
     [ClientRpc]
-    private void HandleVentInteractionClientRpc( ClientRpcParams  clientRpcParams)
-    {
-        // 역할 검증
-        PlayerJob currentRole = playerModel.GetPlayerJob();
-        if (currentRole != PlayerJob.Farmer)
-        {
-            Debug.LogWarning($"[Server] Only Farmer can use vents. Current role: {currentRole}");
-            return;
-        }
-        
+    private void TriggerVentClientRpc(ClientRpcParams clientRpcParams = default){
         roleController.CurrentStrategy?.TryVent();
     }
 

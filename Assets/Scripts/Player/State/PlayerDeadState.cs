@@ -39,7 +39,7 @@ public class PlayerDeadState : NetworkStateBase
         GameObject effect = Resources.Load<GameObject>("Prefabs/FX_PF_Electricity_AreaExplosion_Blue");
         if (IsOwner)
         {
-            Instantiate(effect,transform.position,Quaternion.identity);    
+            Instantiate(effect,transform.position,Quaternion.identity);   
             SoundManager.Instance.SFXPlay(deathSFX.name, deathSFX.clip);
         }
     }

@@ -123,6 +123,16 @@ public class PlayerModel : NetworkBehaviour
             curAnimationState.OnStateUpdate();
         }
     }
+    /// <summary>
+    /// 애니메이션 상태 변경 ServerRpc
+    /// </summary>
+    [ServerRpc]
+    public void SetAnimationStateServerRpc(PlayerAnimationState animState)
+    {
+        PlayerStateData newStateData = PlayerStateData.Value;
+        newStateData.animationState = animState;
+        PlayerStateData.Value = newStateData;
+    }
 
     #region 플레이어 움직임
     private Rigidbody2D playerRB;

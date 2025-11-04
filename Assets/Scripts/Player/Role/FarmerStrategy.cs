@@ -10,11 +10,13 @@ using System;
 /// </summary>
 public class FarmerStrategy : IRoleStrategy
 {
+    
     private PlayerPresenter _playerPresenter;
     private PlayerModel _playerModel;
     private PlayerInput _playerInput;
     private InputActionMap _farmerActionMap;
     private InputActionMap _commonActionMap;
+    private float _ventAnimationDuration = -1f;
     
     public FarmerStrategy(PlayerModel playerModel , PlayerPresenter playerPresenter, PlayerInput playerInput)
     {
@@ -31,7 +33,27 @@ public class FarmerStrategy : IRoleStrategy
         
         if (_commonActionMap != null) _commonActionMap.Enable();
         if (_farmerActionMap != null) _farmerActionMap.Enable();
-        
+        CacheVentAnimationDuration();
+    }
+    private void CacheVentAnimationDuration()
+    {
+        Animator animator = _playerPresenter.GetComponentInChildren<Animator>();
+        if (animator == null)
+        {
+            _ventAnimationDuration = 0.5f;
+            return;
+        }
+
+        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
+        foreach (AnimationClip clip in controller.animationClips)
+        {
+            if (clip.name.Contains(GameConstants.Animation.VentEnter)) 
+            {
+                _ventAnimationDuration = clip.length;
+                return;
+            }
+        }
+        _ventAnimationDuration = 0.5f;
     }
     
     /// <summary>
@@ -87,9 +109,9 @@ public class FarmerStrategy : IRoleStrategy
         if (!CanVent()) return;
         
         // 벤트 근처 확인
-        if (HasVentNearby())
+        if (!HasVentNearby())
         {
-            _playerPresenter.TryVent();
+            Debug.LogError("벤트가 근처에 없음");
         }
     }
     public bool CanVent()
@@ -100,17 +122,27 @@ public class FarmerStrategy : IRoleStrategy
 
     private bool HasVentNearby()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
-        foreach (Collider2D collider in colliders)
+        VentController[] allVents = UnityEngine.Object.FindObjectsByType<VentController>(FindObjectsSortMode.None);
+        foreach (VentController vent in allVents)
         {
-            if (collider.CompareTag(GameTags.Vent))
+            float dist = Vector3.Distance(_playerPresenter.transform.position, vent.transform.position);
+            if (dist <= vent.InteractionRadius)
             {
+                //애니메이션 재생
+                _playerModel.SetAnimationStateServerRpc(PlayerAnimationState.VentEnter);
+                //애니메이션 재생 완료 후 진입
+                _playerPresenter.StartCoroutine(EnterVentAfterAnimation(vent));
                 return true;
             }
         }
         return false;
     }
 
+    private System.Collections.IEnumerator EnterVentAfterAnimation(VentController vent)
+    {
+        yield return new WaitForSeconds(_ventAnimationDuration);
+        vent.Interact(_playerPresenter.gameObject);
+    }
     
     public void TryKill()
     {
