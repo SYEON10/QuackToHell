@@ -389,14 +389,7 @@ public class LobbyManager : NetworkBehaviour
     [ServerRpc]
     private void AssignPlayerRolesServerRpc(ServerRpcParams rpcParams = default)
     {
-        ulong requesterClientId = rpcParams.Receive.SenderClientId;
-        ClientRpcParams clientRpcParams = new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new[] { requesterClientId }
-            }
-        };
+        
         
         //모든 플레이어 가져오기
         PlayerModel[] allPlayers = PlayerHelperManager.Instance.GetAllPlayers<PlayerModel>();
@@ -409,6 +402,13 @@ public class LobbyManager : NetworkBehaviour
 
         //역할 부여
         for(int i=0;i<allPlayers.Length;i++){
+            ClientRpcParams clientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new[] { allPlayers[i].OwnerClientId }
+                }
+            };
             if(ToggleForcedAllFarmer)
             {
                 PlaySFXClientRpc(LobbySFX.mafiaAssignSFX, clientRpcParams);
