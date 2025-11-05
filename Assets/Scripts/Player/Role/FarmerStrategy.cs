@@ -164,10 +164,9 @@ public class FarmerStrategy : IRoleStrategy
     {
         if (!CanInteract()) return;
         
-        // 1단계: 상호작용 오브젝트 확인
         if (HasInteractableObjectsNearby())
         {
-            _playerPresenter.TryInteractServerRpc(); // 기존 로직
+            _playerPresenter.TryInteractServerRpc(); 
         }
     }
 

@@ -1056,7 +1056,7 @@ public class PlayerPresenter : NetworkBehaviour
     
     public void OnOffNickname(bool onOff)
     {
-        playerView.SetNicknameVisibility(false);
+        playerView.SetNicknameVisibility(onOff);
     }
     
     /// <summary>
