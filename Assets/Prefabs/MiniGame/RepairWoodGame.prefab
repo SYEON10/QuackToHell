@@ -137,8 +137,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -300, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: -128.18896, y: -116.1889}
+  m_SizeDelta: {x: 237.9401, y: 164.7159}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6429784666539043281
 CanvasRenderer:
@@ -168,9 +168,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3161942850466663788, guid: 6a30916c640da2f42bec2dab8e7a479f, type: 3}
+  m_Sprite: {fileID: 7355757390191739230, guid: 75b3898c87ba01b4c8e1f383ce30b6ef, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -193,9 +193,9 @@ MonoBehaviour:
   orderIndex: 0
   onClickedVisual: {fileID: 0}
   wrongOrderAnim: {fileID: 0}
-  targetImage: {fileID: 0}
-  offSprite: {fileID: 0}
-  onSprite: {fileID: 0}
+  targetImage: {fileID: 709120526950885846}
+  offSprite: {fileID: 7355757390191739230, guid: 75b3898c87ba01b4c8e1f383ce30b6ef, type: 3}
+  onSprite: {fileID: -771994845524449943, guid: 098b90d13a8f20a4ea7ebc3274d169ef, type: 3}
   setNativeSizeOnSwap: 0
   offColor: {r: 1, g: 1, b: 1, a: 1}
   onColor: {r: 1, g: 1, b: 1, a: 1}
@@ -209,7 +209,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2748065055030133214}
   m_Layer: 5
-  m_Name: ClickOncePointsGame
+  m_Name: RepairWoodGame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -270,8 +270,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 300, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 174.2, y: 161.3}
+  m_SizeDelta: {x: 146.415, y: 155.1965}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &213147981029229053
 CanvasRenderer:
@@ -301,9 +301,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3161942850466663788, guid: 436e866dd929ed74981361b7aa042c70, type: 3}
+  m_Sprite: {fileID: 9123363309080028179, guid: 1d9f4153ebb07b246a709040127a5699, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -326,9 +326,9 @@ MonoBehaviour:
   orderIndex: 0
   onClickedVisual: {fileID: 0}
   wrongOrderAnim: {fileID: 0}
-  targetImage: {fileID: 0}
-  offSprite: {fileID: 0}
-  onSprite: {fileID: 0}
+  targetImage: {fileID: 6014152330412979382}
+  offSprite: {fileID: 9123363309080028179, guid: 1d9f4153ebb07b246a709040127a5699, type: 3}
+  onSprite: {fileID: 7717846196883367088, guid: 7a29aee1c5845f8419f3cfb5a42caafb, type: 3}
   setNativeSizeOnSwap: 0
   offColor: {r: 1, g: 1, b: 1, a: 1}
   onColor: {r: 1, g: 1, b: 1, a: 1}
@@ -520,8 +520,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 1
+  m_Sprite: {fileID: -2897303075374887623, guid: 4b088a241407f2949a973293c3c8b1c1, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -594,8 +594,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 74.6, y: -247.7}
+  m_SizeDelta: {x: 185.3003, y: 224.1924}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3420736653583872392
 CanvasRenderer:
@@ -625,9 +625,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -3161942850466663788, guid: 065974f16841bbc4db8137dd5718ba55, type: 3}
+  m_Sprite: {fileID: 6128504116306402464, guid: 8feb25e7929d1674a838abf777da4266, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -650,9 +650,9 @@ MonoBehaviour:
   orderIndex: 0
   onClickedVisual: {fileID: 0}
   wrongOrderAnim: {fileID: 0}
-  targetImage: {fileID: 0}
-  offSprite: {fileID: 0}
-  onSprite: {fileID: 0}
+  targetImage: {fileID: 2392990379584530688}
+  offSprite: {fileID: 6128504116306402464, guid: 8feb25e7929d1674a838abf777da4266, type: 3}
+  onSprite: {fileID: 8022557698878234087, guid: 15e7e7d625d59f149a721cc04fce9185, type: 3}
   setNativeSizeOnSwap: 0
   offColor: {r: 1, g: 1, b: 1, a: 1}
   onColor: {r: 1, g: 1, b: 1, a: 1}
