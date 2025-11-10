@@ -365,7 +365,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiBaseType: 0
-  uiName: ScrubGameUI
+  uiName: DragToTargetGameUI
 --- !u!4 &1806956943
 Transform:
   m_ObjectHideFlags: 0
