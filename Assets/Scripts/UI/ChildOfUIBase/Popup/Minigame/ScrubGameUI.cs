@@ -2,6 +2,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+//TODO: 올릴 골드 세팅하고(인스펙터용 열기) 클리어 시 골드증가(server rpc)
 public class ScrubGameUI : UIPopup
 {
     private float totalScrubDistance = 0f;
@@ -105,6 +106,7 @@ public class ScrubGameUI : UIPopup
     {
         Debug.Log("문지르기 성공!");
         isComplete = true;
+        gameObject.SetActive(false);
     }
     
 }

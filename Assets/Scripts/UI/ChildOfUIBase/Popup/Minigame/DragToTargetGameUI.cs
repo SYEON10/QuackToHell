@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Text.RegularExpressions;
 
+//TODO: 올릴 골드 세팅하고(인스펙터용 열기) 클리어 시 골드증가(server rpc)
 public class DragToTargetGameUI : UIPopup
 {
     [Tooltip("Drop Zone Positions: you have to fit index 0 to 4 like gameObject name: DragItem0, DragItem1, DragItem2, DragItem3, DragItem4")]
@@ -128,6 +129,7 @@ public class DragToTargetGameUI : UIPopup
     private void OnGameComplete()
     {
         Debug.Log("타겟 위치로 드래그하기 성공!");
+        gameObject.SetActive(false);
     }
 
 }
