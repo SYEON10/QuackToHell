@@ -1,43 +1,87 @@
+using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
 //TODO: 올릴 골드 세팅하고(인스펙터용 열기) 클리어 시 골드증가(server rpc)
 public class ScrubGameUI : UIPopup
 {
-    private float totalScrubDistance = 0f;
+    /* 사용법: 
+    /* Target은 10개있음.
+     * 안 사용하는 건 비활성화하고, 사용하는 건 활성화하기
+     */
+    /*
+     * 주의사항:
+     * 1. 하이어라키창의 오브젝트명 바꾸지 말기
+     * 2. 이미 있는 오브젝트에 대해서 추가 / 삭제x
+     */
+    private List<float> totalScrubDistances;
     
     [Header("Write the goal distance(pixels) to complete the game")]
     [SerializeField] 
     private float distanceToComplete = 1000f;
+    [Tooltip("if true, the target image will be transparent while scrubbing.")]
+    [SerializeField] 
+    private bool isTransparent = false;
     
     private Vector3 startPosition;
     private GameObject eraserGameObject;
-    private GameObject targetGameObject;
     private RectTransform eraserRectTransform;
-    private RectTransform targetRectTransform;
-    private Image targetImage;
+    private List<RectTransform> targetRectTransforms;
+    private List<Image> targetImages;
     private bool isComplete = false;
-    private float progress = 1f;
+    private List<float> progress;
+    
+    
     enum Images
     {
         Eraser,
-        Target,
+        Target1,
+        Target2,
+        Target3,
+        Target4,
+        Target5,
+        Target6,
+        Target7,
+        Target8,
+        Target9,
+        Target10,
     }
 
-    
     private void Start()
     {
         base.Init();
         Bind<Image>(typeof(Images));
-        eraserGameObject = Get<Image>((int)Images.Eraser).gameObject;
-        eraserRectTransform = Get<Image>((int)Images.Eraser).GetComponent<RectTransform>();
-        BindEvent(eraserGameObject,OnRubbing, GameEvents.UIEvent.Drag);
-        BindEvent(eraserGameObject,OnBeginDrag, GameEvents.UIEvent.BeginDrag);
-        BindEvent(eraserGameObject,OnEndDrag, GameEvents.UIEvent.EndDrag);
-        targetGameObject = Get<Image>((int)Images.Target).gameObject;
-        targetRectTransform = Get<Image>((int)Images.Target).GetComponent<RectTransform>();
-        targetImage = Get<Image>((int)Images.Target).GetComponent<Image>();
+        
+        //리스트 초기화
+        targetRectTransforms = new List<RectTransform>();
+        targetImages = new List<Image>();
+        totalScrubDistances = new List<float>();
+        progress = new List<float>();
+
+        foreach (Images image in Enum.GetValues(typeof(Images)))
+        {
+            if (!Get<Image>((int)image).gameObject.activeSelf)
+            {
+                continue;
+            }
+            GameObject gameObject = Get<Image>((int)image).gameObject;
+            if (image == Images.Eraser)
+            {
+                eraserGameObject = gameObject;
+                eraserRectTransform = Get<Image>((int)image).GetComponent<RectTransform>();
+                BindEvent(gameObject,OnRubbing, GameEvents.UIEvent.Drag);
+                BindEvent(gameObject,OnBeginDrag, GameEvents.UIEvent.BeginDrag);
+                BindEvent(gameObject,OnEndDrag, GameEvents.UIEvent.EndDrag);
+                continue;
+            }
+            targetRectTransforms.Add(Get<Image>((int)image).GetComponent<RectTransform>()); 
+            targetImages.Add(Get<Image>((int)image).GetComponent<Image>());
+            totalScrubDistances.Add(0f);
+            progress.Add(1f);
+        }
+        
     }
     
     /*eraser rect랑 target rect 겹치는지 확인 : (xmin,xmax,ymin,ymax)사이에 포인터가 있는지 체크*/
@@ -64,7 +108,6 @@ public class ScrubGameUI : UIPopup
 
     private void OnBeginDrag(PointerEventData data)
     {
-        
         startPosition = eraserGameObject.transform.position;
     }
     
@@ -75,29 +118,54 @@ public class ScrubGameUI : UIPopup
         //위치 움직이기
         eraserGameObject.transform.position = data.position;
         
+        
+        int overlappedIndex = -1;
+        for (int i=0;i<targetRectTransforms.Count;i++)
+        {
+            if (IsRectTransformOverlapping(eraserRectTransform, targetRectTransforms[i]))
+            {
+                overlappedIndex = i;    
+                break;
+            }
+        }
+        
         //안겹치면 로직x
-        if (!IsRectTransformOverlapping(eraserRectTransform, targetRectTransform))
+        if (overlappedIndex == -1)
         {
             return;
         }
         
+        
         //움직인거리
-        totalScrubDistance += data.delta.magnitude;
-        Debug.Log($"totalScrubDistance: {totalScrubDistance}");
-        progress = 1f - Mathf.Clamp01(totalScrubDistance /distanceToComplete) ;
+        totalScrubDistances[overlappedIndex] += data.delta.magnitude;
+        Debug.Log($"totalScrubDistance: {totalScrubDistances}");
+        progress[overlappedIndex] = 1f - Mathf.Clamp01(totalScrubDistances[overlappedIndex] /distanceToComplete) ;
         Debug.Log($"progress: {progress}");
         
         //클리어 조건
-        if (totalScrubDistance >= distanceToComplete)
+        //문제지점
+        int removeCount = 0;
+        for(int i=0;i<totalScrubDistances.Count;i++){
+            if (totalScrubDistances[i] >= distanceToComplete)
+            {
+                progress[i] = 0f;
+                removeCount++;
+            }
+        }
+        
+        if (removeCount == totalScrubDistances.Count)
         {
-            progress = 0f;
             OnGameComplete();
         }
        
         //투명해지기 (움직이는 거리에 비례해서 a값 조정)
-        Color color = targetImage.color;
-        color.a = progress;
-        targetImage.color = color;
+        if (!isTransparent)
+        {
+            return;
+        }
+        Color color = targetImages[overlappedIndex].color;
+        color.a = progress[overlappedIndex];
+        targetImages[overlappedIndex].color = color;
     }
     
 
