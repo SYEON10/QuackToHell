@@ -186,16 +186,32 @@ public class MinigameController : MonoBehaviour
 
     private Transform ResolveLocalPlayer()
     {
+        // 인스펙터에서 직접 지정해 둔 경우 그대로 사용
         if (overrideLocalPlayer) return overrideLocalPlayer;
 
-        // Netcode for GameObjects: 각 클라의 로컬 플레이어 우선
-        if (NetworkManager.Singleton != null &&
-            NetworkManager.Singleton.LocalClient != null &&
-            NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        // Netcode가 켜져 있을 때만 네트워크 경로로 찾기
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
         {
-            return NetworkManager.Singleton.LocalClient.PlayerObject.transform;
+            var nm = NetworkManager.Singleton;
+
+            var localPlayerObj = nm.SpawnManager.GetLocalPlayerObject();
+            if (localPlayerObj != null)
+                return localPlayerObj.transform;
+
+            foreach (var netObj in FindObjectsOfType<NetworkObject>())
+            {
+                if (netObj != null &&
+                    netObj.CompareTag("Player") &&
+                    netObj.IsOwner)
+                {
+                    return netObj.transform;
+                }
+            }
+
+            Debug.LogWarning("[MinigameController] 로컬 플레이어를 Netcode로 찾지 못했습니다.");
         }
 
+        // 여기까지 왔다는 건 Netcode 안 쓰는 싱글 테스트이거나, 아직 네트워크가 시작 안 된 상태 등
         var tagged = GameObject.FindWithTag("Player");
         if (tagged) return tagged.transform;
 
