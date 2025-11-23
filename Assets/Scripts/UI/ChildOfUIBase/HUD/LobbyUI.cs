@@ -21,7 +21,8 @@ public class LobbyUI : UIHUD
     enum Texts
     {
         Text_Code,
-        Text_Button_StartGame
+        Text_Button_StartGame,
+
     }
 
     enum Buttons
@@ -42,6 +43,7 @@ public class LobbyUI : UIHUD
         Bind<TextMeshProUGUI>(typeof(Texts));
         codeText = Get<TextMeshProUGUI>((int)Texts.Text_Code);
         codeText.text = LobbyManager.Instance.HostLobbyCode;
+
 
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost)
         {
