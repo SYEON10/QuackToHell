@@ -24,6 +24,8 @@ public class ScrubGameUI : UIPopup
     [Tooltip("if true, the target image will be transparent while scrubbing.")]
     [SerializeField] 
     private bool isTransparent = false;
+    [SerializeField] private float completeDelay = 1f;
+    
     
     private Vector3 startPosition;
     private GameObject eraserGameObject;
@@ -32,6 +34,8 @@ public class ScrubGameUI : UIPopup
     private List<Image> targetImages;
     private bool isComplete = false;
     private List<float> progress;
+    private int removeCount = 0;
+    private float completeDelayTimer = 0f;
     
     
     enum Images
@@ -85,11 +89,12 @@ public class ScrubGameUI : UIPopup
     }
     
     /*eraser rect랑 target rect 겹치는지 확인 : (xmin,xmax,ymin,ymax)사이에 포인터가 있는지 체크*/
-    private bool IsRectTransformOverlapping(RectTransform rectA, RectTransform rectB)
+    private bool IsRectTransformOverlapping(RectTransform rectEraser, RectTransform rectB)
     {
+        if(rectB.gameObject.activeSelf == false) {return false;}
         //각 렉트트랜스폼의 월드좌표기준 4개 코너 가져오기
         Vector3[] cornersA = new Vector3[4];
-        rectA.GetWorldCorners(cornersA);
+        rectEraser.GetWorldCorners(cornersA);
         //xmin, xmax, ymin, ymax로 사각형 만들기
         Rect rect1 = new Rect(cornersA[0].x, cornersA[0].y, cornersA[2].x - cornersA[0].x, cornersA[2].y - cornersA[0].y);
                 
@@ -118,13 +123,19 @@ public class ScrubGameUI : UIPopup
         //위치 움직이기
         eraserGameObject.transform.position = data.position;
         
+        if (removeCount == totalScrubDistances.Count)
+        {
+            completeDelayTimer += Time.deltaTime;
+            if (completeDelayTimer < completeDelay) return;
+            OnGameComplete();
+        }
         
         int overlappedIndex = -1;
         for (int i=0;i<targetRectTransforms.Count;i++)
         {
             if (IsRectTransformOverlapping(eraserRectTransform, targetRectTransforms[i]))
             {
-                overlappedIndex = i;    
+                overlappedIndex = i;                    
                 break;
             }
         }
@@ -144,20 +155,18 @@ public class ScrubGameUI : UIPopup
         
         //클리어 조건
         //문제지점
-        int removeCount = 0;
         for(int i=0;i<totalScrubDistances.Count;i++){
             if (totalScrubDistances[i] >= distanceToComplete)
             {
                 progress[i] = 0f;
                 removeCount++;
+                //note: 얘는 레이캐스트를 사용하지않음
+                targetImages[overlappedIndex].gameObject.SetActive(false);
             }
         }
         
-        if (removeCount == totalScrubDistances.Count)
-        {
-            OnGameComplete();
-        }
-       
+        
+        
         //투명해지기 (움직이는 거리에 비례해서 a값 조정)
         if (!isTransparent)
         {
