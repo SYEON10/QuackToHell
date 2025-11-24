@@ -23,13 +23,12 @@ using System.Collections;
 /// </summary>
 public class PlayerPresenter : NetworkBehaviour
 {
-    
-
     [Header("Components")]
     private PlayerModel playerModel;
     private PlayerView playerView;
     private RoleController roleController;
     private PlayerInput playerInput;
+    
     [Header("")]
     [SerializeField]    
     private GameObject corpsePrefab;
@@ -40,7 +39,8 @@ public class PlayerPresenter : NetworkBehaviour
     private InteractionHUDController interactionHUDController;
 
     // 외부 접근 제한 - 메시지 기반 인터페이스만 사용
-
+    
+    
     private void Start()
     {
         // 컴포넌트 초기화
@@ -82,7 +82,7 @@ public class PlayerPresenter : NetworkBehaviour
         PlayerJob playerJob = playerModel.GetPlayerJob();
         if(interactionHUDController!=null)
         {
-            interactionHUDController.SetPlayerInteractionUI(playerJob, false);
+            interactionHUDController.SetPlayerInteractionUI(playerJob, false,playerView.CanKill);
         }
     }
 
@@ -92,7 +92,7 @@ public class PlayerPresenter : NetworkBehaviour
         PlayerJob playerJob = playerModel.GetPlayerJob();
         if(interactionHUDController!=null)
         {
-            interactionHUDController.SetPlayerInteractionUI(playerJob, true);
+            interactionHUDController.SetPlayerInteractionUI(playerJob, true, playerView.CanKill);
         }
     }
 

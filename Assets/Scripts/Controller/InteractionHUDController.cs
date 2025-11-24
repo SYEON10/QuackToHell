@@ -123,12 +123,17 @@ public class InteractionHUDController : MonoBehaviour
         }
     }
 
-    public void SetPlayerInteractionUI(PlayerJob role, bool isDetected){
+    public void SetPlayerInteractionUI(PlayerJob role, bool isDetected, bool canInteract){
         //플레이어 감지시, 역할에 맞는 고정 버튼을 활성화
         //farmer: isDetected상태에 따라 kill버튼 활성화
         if(role == PlayerJob.Farmer){
-            if(isDetected){
-                EnableButton(ButtonName.Kill);
+            if (isDetected)
+            {
+                //TODO: 쿨타임따라 enable
+                if (canInteract)
+                {
+                    EnableButton(ButtonName.Kill);
+                }
             }
             else{
                 DisableButton(ButtonName.Kill);
@@ -148,10 +153,12 @@ public class InteractionHUDController : MonoBehaviour
         if (!savotageButtonButton.interactable) return;
         playerPresenter?.RequestSabotage();
     }
+    
     public void OnDynamicInteractionButton(){
         if (!interactButtonButton.interactable) return;
         playerPresenter?.RequestInteract();
     }
+    
     public void OnCorpseReportButton(){
         if (!reportButtonButton.interactable) return;
         playerPresenter?.RequestReportCorpse();

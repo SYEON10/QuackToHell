@@ -15,6 +15,8 @@ public class PlayerView : NetworkBehaviour
         playerKillSFX,
         
     }
+
+    [SerializeField] private float killCooltimeMax = 20f;
     [Header("SFX")]
     [SerializeField] private AudioSource playerKillSFX;
 
@@ -27,6 +29,9 @@ public class PlayerView : NetworkBehaviour
     public Action<GameObject> onPlayerDetected;
     public Action onPlayerExited;
     private Camera localCamera = null;
+    private float killCooltimer = 0f;
+    private bool canKill = true;
+    public bool CanKill => canKill;
 
     private NetworkVariable<bool> ignoreMoveInput = new NetworkVariable<bool>(false);
     public bool IgnoreMoveInput
@@ -73,6 +78,12 @@ public class PlayerView : NetworkBehaviour
         
         DetectNearbyPlayers();
         #endregion
+        killCooltimer+= Time.deltaTime;
+        if(killCooltimer >= killCooltimeMax)
+        {
+            killCooltimer = 0f;
+            canKill = true;
+        }
     }
     
     //note: 민수님
@@ -359,9 +370,15 @@ public class PlayerView : NetworkBehaviour
     private void OnKillInput(InputAction.CallbackContext context)
     {
         if (!IsOwner) return;
-        
-       
+
+        if (!canKill)
+        {
+            Debug.Log($"쿨타임때문에 죽일 수 x. 남은 쿨타임: {killCooltimeMax-killCooltimer}");
+            return;
+        }
         OnKillTryInput?.Invoke();
+        canKill = false;
+        
     }
 
     
