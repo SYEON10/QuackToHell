@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -7,13 +8,18 @@ using System.Collections.Generic;
 //TODO: 올릴 골드 세팅하고(인스펙터용 열기) 클리어 시 골드증가(server rpc)
 public class DragToTargetGameUI : UIPopup
 {
+    [SerializeField]
+    private bool whenFitTransparent = false;
+    
+    [SerializeField] private float completeDelay = 1f;
+    private float completeDelayTimer = 0f;
+    
     /// <summary>
     /// 사용하지 않는 오브젝트를 비활성화 할 경우, 반드시 인덱스 뒷번호부터 비활성화할 것.
     /// </summary>
     [Tooltip("Drop Zone Positions: you have to fit index 0 to 4 order like gameObject name: DragItem0, DragItem1, DragItem2, DragItem3, DragItem4")]
     [SerializeField] private RectTransform[] onDroppedFitPositions;
     
-    private bool isComplete = false;
     private List<Vector3> _onDroppedFitPositions;
     private List<GameObject> dragItemGameObject;
 
@@ -70,6 +76,16 @@ public class DragToTargetGameUI : UIPopup
         
     }
 
+    private void Update()
+    {
+        if (matchCount == TOTAL_MATCH_COUNT)
+        {
+            completeDelayTimer += Time.deltaTime;
+            if (completeDelayTimer < completeDelay) return;
+            OnGameComplete();
+        }
+    }
+
     int ReturnDragItemGameObjectIndex(string objectName)
     {
         Match match = Regex.Match(objectName, @"\d+");
@@ -107,15 +123,14 @@ public class DragToTargetGameUI : UIPopup
                 matchCount++;
                 
                 //투명컬러
-                Color color = new Color(1f, 1f, 1f, 0.5f);
-                data.pointerDrag.gameObject.GetComponent<Image>().color = color;
-                data.pointerEnter.gameObject.GetComponent<Image>().color = color;
-                SetDragItemPosition(index: otherIndex);
-                if (matchCount == TOTAL_MATCH_COUNT)
+                if (whenFitTransparent)
                 {
-                    isComplete = true;
-                    OnGameComplete();
+                    Color color = new Color(1f, 1f, 1f, 0.5f);
+                    data.pointerDrag.gameObject.GetComponent<Image>().color = color;
+                    data.pointerEnter.gameObject.GetComponent<Image>().color = color;
                 }
+                SetDragItemPosition(index: otherIndex);
+                
             }
             
         }

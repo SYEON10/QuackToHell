@@ -87,7 +87,17 @@ public class ScrubGameUI : UIPopup
         }
         
     }
-    
+
+    private void Update()
+    {
+        if (removeCount == totalScrubDistances.Count)
+        {
+            completeDelayTimer += Time.deltaTime;
+            if (completeDelayTimer < completeDelay) return;
+            OnGameComplete();
+        }
+    }
+
     /*eraser rect랑 target rect 겹치는지 확인 : (xmin,xmax,ymin,ymax)사이에 포인터가 있는지 체크*/
     private bool IsRectTransformOverlapping(RectTransform rectEraser, RectTransform rectB)
     {
@@ -123,12 +133,7 @@ public class ScrubGameUI : UIPopup
         //위치 움직이기
         eraserGameObject.transform.position = data.position;
         
-        if (removeCount == totalScrubDistances.Count)
-        {
-            completeDelayTimer += Time.deltaTime;
-            if (completeDelayTimer < completeDelay) return;
-            OnGameComplete();
-        }
+        
         
         int overlappedIndex = -1;
         for (int i=0;i<targetRectTransforms.Count;i++)
@@ -149,15 +154,18 @@ public class ScrubGameUI : UIPopup
         
         //움직인거리
         totalScrubDistances[overlappedIndex] += data.delta.magnitude;
-        Debug.Log($"totalScrubDistance: {totalScrubDistances}");
+        Debug.Log($"overlapped index: {overlappedIndex}, totalScrubDistance: {totalScrubDistances}");
         progress[overlappedIndex] = 1f - Mathf.Clamp01(totalScrubDistances[overlappedIndex] /distanceToComplete) ;
-        Debug.Log($"progress: {progress}");
+        
         
         //클리어 조건
-        //문제지점
         for(int i=0;i<totalScrubDistances.Count;i++){
             if (totalScrubDistances[i] >= distanceToComplete)
             {
+                if (!targetImages[i].gameObject.activeSelf)
+                {
+                    continue;
+                }
                 progress[i] = 0f;
                 removeCount++;
                 //note: 얘는 레이캐스트를 사용하지않음
