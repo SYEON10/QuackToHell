@@ -440,6 +440,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  killCooltimeMax: 20
   playerKillSFX: {fileID: 3856955297487974090}
   playerDetectionRadius: 1.5
   playerInput: {fileID: 3855099441482742434}
@@ -1215,7 +1216,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 2}
+  m_Size: {x: 0.652, y: 0.804}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

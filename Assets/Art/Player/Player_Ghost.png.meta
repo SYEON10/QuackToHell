@@ -69,7 +69,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 250
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -123,8 +123,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 545
-        height: 670
+        width: 163
+        height: 201
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,10 +143,10 @@ TextureImporter:
       name: Player_Ghost_1
       rect:
         serializedVersion: 2
-        x: 545
+        x: 163
         y: 0
-        width: 545
-        height: 670
+        width: 163
+        height: 201
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -165,10 +165,10 @@ TextureImporter:
       name: Player_Ghost_2
       rect:
         serializedVersion: 2
-        x: 1090
+        x: 326
         y: 0
-        width: 545
-        height: 670
+        width: 163
+        height: 201
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -187,10 +187,10 @@ TextureImporter:
       name: Player_Ghost_3
       rect:
         serializedVersion: 2
-        x: 1635
+        x: 489
         y: 0
-        width: 545
-        height: 670
+        width: 163
+        height: 201
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -209,10 +209,10 @@ TextureImporter:
       name: Player_Ghost_4
       rect:
         serializedVersion: 2
-        x: 2180
+        x: 652
         y: 0
-        width: 545
-        height: 670
+        width: 163
+        height: 201
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -223,50 +223,6 @@ TextureImporter:
       bones: []
       spriteID: e69bc8bfa23d4e4e0800000000000000
       internalID: -1953204156809561746
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Player_Ghost_5
-      rect:
-        serializedVersion: 2
-        x: 2725
-        y: 0
-        width: 545
-        height: 670
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 39f7ac263a4c5e710800000000000000
-      internalID: 1721998638555234195
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Player_Ghost_6
-      rect:
-        serializedVersion: 2
-        x: 3270
-        y: 0
-        width: 545
-        height: 670
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: edc07f02b0608a820800000000000000
-      internalID: 2929598202471976158
       vertices: []
       indices: 
       edges: []
@@ -290,8 +246,6 @@ TextureImporter:
       Player_Ghost_2: -5045575979258654229
       Player_Ghost_3: 5589112095263941703
       Player_Ghost_4: -1953204156809561746
-      Player_Ghost_5: 1721998638555234195
-      Player_Ghost_6: 2929598202471976158
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
