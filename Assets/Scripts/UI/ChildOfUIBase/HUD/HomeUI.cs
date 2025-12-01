@@ -5,7 +5,12 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
+using System.Threading.Tasks;
+using Unity.Services.Core;
 
 
 //TODO: 방제 무한스크롤(자동스크롤)
@@ -244,7 +249,14 @@ public class HomeUI : UIHUD
         refreshCooltimeTimer = 0f;
         
         List<Lobby> lobbyList =  await LobbyManager.Instance.ListLobbies();
+        
+        /*if (lobbyList.Count==0)
+        {
+            return;
+        }*/
+        
         LobbyManagerOnRoomListPulledAddSlotToRoomListContent(lobbyList);
+        Debug.Log(AuthenticationService.Instance.IsSignedIn);
     }
 
 
