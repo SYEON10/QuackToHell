@@ -64,6 +64,7 @@ public class PlayerPresenter : NetworkBehaviour
             {
                 playerInput.enabled = false;
             }
+            return;
         }
     }
 

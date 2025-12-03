@@ -4,6 +4,7 @@ using Unity.Netcode;
 
 public class PlayerMinimapAssigner : NetworkBehaviour
 {
+    /*
     public override void OnNetworkSpawn()
     {
         // 내 로컬 플레이어가 아니면 패스
@@ -14,12 +15,12 @@ public class PlayerMinimapAssigner : NetworkBehaviour
     }
 
     private IEnumerator AssignWhenReady()
-    {
-        // MinimapFollow.Instance 생길 때까지 기다리기
+    {    
         while (MinimapFollow.Instance == null)
             yield return null;
 
         MinimapFollow.Instance.SetTarget(transform);
         Debug.Log($"[Minimap] Target set: {gameObject.name}");
     }
+    */
 }
