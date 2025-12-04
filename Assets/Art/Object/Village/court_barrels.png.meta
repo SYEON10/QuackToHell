@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 2bc3d1f482eb3d84892f0fafc99cfd22
+guid: 67c03a470959c1e40bc010f97b8a70cf
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3936985286153675031
-    second: CourtBell_0
+      213: 8643923050072511626
+    second: court_barrels_0
+  - first:
+      213: 775753018918613540
+    second: court_barrels_1
+  - first:
+      213: 7087690027900885257
+    second: court_barrels_2
+  - first:
+      213: -6326644948643714690
+    second: court_barrels_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +109,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CourtBell_0
+      name: court_barrels_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 349
-        height: 292
+        x: 7
+        y: 15
+        width: 230
+        height: 62
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +124,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9eeded4cdb40d59c0800000000000000
-      internalID: -3936985286153675031
+      spriteID: a841261773265f770800000000000000
+      internalID: 8643923050072511626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: court_barrels_1
+      rect:
+        serializedVersion: 2
+        x: 259
+        y: 15
+        width: 344
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 422b416b24704ca00800000000000000
+      internalID: 775753018918613540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: court_barrels_2
+      rect:
+        serializedVersion: 2
+        x: 1913
+        y: 17
+        width: 156
+        height: 91
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9095c1737888c5260800000000000000
+      internalID: 7087690027900885257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: court_barrels_3
+      rect:
+        serializedVersion: 2
+        x: 2124
+        y: 14
+        width: 326
+        height: 233
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e79621070fd3338a0800000000000000
+      internalID: -6326644948643714690
       vertices: []
       indices: 
       edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      CourtBell_0: -3936985286153675031
+      court_barrels_0: 8643923050072511626
+      court_barrels_1: 775753018918613540
+      court_barrels_2: 7087690027900885257
+      court_barrels_3: -6326644948643714690
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

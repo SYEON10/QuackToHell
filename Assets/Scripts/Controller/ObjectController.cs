@@ -145,7 +145,7 @@ public sealed class ObjectController : MonoBehaviour
         int baseOrder = 0;
         switch (renderRule)
         {
-            case RenderRule.AlwaysBehindPlayer: baseOrder = -100; break;
+            case RenderRule.AlwaysBehindPlayer: baseOrder = 0; break;
             case RenderRule.AlwaysInFrontOfPlayer: baseOrder = 100; break;
             default: baseOrder = 0; break;
         }
@@ -173,7 +173,7 @@ public sealed class ObjectController : MonoBehaviour
         if (player == null) return;
 
         int playerOrder = GetPlayerSortingOrder();
-        int relative = (player.position.y > transform.position.y) ? +10 : -10;
+        int relative = (player.position.y > transform.position.y) ? +50 : -50;
         int desired = playerOrder + relative + orderOffset;
         SetSortingOrder(desired);
     }

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2bc3d1f482eb3d84892f0fafc99cfd22
+guid: 0cf7aaa0720f09c47a382eccfae8d75a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3936985286153675031
-    second: CourtBell_0
+      213: -6907475080902034581
+    second: court_chair_8_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CourtBell_0
+      name: court_chair_8_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 349
-        height: 292
+        y: 2
+        width: 102
+        height: 117
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9eeded4cdb40d59c0800000000000000
-      internalID: -3936985286153675031
+      spriteID: b6bb8f3e208b320a0800000000000000
+      internalID: -6907475080902034581
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      CourtBell_0: -3936985286153675031
+      court_chair_8_0: -6907475080902034581
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
