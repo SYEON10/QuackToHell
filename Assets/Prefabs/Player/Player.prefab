@@ -1106,6 +1106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   animator: {fileID: 5639819905214187387}
+  ventExitAnimationClip: {fileID: 7400000, guid: 5b1792ab70e11f1478a6e45752e6694f, type: 2}
 --- !u!114 &-7906414482783647899
 MonoBehaviour:
   m_ObjectHideFlags: 0

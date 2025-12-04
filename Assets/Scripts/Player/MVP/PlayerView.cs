@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using System.Collections;
 /// <summary>
 /// 시각 및 입력 처리 (완전 Input System 방식)
 /// </summary>
@@ -34,24 +35,14 @@ public class PlayerView : NetworkBehaviour
     public bool CanKill => canKill;
 
     private NetworkVariable<bool> ignoreMoveInput = new NetworkVariable<bool>(false);
-    public bool IgnoreMoveInput
-    {
-        get { return ignoreMoveInput.Value; }
-        set
-        {
-            if (!IsHost)
-            {
-                return;
-            }
-            ignoreMoveInput.Value = value;   
-        }
-    }
 
     [Header("Input System")]
     [SerializeField] private PlayerInput playerInput;
 
     private InteractionHUDController interactionHUDController;
 
+    private Rigidbody2D playerRigidbody2D;
+    
     [ClientRpc]
     public void PlaySFXClientRpc(PlayerSFX sfx, ClientRpcParams rpcParams = default )
     {
@@ -143,7 +134,7 @@ public class PlayerView : NetworkBehaviour
         Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
         DebugUtils.AssertNotNull(canvas, "Canvas", this);
         nicknameText = canvas.GetComponentInChildren<TextMeshProUGUI>();
-
+        playerRigidbody2D = GetComponent<Rigidbody2D>();
         SceneManager.sceneLoaded += OnSceneLoaded;
         if (IsOwner)
         {
@@ -307,21 +298,23 @@ public class PlayerView : NetworkBehaviour
             YDirection = inputYDirection;
         }
     }
+    // 마지막 입력 방향 저장
+    private Vector2 lastMoveInput = Vector2.zero;
 
     // Input System을 사용한 이동 입력 처리
     private void OnMoveInput(InputAction.CallbackContext context)
     {
         if (!IsOwner) return;
-        if (ignoreMoveInput.Value) return;
-
         Vector2 moveInput = context.ReadValue<Vector2>();
-        
+        lastMoveInput = moveInput;
+        if (ignoreMoveInput.Value) return;
         // 정수로 변환하여 전송
         int xDirection = Mathf.RoundToInt(moveInput.x);
         int yDirection = Mathf.RoundToInt(moveInput.y);
         
         OnMovementInput?.Invoke(this, new OnMovementInputEventArgs(xDirection, yDirection));
     }
+    
     #endregion
     
     #region 움직임 제한
@@ -334,10 +327,31 @@ public class PlayerView : NetworkBehaviour
         {
             if (player != null)
             {
-                player.IgnoreMoveInput = value;
+                player.ignoreMoveInput.Value = value;
             }
+           
+            playerRigidbody2D.linearVelocity = Vector2.zero;
+            
         }
     }
+
+    //로컬 플레이어 움직임 제한
+    public IEnumerator SetIgnorePlayerMoveInput(bool  value, float waitTime=0f)
+    {
+        yield return new WaitForSeconds(waitTime);
+        ignoreMoveInput.Value = value;
+        playerRigidbody2D.linearVelocity = Vector2.zero;
+        
+        // ignoreMoveInput이 false가 되었을 때, 현재 입력이 있으면 움직임 재개
+        if (!value && IsOwner && lastMoveInput != Vector2.zero)
+        {
+            int xDirection = Mathf.RoundToInt(lastMoveInput.x);
+            int yDirection = Mathf.RoundToInt(lastMoveInput.y);
+            OnMovementInput?.Invoke(this, new OnMovementInputEventArgs(xDirection, yDirection));
+        }
+
+    }
+    
     #endregion
 
     /// <summary>

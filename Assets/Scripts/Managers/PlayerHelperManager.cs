@@ -118,7 +118,7 @@ public class PlayerHelperManager : MonoBehaviour
         foreach (PlayerView player in allPlayers)
         {
             DebugUtils.AssertNotNull(player, "PlayerView", this);
-            player.IgnoreMoveInput = true;
+            player.SetIgnorePlayerMoveInput(true);
             Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
