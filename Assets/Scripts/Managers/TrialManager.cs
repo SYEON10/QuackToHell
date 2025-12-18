@@ -96,7 +96,9 @@ public class TrialManager : NetworkBehaviour
         InjectReporterPlayerText(reporterClientId);
           
         //모든 플레이어의 움직임 멈춤
-        PlayerHelperManager.Instance.StopAllPlayerServerRpc();
+        ulong localCliendId = NetworkManager.Singleton.LocalClientId;
+        PlayerView playerView = PlayerHelperManager.Instance.GetPlayerViewlByClientId(localCliendId);
+        playerView.SetIgnoreAllPlayerMoveInputServerRpc(true);
         //5초뒤 씬 이동
         Invoke("LoadCourtScene", 5f);
     }

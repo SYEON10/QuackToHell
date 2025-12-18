@@ -7,13 +7,14 @@ using System;
 /// 유령 역할 전략
 /// 시체를 볼 수 있지만 리포트는 불가능
 /// </summary>
-public class GhostStrategy : IRoleStrategy
+public class GhostStrategy : NetworkBehaviour, IRoleStrategy
 {
     private PlayerPresenter _playerPresenter;
     private PlayerInput _playerInput;
     private InputActionMap _commonActionMap;
+    public Action onDead;
     
-    public GhostStrategy(PlayerPresenter playerPresenter, PlayerInput playerInput)
+    public void Initialize(PlayerPresenter playerPresenter, PlayerInput playerInput)
     {
         _playerPresenter = playerPresenter;
         _playerInput = playerInput;
@@ -26,24 +27,10 @@ public class GhostStrategy : IRoleStrategy
         if (_commonActionMap != null) _commonActionMap.Enable();
         
         // 유령 전용 UI 활성화
-        _playerPresenter.ShowGhostUI();
+        onDead?.Invoke();
     }
     
-    public void HandleInput(InputAction.CallbackContext context)
-    {
-        // 유령은 기본 입력만 처리
-        string actionName = context.action.name;
-        
-        switch (actionName)
-        {
-            case GameInputs.Actions.Interact:
-                TryInteract();
-                break;
-            case GameInputs.Actions.Report:
-                TryReportCorpse();
-                break;
-        }
-    }
+
     
     public void Update()
     {
@@ -60,36 +47,177 @@ public class GhostStrategy : IRoleStrategy
     }
     
     #region Ability 구현 (다형성)
-    
-    public void TryKill()
+    public void Kill(ulong targetNetworkObjectId)
     {
         // 유령은 킬 불가능
-        Debug.Log("유령은 킬을 사용할 수 없습니다.");
+        CanKillServerRpc(targetNetworkObjectId);
     }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void KillServerRpc(ulong targetNetworkObjectId)
+    {
+        // 유령은 킬 불가능
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void CanKillServerRpc(ulong targetNetworkObjectId, bool checkForUI = false, ServerRpcParams rpcParams = default)
+    {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        CanKillResultClientRpc(false, targetNetworkObjectId, checkForUI, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+    }
+
+    [ClientRpc]
+    public void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, bool checkForUI = false, ClientRpcParams rpcParams = default)
+    {
+        // 유령은 킬 불가능
+        if (!canKill)
+        {
+            Debug.Log("유령은 킬을 사용할 수 없습니다.");
+        }
+    }
+
+    public void Convocation(ulong corpseNetworkObjectId)
+    {
+        throw new NotImplementedException();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void CanReportServerRpc(ulong corpseNetworkObjectId, ServerRpcParams rpcParams = default)
+    {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        
+        //유령은 report못함
+        CanReportResultClientRpc(false, corpseNetworkObjectId, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+    }
+
+    [ClientRpc]
+    public void CanReportResultClientRpc(bool canReport, ulong corpseNetworkObjectId, ClientRpcParams rpcParams = default)
+    {
+        Debug.Log("유령은 시체 리포트 못 함");
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ReportServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default)
+    {
+        Debug.Log("유령은 시체 리포트 못 함");
+        return;
+    }
+
+    public void Savotage()
+    {
+        CanSavotageServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void CanSavotageServerRpc(ServerRpcParams rpcParams = default)
+    {
+        //ghost는 사보타지 불가
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        CanSavotageResultClientRpc(false, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+    }
+
+    [ClientRpc]
+    public void CanSavotageResultClientRpc(bool canSabotage, ClientRpcParams rpcParams = default)
+    {
+        if (!canSabotage)
+        {
+            return;
+        }
+        Debug.Log($"사보타지 가능여부={canSabotage}: Server Rpc호출");
+        SavotageServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SavotageServerRpc(ServerRpcParams rpcParams = default)
+    {
+        Debug.Log("유령은 사보타지 불가");
+    }
+
+    public void Interact(string targetTag)
+    {
+        CanInteractServerRpc(targetTag);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void CanInteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    {
+        bool result = false;
+        //인터랙트 가능한 태그가 아니면 fasle
+        if (targetTag == GameTags.Vent || targetTag == GameTags.Interactable ||
+            targetTag == GameTags.ConvocationOfTrial || targetTag == GameTags.MiniGame)
+        {
+            result = true;
+        }
+        
+        
+        // 요청한 클라이언트 ID 가져오기
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
     
-    public void TrySabotage()
+        // 해당 클라이언트에게만 결과 전송
+        CanInteractResultClientRpc(result, targetTag, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+    }
+
+    [ClientRpc]
+    public void CanInteractResultClientRpc(bool canInteract, string targetTag, ClientRpcParams rpcParams = default)
+    {
+        if (!canInteract) return;
+    
+        InteractServerRpc(targetTag);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void InteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    {
+        ulong sender = rpcParams.Receive.SenderClientId;
+
+        switch (targetTag)
+        {
+            //벤트
+            case GameTags.Vent:
+                //벤트타기
+                Debug.Log("유령은 벤트 못 탐");
+                break;
+            //미니게임
+            case  GameTags.MiniGame:
+                //미니게임 상호작용
+                Debug.Log("유령은 미니게임 못 함");
+                break;
+            //재판소집
+            case  GameTags.ConvocationOfTrial:
+                //재판소집
+                Debug.Log("유령은 재판소집 못 함");
+                break;
+        }
+    }
+
+
+
+    public void Sabotage()
     {
         // 유령은 사보타지 불가능
         Debug.Log("유령은 사보타지를 사용할 수 없습니다.");
     }
     
-    public void TryInteract()
+
+    
+    public void ReportCorpse(ulong targetNetworkObjectId)
     {
-        if (!CanInteract()) return;
-        
-        // 상호작용 액션 실행
-        _playerPresenter.TryInteractServerRpc();
+        CanReportServerRpc(targetNetworkObjectId);
     }
     
-    public void TryReportCorpse()
-    {
-        if (!CanReportCorpse()) return;
-        
-        // 시체 리포트 액션 실행
-        _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
-    }
-    
-    public bool CanKill()
+    public bool CanKill(GameObject target)
     {
         // 유령은 킬 불가능
         return false;

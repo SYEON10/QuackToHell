@@ -66,6 +66,20 @@ public class PlayerHelperManager : MonoBehaviour
         }
         return null;
     }
+    
+    public PlayerView GetPlayerViewlByClientId(ulong clientId)
+    {
+        // note cba0898: Assert 는 배포 빌드에서 해당 상황이 없어야 한다는 가정입니다. 조건문의 일부로 포함하지 말아주세요.
+        PlayerView[] allPlayers = GetAllPlayers<PlayerView>();
+        foreach (PlayerView player in allPlayers)
+        {
+            if (player.NetworkObject.OwnerClientId == clientId)
+            {
+                return player;
+            }
+        }
+        return null;
+    }
 
     /// <summary>
     /// 클라이언트 ID로 플레이어를 찾아서 골드를 반환
@@ -107,25 +121,7 @@ public class PlayerHelperManager : MonoBehaviour
     {
         return NetworkManager.Singleton.ConnectedClients.Count;
     }
-
-    /// <summary>
-    /// 모든 플레이어의 움직임을 멈추는 서버 RPC
-    /// </summary>
-    [ServerRpc]
-    public void StopAllPlayerServerRpc()
-    {
-        PlayerView[] allPlayers = FindObjectsByType<PlayerView>(FindObjectsSortMode.None);
-        foreach (PlayerView player in allPlayers)
-        {
-            DebugUtils.AssertNotNull(player, "PlayerView", this);
-            player.SetIgnorePlayerMoveInput(true);
-            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector2.zero;
-            }
-        }
-    }
+    
     /// <summary>
     /// 모든 플레이어를 가져오는 함수
     /// </summary>

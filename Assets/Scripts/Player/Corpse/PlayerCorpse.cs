@@ -8,7 +8,13 @@ public class PlayerCorpse : NetworkBehaviour
 
     private NetworkVariable<PlayerAppearanceData> _appearanceData = new NetworkVariable<PlayerAppearanceData>();
     public NetworkVariable<PlayerAppearanceData> AppearanceData { get { return _appearanceData; } }
+    private ulong clientId;
 
+    public ulong ClientId
+    {
+        get { return clientId; }
+        set  { clientId = value; }
+    }
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

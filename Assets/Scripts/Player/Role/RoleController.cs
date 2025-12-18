@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +16,10 @@ public class RoleController : MonoBehaviour
     private IRoleStrategy _currentStrategy;
     private PlayerJob _currentRole = PlayerJob.None;
     
+    private FarmerStrategy _farmerStrategy;
+    private AnimalStrategy _animalStrategy;
+    private GhostStrategy _ghostStrategy;
+    
     /// <summary>
     /// 현재 전략 (외부에서 접근 가능)
     /// </summary>
@@ -26,6 +31,14 @@ public class RoleController : MonoBehaviour
         _playerModel = GetComponent<PlayerModel>();
         if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
+        
+        _farmerStrategy = GetComponent<FarmerStrategy>();
+        _animalStrategy = GetComponent<AnimalStrategy>();
+        _ghostStrategy = GetComponent<GhostStrategy>();
+        _farmerStrategy.enabled = false;
+        _animalStrategy.enabled = false;
+        _ghostStrategy.enabled = false;
+        
     }
     
     private void Start()
@@ -60,44 +73,45 @@ public class RoleController : MonoBehaviour
         if (_currentStrategy != null)
         {
             _currentStrategy.Cleanup();
+            (_currentStrategy as MonoBehaviour).enabled = false;
         }
         
         _currentRole = newRole;
         
         // 새로운 전략 생성
-        _currentStrategy = CreateStrategyForRole(newRole);
+        _currentStrategy = GetStrategyForRole(newRole);
         
         // 새 전략 설정
         if (_currentStrategy != null)
         {
+            (_currentStrategy as MonoBehaviour).enabled = true;
             _currentStrategy.Setup();
         }
 
         Debug.Log($"ChangeRole: {newRole}, clientId: {_playerPresenter.NetworkObject.OwnerClientId}");
     }
     
-    private IRoleStrategy CreateStrategyForRole(PlayerJob role)
+    private IRoleStrategy GetStrategyForRole(PlayerJob role)
     {
         switch (role)
         {
             case PlayerJob.Farmer:
-                return new FarmerStrategy(_playerModel, _playerPresenter, playerInput);
+                _farmerStrategy.Initialize(_playerModel, _playerPresenter, playerInput);
+                return _farmerStrategy;
+            
             case PlayerJob.Animal:
-                return new AnimalStrategy(_playerModel, _playerPresenter, playerInput);
+                _animalStrategy.Initialize(_playerModel, _playerPresenter, playerInput);
+                return _animalStrategy;
+            
             case PlayerJob.Ghost:
-                return new GhostStrategy(_playerPresenter, playerInput);
+                _ghostStrategy.Initialize(_playerPresenter, playerInput);
+                return _ghostStrategy;
+            
             default:
                 return null;
         }
     }
-    
-    /// <summary>
-    /// 현재 역할의 입력 처리: 키보드용
-    /// </summary>
-    public void HandleInput(InputAction.CallbackContext context)
-    {
-        _currentStrategy?.HandleInput(context);
-    }
+
     
     private void OnDestroy()
     {

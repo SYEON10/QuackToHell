@@ -104,12 +104,14 @@ public class GameManager : NetworkBehaviour
         if(scene.name == GameScenes.Village)
         {
             UIManager.Instance.ShowHUDUI<VillageUI>("VillageUI");
+            UIManager.Instance.ShowHUDUI<SkillButtonUI>("SkillButtonUI");
+            
             //시체 청소하기
             CleanPlayerCorpse();
             //움직임 켜기
             ulong localClientId = NetworkManager.Singleton.LocalClientId;
-            PlayerPresenter playerPresenter =  PlayerHelperManager.Instance.GetPlayerPresenterByClientId(localClientId);
-            playerPresenter.SetAllPlayerIgnoreMoveInput(true);
+            PlayerView playerView= PlayerHelperManager.Instance.GetPlayerViewlByClientId(localClientId);
+            playerView.SetIgnoreAllPlayerMoveInputServerRpc(false);
         }
     }
 

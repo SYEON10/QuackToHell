@@ -5,7 +5,11 @@ using UnityEngine;
 using Unity.Collections;
 
 /// <summary>
-/// 로직 관리
+/// *MVP를 잘 몰랐을 떄 썼으므로 아래로 의미를 재정의함
+/// 플레이어에 활용된 MVP의 의미는 기존 UI용 MVP와 조금 다름:
+/// <PlayerModel>           <PlayerPresenter>       <PlayerView>
+/// [입력들온거로로직처리] <-   [Model/적절한 곳에 전달]   <-    [TriggerEnter, 키입력 감지]
+/// [데이터변화]          ->   [View/적절한 곳에 전달]    ->    [변화한 데이터를 외형에 반영]
 /// </summary>
 public class PlayerModel : NetworkBehaviour
 {
@@ -46,8 +50,6 @@ public class PlayerModel : NetworkBehaviour
 
     private void Start()
     {
-        
-       
         // 미리 부착된 컴포넌트들 참조
         _roleController = GetComponent<RoleController>();
         idleStateComponent = GetComponent<PlayerIdleState>();
@@ -451,5 +453,74 @@ public class PlayerModel : NetworkBehaviour
         Debug.Log($"바인딩된 함수는 {handler.Method.Name}, 타겟 = {handler.Target}");
     }
 
+    /// <summary>
+    /// 플레이어 사망 처리 (죽은 플레이어의 presenter에서 실행)
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    public void HandlePlayerDeathServerRpc(ServerRpcParams rpcParams=default)
+    {
+        // 1. 서버에서 플레이어 상태 검증 (이미 죽었는지 확인)
+        if (PlayerStateData.Value.AliveState == PlayerLivingState.Dead)
+        {
+            Debug.LogWarning($"Server: Player {OwnerClientId} is already dead");
+            return;
+        }
+        
+        // 시체 프리팹 생성 (서버가 권위적 정보로 처리)
+        CorpseFactory.Instance.CreateCorpseServerRpc(transform.position, Quaternion.identity  , _playerAppearanceData.Value, ClientId);
+        
+        // 죽은 플레이어에게만 유령 상태로 변경하라고 알림
+        ChangeToGhostStateServerRpc();
+        
+        // 로컬: 유령 상태로 전환 (레이어..)
+        ClientRpcParams clientRpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new[] { ClientId }
+            }
+        };
+        ChangeToGhostStateClientRpc(clientRpcParams);
+        
+        //시각처리: Model의 State.OnValueChanged에서
+    }
     
+    /// <summary>
+    /// 로컬: 유령 상태로 전환 (레이어..)
+    /// </summary>
+    [ClientRpc]
+    private void ChangeToGhostStateClientRpc(ClientRpcParams clientRpcParams = default)
+    {
+        // 레이어 변경
+        gameObject.layer = GameLayers.GetLayerIndex(GameLayers.PlayerGhost);
+    }
+    
+    //NOTE: 민수님
+    //이거는 MODEL건드리는거니까 여기 있어야하는 거 맞음.
+    /// <summary>
+    /// 유령 상태로 전환 (서버전용함수)
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeToGhostStateServerRpc()
+    {
+        var temp = _playerStatusData.Value;
+        // 서버에서 속도 변경 (NetworkVariable로 동기화됨)
+        temp.moveSpeed = _playerStatusData.Value.moveSpeed * GameConstants.Player.GhostSpeedMultiplier; // 유령 속도로 설정
+        // 서버에서 job변경
+        temp.job =  PlayerJob.Ghost;
+        _playerStatusData.Value = temp;
+        // 서버에서 상태 변경
+        PlayerStateData newState = new PlayerStateData
+        {
+            AliveState = PlayerLivingState.Dead,
+            AnimationState = _playerStateData.Value.AnimationState  // 기존 값 유지
+        };
+        _playerStateData.Value = newState;
+        // 서버에서 태그 변경 (NetworkVariable로 동기화됨)
+        _playerTag.Value = GameTags.PlayerGhost;
+        // 서버에서 투명도 변경
+        PlayerAppearanceData currentAppearanceData = _playerAppearanceData.Value;
+        currentAppearanceData.AlphaValue = GameConstants.Player.GhostTransparency;
+        _playerAppearanceData.Value = currentAppearanceData;
+    }
 }

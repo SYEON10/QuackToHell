@@ -47,18 +47,19 @@ public class CorpseFactory : MonoBehaviour
 
 
     [ServerRpc]
-    public void CreateCorpseServerRpc(Vector3 position, Quaternion rotation, PlayerAppearanceData victimAppearanceData)
+    public void CreateCorpseServerRpc(Vector3 position, Quaternion rotation, PlayerAppearanceData victimAppearanceData, ulong clientId)
     {
+        
         // 1. 시체 인스턴스화
         GameObject corpseInstance = Instantiate(_corpsePrefab, position, rotation);
-
-        // 2. 네트워크에 스폰
-        NetworkObject corpseNetworkObject = corpseInstance.GetComponent<NetworkObject>();
-        corpseNetworkObject.Spawn(true);
-
-        // 3. 데이터 초기화
+        
+        // 2. 데이터 초기화
         PlayerCorpse playerCorpse = corpseInstance.GetComponent<PlayerCorpse>();
         playerCorpse.AppearanceData.Value = victimAppearanceData;
-
+        playerCorpse.ClientId = clientId;
+        
+        // 3. 네트워크에 스폰
+        NetworkObject corpseNetworkObject = corpseInstance.GetComponent<NetworkObject>();
+        corpseNetworkObject.Spawn(true);
     }
 }

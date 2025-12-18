@@ -22,9 +22,6 @@ TagManager:
   - UI_InteractionHUD
   - Vent
   - MiniGame
-  - Teleport
-  - RareCardShop
-  - Exit
   - task-wire
   - MainCanvas
   layers:

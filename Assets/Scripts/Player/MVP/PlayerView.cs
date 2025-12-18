@@ -7,17 +7,22 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System.Collections;
 /// <summary>
-/// 시각 및 입력 처리 (완전 Input System 방식)
+/// *MVP를 잘 몰랐을 떄 썼으므로 아래로 의미를 재정의함
+/// 플레이어에 활용된 MVP의 의미는 기존 UI용 MVP와 조금 다름:
+/// <PlayerModel>           <PlayerPresenter>       <PlayerView>
+/// [입력들온거로로직처리] <-   [Model/적절한 곳에 전달]   <-    [TriggerEnter, 키입력 감지]
+/// [데이터변화]          ->   [View/적절한 곳에 전달]    ->    [변화한 데이터를 외형에 반영]
 /// </summary>
 public class PlayerView : NetworkBehaviour
 {
+    
     public enum PlayerSFX
     {
         playerKillSFX,
         
     }
 
-    [SerializeField] private float killCooltimeMax = 20f;
+    
     [Header("SFX")]
     [SerializeField] private AudioSource playerKillSFX;
 
@@ -25,21 +30,42 @@ public class PlayerView : NetworkBehaviour
     // PlayerView.cs에 추가
     [Header("Player Detection")]
     [SerializeField] private float playerDetectionRadius = 2f;
-    private HashSet<GameObject> previouslyDetectedPlayers = new HashSet<GameObject>();
 
     public Action<GameObject> onPlayerDetected;
-    public Action onPlayerExited;
+    public Action<GameObject> onPlayerExited;
+    public Action<GameObject> onCorpseDetected;
+    public Action<GameObject> onCorpseExited;
+    public Action<GameObject> OnObjectEntered;
+    public Action<GameObject> OnObjectExited;
+    
     private Camera localCamera = null;
-    private float killCooltimer = 0f;
-    private bool canKill = true;
-    public bool CanKill => canKill;
+
+    private GameObject targetPlayerCache = null;
+
+    public GameObject TargetPlayerCache
+    {
+        get { return targetPlayerCache; }
+    }
+    
+    private GameObject targetCorpseCache = null;
+
+    public GameObject TargetCorpseCache
+    {
+        get { return targetCorpseCache; }
+    }
+    
+    private GameObject interactObjCache = null;
+
+    public GameObject InteractObjCache
+    {
+        get { return interactObjCache; }
+    }
 
     private NetworkVariable<bool> ignoreMoveInput = new NetworkVariable<bool>(false);
 
     [Header("Input System")]
     [SerializeField] private PlayerInput playerInput;
 
-    private InteractionHUDController interactionHUDController;
 
     private Rigidbody2D playerRigidbody2D;
     
@@ -61,21 +87,7 @@ public class PlayerView : NetworkBehaviour
             playerInput = GetComponent<PlayerInput>();
         }
     }
-    private void Update() {
-        #region 플레이어감지
-        // 소유자만 감지 실행
-        if (!IsOwner) return;
-        
-        
-        DetectNearbyPlayers();
-        #endregion
-        killCooltimer+= Time.deltaTime;
-        if(killCooltimer >= killCooltimeMax)
-        {
-            killCooltimer = 0f;
-            canKill = true;
-        }
-    }
+
     
     //note: 민수님
     //view가 하는 게 아님. 
@@ -91,42 +103,51 @@ public class PlayerView : NetworkBehaviour
     //MVP는 UI쓸 떄 많이쓰는거임. 다른곳에도 우겨넣을필요x
     //보통은 클래스를 쪼개서 재활용을 높이는 게 베스트.
     //첨에 만들 땐 불편한데 유지보수가 편리(트레이드오프)
-    private void DetectNearbyPlayers()
+    
+    //note: 민수님 /이것도 view가 가지면 어색함
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        // 현재 감지된 플레이어들
-        HashSet<GameObject> currentlyDetectedPlayers = new HashSet<GameObject>();
-        
-        // 범위 내 모든 콜라이더 검색
-        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, playerDetectionRadius);
-        
-        foreach (Collider2D collider in nearbyColliders)
+        if (!IsOwner) return;
+        GameObject detectedObject = collision.gameObject;
+        if (collision.CompareTag(GameTags.Player))
         {
-            if (collider.CompareTag(GameTags.Player) && collider.gameObject != gameObject)
-            {
-                GameObject detectedPlayer = collider.gameObject;
-                currentlyDetectedPlayers.Add(detectedPlayer);
-                
-                // 새로 감지된 플레이어 (Enter 이벤트)
-                if (!previouslyDetectedPlayers.Contains(detectedPlayer))
-                {
-                    onPlayerDetected?.Invoke(detectedPlayer);
-                }
-            }
+            targetPlayerCache = collision.gameObject;
+            onPlayerDetected?.Invoke(detectedObject);
         }
-        
-        // Exit 이벤트 처리 (필요한 경우)
-        foreach (GameObject previousPlayer in previouslyDetectedPlayers)
+        else if (collision.CompareTag(GameTags.PlayerCorpse))
         {
-            if (!currentlyDetectedPlayers.Contains(previousPlayer))
-            {
-                onPlayerExited?.Invoke(); // 필요시 추가
-            }
+            targetCorpseCache =  collision.gameObject;
+            onCorpseDetected?.Invoke(targetCorpseCache);
         }
-        
-        // 이전 상태 업데이트
-        previouslyDetectedPlayers = currentlyDetectedPlayers;
+        else
+        {
+            interactObjCache = collision.gameObject;
+            OnObjectEntered?.Invoke(detectedObject);
+        }
     }
-
+    
+    //note: 민수님 /이것도 view가 가지면 어색함
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!IsOwner) return;
+        GameObject detectedObject = collision.gameObject;
+        if (collision.CompareTag(GameTags.Player))
+        {
+            targetPlayerCache = null;
+            onPlayerExited?.Invoke(detectedObject);
+        }
+        else if (collision.CompareTag(GameTags.PlayerCorpse))
+        {
+            targetCorpseCache =  null;
+            onCorpseExited?.Invoke(targetCorpseCache);
+        }
+        else
+        {
+            interactObjCache = null;
+            OnObjectExited?.Invoke(detectedObject);
+        }
+    }
+    
 
     
     protected void Start()
@@ -158,9 +179,9 @@ public class PlayerView : NetworkBehaviour
         DebugUtils.AssertNotNull(interactAction, "InteractAction", this);
         interactAction.performed += OnInteractInputHandler;
 
-        InputAction reportAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Report}"];
-        DebugUtils.AssertNotNull(reportAction, "ReportAction", this);
-        reportAction.performed += OnReportInput;
+        InputAction corpseReportAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Report}"];
+        DebugUtils.AssertNotNull(corpseReportAction, "ReportAction", this);
+        corpseReportAction.performed += OnCorpseReportInput;
 
         InputAction killAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Kill}"];
         DebugUtils.AssertNotNull(killAction, "KillAction", this);
@@ -197,7 +218,7 @@ public class PlayerView : NetworkBehaviour
             InputAction reportAction = playerInput.actions[$"{GameInputs.ActionMaps.Player}/{GameInputs.Actions.Report}"];
             if (DebugUtils.AssertNotNull(reportAction, "ReportAction", this))
             {
-                reportAction.performed -= OnReportInput;
+                reportAction.performed -= OnCorpseReportInput;
             }
 
             InputAction killAction = playerInput.actions[$"{GameInputs.ActionMaps.Farmer}/{GameInputs.Actions.Kill}"];
@@ -223,15 +244,9 @@ public class PlayerView : NetworkBehaviour
             }
             SetupLocalCamera();
         }
-        if(scene.name == GameScenes.Village && IsOwner)
-        {
-            SetIgnoreAllPlayerMoveInputServerRpc(false);
-        }
     }
     
     #region 카메라
- 
-
     private void SetupLocalCamera()
     {
         // Owner인 플레이어만 카메라 설정
@@ -361,6 +376,7 @@ public class PlayerView : NetworkBehaviour
     {
         int colorIndex = playerAppearanceData.ColorIndex;
         float alphaValue = playerAppearanceData.AlphaValue;
+        int orderInLayer = playerAppearanceData.orderInLayer;
         
         //색 바꾸기
         SpriteRenderer[] spriteRenderers = gameObject.GetComponentsInChildren<SpriteRenderer>();
@@ -374,6 +390,8 @@ public class PlayerView : NetworkBehaviour
             Color color = spriteRenderer.color;
             color.a = alphaValue;
             spriteRenderer.color =  color;
+            //order in layer
+            spriteRenderer.sortingOrder = orderInLayer;
         }
     }
 
@@ -385,21 +403,13 @@ public class PlayerView : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        if (!canKill)
-        {
-            Debug.Log($"쿨타임때문에 죽일 수 x. 남은 쿨타임: {killCooltimeMax-killCooltimer}");
-            return;
-        }
-        OnKillTryInput?.Invoke();
-        canKill = false;
         
+        OnKillTryInput?.Invoke();
     }
 
     
     #endregion
-    public Action OnVentTryInput;
     public Action OnSavotageTryInput;
-
 
     private void OnSavotageInput(InputAction.CallbackContext context)
     {
@@ -424,40 +434,41 @@ public class PlayerView : NetworkBehaviour
 
     #region 시체발견 (LeftShift키) - 모든 사람 가능 (Ghost 제외)
     public Action<ulong> OnCorpseReported;
-
     
-
     // LeftShift키로 시체 리포트 처리
-    private void OnReportInput(InputAction.CallbackContext context)
+    private void OnCorpseReportInput(InputAction.CallbackContext context)
     {
         if (!IsOwner) return;
-        
-        
-        OnCorpseReported?.Invoke(OwnerClientId);
-        
-        
-    }
-    public void InjectHUDController(InteractionHUDController interactionHUDController)
-    {
-        this.interactionHUDController = interactionHUDController;
-    }
 
-    public Action<Collider2D> OnObjectEntered;
-    public Action<Collider2D> OnObjectExited;
+        ulong targetCorpseId = targetCorpseCache.GetComponent<PlayerCorpse>().ClientId;
+        OnCorpseReported?.Invoke(targetCorpseId);
+    }
+    
+    /// <summary>
+    /// 플레이어 가시성 설정
+    /// </summary>
+    public void SetPlayerVisibility(bool visible)
+    {
+        // 모든 렌더러 컴포넌트 활성화/비활성화
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            renderer.enabled = visible;
+        }
+        
+        // 닉네임 텍스트도 함께 처리
+        SetNicknameVisibility(visible);
 
-    //note: 민수님 /이것도 view가 가지면 어색함
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (!IsOwner) return;
-    
-        OnObjectEntered?.Invoke(collision); 
+        // 콜라이더는 항상 활성화 (충돌 감지용)
+        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+        foreach (Collider2D collider in colliders)
+        {
+            collider.enabled = true;
+        }
     }
-    //note: 민수님 /이것도 view가 가지면 어색함
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (!IsOwner) return;
     
-        OnObjectExited?.Invoke(collision); 
-    }
     #endregion
+    
+    
+
 }

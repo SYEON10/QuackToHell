@@ -3,27 +3,40 @@ using UnityEngine.InputSystem;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System;
+using UnityEngine.PlayerLoop;
 
 /// <summary>
 /// 농장주 역할 전략
 /// Kill, Sabotage 등의 Ability를 다형성으로 구현
 /// </summary>
-public class FarmerStrategy : IRoleStrategy
+public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
 {
+    // UI용 이벤트
+    public event Action<bool, ulong> OnCanKillUIResultReceived;
+    public event Action OnKillSuccess;
     
     private PlayerPresenter _playerPresenter;
     private PlayerModel _playerModel;
+    private PlayerView _playerView;
     private PlayerInput _playerInput;
     private InputActionMap _farmerActionMap;
     private InputActionMap _commonActionMap;
-    private float _ventAnimationDuration = -1f;
     
-    public FarmerStrategy(PlayerModel playerModel , PlayerPresenter playerPresenter, PlayerInput playerInput)
+    
+    [SerializeField] private float killCooltimeMax = 20f;
+    private float killCooltimer = 0f;
+    private bool canKill = false;
+    
+
+    
+    public void Initialize(PlayerModel playerModel, PlayerPresenter playerPresenter, PlayerInput playerInput)
     {
         _playerModel = playerModel;
+        _playerView = playerModel.GetComponent<PlayerView>();
         _playerPresenter = playerPresenter;
         _playerInput = playerInput;
     }
+
     
     public void Setup()
     {
@@ -33,60 +46,87 @@ public class FarmerStrategy : IRoleStrategy
         
         if (_commonActionMap != null) _commonActionMap.Enable();
         if (_farmerActionMap != null) _farmerActionMap.Enable();
-        CacheVentAnimationDuration();
     }
-    private void CacheVentAnimationDuration()
-    {
-        Animator animator = _playerPresenter.GetComponentInChildren<Animator>();
-        if (animator == null)
-        {
-            _ventAnimationDuration = 0.5f;
-            return;
-        }
-
-        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
-        foreach (AnimationClip clip in controller.animationClips)
-        {
-            if (clip.name.Contains(GameConstants.Animation.VentEnter)) 
-            {
-                _ventAnimationDuration = clip.length;
-                return;
-            }
-        }
-        _ventAnimationDuration = 0.5f;
-    }
-    
-    /// <summary>
-    /// 농장주 전용 입력 처리: 키보드용
-    /// </summary>
-    /// <param name="context"></param>
-    public void HandleInput(InputAction.CallbackContext context)
-    {
-        // 농장주 전용 입력 처리
-        string actionName = context.action.name;
-        
-        switch (actionName)
-        {
-            case GameInputs.Actions.Kill:
-                TryKill();
-                break;
-            case GameInputs.Actions.Interact:
-                TryInteract();
-                break;
-            case GameInputs.Actions.Report:
-                TryReportCorpse();
-                break;
-            case GameInputs.Actions.Savotage:
-                TrySabotage();
-                break;
-        }
-    }
+   
     
     public void Update()
     {
         // 농장주 전용 업데이트 로직
         // 예: 특별한 효과, 타이머 등
+        killCooltimer+= Time.deltaTime;
+        if(killCooltimer >= killCooltimeMax)
+        {
+            killCooltimer = 0f;
+            canKill = true;
+        }
     }
+    
+    // 0. 외부 인터페이스
+    public void Kill(ulong targetNetworkObjectId)
+    {
+        CanKillServerRpc(targetNetworkObjectId);
+    }
+
+    // 1. Can으로 조건검사: ServerRpc
+    [ServerRpc(RequireOwnership = false)]
+    public void CanKillServerRpc(ulong targetNetworkObjectId, bool checkForUI = false, ServerRpcParams rpcParams = default)
+    {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        
+        PlayerModel targetPlayerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(targetNetworkObjectId);
+    
+        bool result = false;
+    
+        if (targetPlayerModel.GetPlayerJob() == PlayerJob.Farmer)
+        {
+            result = false;
+        }
+        else if (canKill==false)
+        {
+            result = false;
+        }
+        else if (targetPlayerModel.GetPlayerAliveState() != PlayerLivingState.Alive)
+        {
+            result = false;
+        }
+        else
+        {
+            result = true;
+        }
+    
+        CanKillResultClientRpc(result, targetNetworkObjectId, checkForUI, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+    }
+    
+    
+
+    // 2. 결과를 전송: ClientRpc
+    [ClientRpc]
+    public void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, bool checkForUI = false, ClientRpcParams rpcParams = default)
+    {
+        OnCanKillUIResultReceived?.Invoke(canKill, targetNetworkObjectId);
+    
+        if (canKill == false) return;
+        if (checkForUI == true) return;
+    
+        KillServerRpc(targetNetworkObjectId);
+    }
+
+
+    // 3. 실제 작업 수행: ServerRpc
+    [ServerRpc(RequireOwnership = false)]
+    public void KillServerRpc(ulong targetNetworkObjectId)
+    {
+        PlayerModel targetPlayerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(targetNetworkObjectId);
+        targetPlayerModel.HandlePlayerDeathServerRpc();
+        
+        //TODO: SkillButton한테 Kill성공했다고 invoke
+        OnKillSuccess?.Invoke();
+        ConsumeKillCooldownClientRpc();
+    }
+    
     
     public void Cleanup()
     {
@@ -106,140 +146,99 @@ public class FarmerStrategy : IRoleStrategy
 
     public void TryVent()
     {
-        if (!CanVent()) return;
         
-        // 벤트 근처 확인
-        if (!HasVentNearby())
-        {
-            Debug.LogError("벤트가 근처에 없음");
-        }
     }
-    public bool CanVent()
-    {
-        // 농장주만 벤트 사용 가능
-        return _playerModel.GetPlayerAliveState() == PlayerLivingState.Alive;
+   
+
+
+  
+    [ClientRpc]
+    private void ConsumeKillCooldownClientRpc(){
+        killCooltimer = 0f;
+        canKill = false;
     }
 
-    private bool HasVentNearby()
+    public void Savotage()
     {
-        VentController[] allVents = UnityEngine.Object.FindObjectsByType<VentController>(FindObjectsSortMode.None);
-        foreach (VentController vent in allVents)
-        {
-            float dist = Vector3.Distance(_playerPresenter.transform.position, vent.transform.position);
-            if (dist <= vent.InteractionRadius)
-            {
-                //애니메이션 재생
-                _playerModel.SetAnimationStateServerRpc(PlayerAnimationState.VentEnter);
-                //애니메이션 재생 완료 후 진입
-                _playerPresenter.StartCoroutine(EnterVentAfterAnimation(vent));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private System.Collections.IEnumerator EnterVentAfterAnimation(VentController vent)
-    {
-        yield return new WaitForSeconds(_ventAnimationDuration);
-        vent.Interact(_playerPresenter.gameObject);
-    }
-    
-    public void TryKill()
-    {
-        if (!CanKill()) return;
-        
-        _playerPresenter.TryKillServerRpc();
-    }
-    
-    public void TrySabotage()
-    {
-        if (!CanSabotage()) return;
-        
-        // TODO: 사보타지 액션 구현
-        Debug.Log("사보타지기능 아직 없듬");
-        
-    }
-    
-    public void TryInteract()
-    {
-        if (!CanInteract()) return;
-        
-        if (HasInteractableObjectsNearby())
-        {
-            _playerPresenter.TryInteractServerRpc(); 
-        }
-    }
-
-    public bool HasInteractableObjectsNearby()
-    {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
-        foreach (Collider2D collider in colliders)
-        {
-            if (collider.CompareTag(GameTags.MiniGame) ||
-                collider.CompareTag(GameTags.RareCardShop) ||
-                collider.CompareTag(GameTags.Exit) ||
-                collider.CompareTag(GameTags.Teleport) ||
-                collider.CompareTag(GameTags.Vent)||
-                collider.CompareTag(GameTags.ConvocationOfTrial))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public void TryReportCorpse()
-    {
-        if (!CanReportCorpse()) return;
-        
-        // 시체 오브젝트 근처 확인
-        if (HasCorpseNearby())
-        {
-            _playerPresenter.ReportCorpseServerRpc(_playerPresenter.OwnerClientId);
-        }
-        
-    }
-    
-
-    private bool HasCorpseNearby()
-    {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
-        foreach (Collider2D collider in colliders)
-        {
-            if (collider.CompareTag(GameTags.PlayerCorpse))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private bool HasTrialConvocationNearby()
-    {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(_playerPresenter.transform.position, 1.5f);
-        foreach (Collider2D collider in colliders)
-        {
-            if (collider.CompareTag(GameTags.ConvocationOfTrial))
-            {
-                return true;
-            }
-        }
-        return false;
+        CanSavotageServerRpc();
     }
 
 
-    
-    public bool CanKill()
+    [ServerRpc(RequireOwnership = false)]
+    public void SavotageServerRpc(ServerRpcParams rpcParams = default)
     {
-        // 농장주는 킬 가능
-        return true;
+        Debug.Log("사보타지 아직 미구현");
+    }
+
+    public void Interact(string targetTag)
+    {
+        CanInteractServerRpc(targetTag);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void CanInteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    {
+        bool result = false;
+        //인터랙트 가능한 태그가 아니면 fasle
+        if (targetTag == GameTags.Vent || targetTag == GameTags.Interactable ||
+            targetTag == GameTags.ConvocationOfTrial || targetTag == GameTags.MiniGame)
+        {
+            result = true;
+        }
+        
+        
+        // 요청한 클라이언트 ID 가져오기
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+    
+        // 해당 클라이언트에게만 결과 전송
+        CanInteractResultClientRpc(result, targetTag, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+        
+    }
+
+    [ClientRpc]
+    public void CanInteractResultClientRpc(bool canInteract, string targetTag, ClientRpcParams rpcParams = default)
+    {
+        if (!canInteract) return;
+    
+        InteractServerRpc(targetTag);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void InteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    {
+        ulong sender = rpcParams.Receive.SenderClientId;
+
+        switch (targetTag)
+        {
+            //벤트
+            case GameTags.Vent:
+                //벤트타기
+                TryVent();
+                break;
+            //미니게임
+            case  GameTags.MiniGame:
+                //미니게임 상호작용
+                
+                break;
+            //재판소집
+            case  GameTags.ConvocationOfTrial:
+                //재판소집
+                TrialManager.Instance.TryTrialServerRpc(sender);
+                break;
+        }
+    }
+
+
+    public void ReportCorpse(ulong targetNetworkObjectId)
+    {
+        CanReportServerRpc(targetNetworkObjectId);
     }
     
-    public bool CanSabotage()
-    {
-        // 농장주는 사보타지 가능
-        return true;
-    }
+
+    
     
     public bool CanInteract()
     {
@@ -247,11 +246,66 @@ public class FarmerStrategy : IRoleStrategy
         return true;
     }
     
-    public bool CanReportCorpse()
+
+    
+
+    // 1. Can으로 조건검사: ServerRpc
+    [ServerRpc(RequireOwnership = false)]
+    public void CanReportServerRpc(ulong corpseNetworkObjectId, ServerRpcParams rpcParams = default)
     {
-        // 유령이 아닌 경우에만 시체 리포트 가능
-        return _playerModel.GetPlayerAliveState() == PlayerLivingState.Alive;
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        
+        CanReportResultClientRpc(true, corpseNetworkObjectId, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
     }
+
+    // 2. 결과를 전송: ClientRpc
+    [ClientRpc]
+    public void CanReportResultClientRpc(bool canReport, ulong corpseNetworkObjectId, ClientRpcParams rpcParams = default)
+    {
+        if (canReport==false)
+        {
+            return;
+        }
+        Debug.Log($"시체신고 가능여부={canReport}: Server Rpc호출");
+        ReportServerRpc(corpseNetworkObjectId);
+    }
+
+    // 3. 실제 작업 수행: ServerRpc
+    [ServerRpc(RequireOwnership = false)]
+    public void ReportServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default)
+    {
+        ulong reporterClientId = rpcParams.Receive.SenderClientId;
+        TrialManager.Instance.TryTrialServerRpc(reporterClientId);
+    }
+    
+
+    [ServerRpc(RequireOwnership = false)]
+    public void CanSavotageServerRpc(ServerRpcParams rpcParams = default)
+    {
+        //TODO: 사보타지 조건구현
+        //farmer는 사보타지 가능
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        CanSavotageResultClientRpc(true, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
+    }
+
+    [ClientRpc]
+    public void CanSavotageResultClientRpc(bool canSabotage, ClientRpcParams rpcParams = default)
+    {
+        if (canSabotage==false)
+        {
+            return;
+        }
+        Debug.Log($"사보타지 가능여부={canSabotage}: Server Rpc호출");
+        SavotageServerRpc();
+    }
+
+    
     
     #endregion
 }

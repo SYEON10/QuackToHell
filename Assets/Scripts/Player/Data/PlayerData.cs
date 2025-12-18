@@ -41,10 +41,12 @@ public struct PlayerAppearanceData : INetworkSerializable
 {
     public int ColorIndex;
     public float AlphaValue;
+    public int orderInLayer;
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref ColorIndex);
         serializer.SerializeValue(ref AlphaValue);
+        serializer.SerializeValue(ref orderInLayer);
     }
 }
 

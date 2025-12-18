@@ -1,0 +1,399 @@
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using Unity.Netcode;
+
+public class SkillButtonUI : UIHUD
+{
+    private Button Button_Savotage;
+    private Button Button_Kill;
+    private Button Button_Report;
+    private Button Button_Interaction;
+    
+    private PlayerView playerView;
+    private PlayerModel playerModel;
+    private IRoleStrategy roleStrategy;
+    private PlayerJob playerJob;
+    private RoleController roleController;
+    
+    private FarmerStrategy farmerStrategy;
+    private GhostStrategy ghostStrategy;
+    
+    public enum Buttons
+    {
+        Button_Savotage,
+        Button_Kill,
+        Button_Report,
+        Button_Interaction
+    }
+
+    private void Start()
+    {
+        base.Init();
+        Bind<Button>(typeof(Buttons));
+        
+        Button_Interaction = Get<Button>((int)Buttons.Button_Interaction);
+        BindEvent(Button_Interaction.gameObject, OnDynamicInteractionButton, GameEvents.UIEvent.Click);
+        Button_Kill = Get<Button>((int)Buttons.Button_Kill);
+        BindEvent(Button_Kill.gameObject, OnKillButton, GameEvents.UIEvent.Click);
+        Button_Report = Get<Button>((int)Buttons.Button_Report);
+        BindEvent(Button_Report.gameObject, OnCorpseReportButton, GameEvents.UIEvent.Click);
+        Button_Savotage = Get<Button>((int)Buttons.Button_Savotage);
+        BindEvent(Button_Savotage.gameObject, OnSavotageButton, GameEvents.UIEvent.Click);
+        
+        playerView = PlayerHelperManager.Instance.GetPlayerViewlByClientId(NetworkManager.Singleton.LocalClientId);
+        playerView.onPlayerDetected += PlayerView_OnPlayerDetected;
+        playerView.onPlayerExited += PlayerView_OnPlayerExited;
+        playerView.OnObjectEntered += HandleObjectEntered;
+        playerView.OnObjectExited += HandleObjectExited;
+        playerView.onCorpseDetected += OnCorpseDetected;
+        playerView.onCorpseExited += OnCorpseExited;
+        
+        
+        roleStrategy = playerView.GetComponent<RoleController>().CurrentStrategy;
+        roleController =  playerView.GetComponent<RoleController>();
+        
+        if (roleStrategy is FarmerStrategy)
+        {
+            farmerStrategy = roleStrategy as FarmerStrategy;
+            farmerStrategy.OnCanKillUIResultReceived += HandleCanKillUIResult;
+            farmerStrategy.OnKillSuccess += OnKillSuccessed;
+             
+        }
+        
+        if (roleStrategy is GhostStrategy)
+        {
+            ghostStrategy =  roleStrategy as GhostStrategy;
+            ghostStrategy.onDead += ShowGhostUI;
+        }
+
+        playerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId);
+        playerJob = playerModel.GetPlayerJob();
+        
+        SetUpButtons();
+    }
+
+    private void OnDestroy()
+    {
+        if (farmerStrategy != null)
+        {
+            farmerStrategy.OnCanKillUIResultReceived -= HandleCanKillUIResult;
+        }
+        
+        if (playerView != null)
+        {
+            playerView.onPlayerDetected -= PlayerView_OnPlayerDetected;
+            playerView.onPlayerExited -= PlayerView_OnPlayerExited;
+            playerView.OnObjectEntered -= HandleObjectEntered;
+            playerView.OnObjectExited -= HandleObjectExited;
+        }
+    }
+
+    private void OnKillSuccessed()
+    {
+        DisableButton(Buttons.Button_Kill);
+    }
+
+    private void PlayerView_OnPlayerDetected(GameObject playerGameObject)
+    {
+        if (playerJob != PlayerJob.Farmer)
+        {
+            return;
+        }
+        
+        if (farmerStrategy != null)
+        {
+             var targetId = playerView.TargetPlayerCache.gameObject.GetComponent<PlayerModel>().ClientId;
+            farmerStrategy.CanKillServerRpc(targetId, true);
+        }
+        else
+        {
+            SetPlayerInteractionUI(playerJob, true, false);
+        }
+    }
+    
+    private void PlayerView_OnPlayerExited(GameObject targetPlayer)
+    {
+        if (playerJob != PlayerJob.Farmer)
+        {
+            return;
+        }
+        
+        SetPlayerInteractionUI(playerJob, false, false);
+    }
+    
+    private void HandleCanKillUIResult(bool canKill, ulong targetNetworkObjectId)
+    {
+        SetPlayerInteractionUI(playerJob, true, canKill);
+    }
+    
+    private void HandleObjectEntered(GameObject targetObject)
+    {
+        if (targetObject.CompareTag(GameTags.PlayerCorpse))
+        {   
+            if(playerModel.GetPlayerJob()==PlayerJob.Ghost){
+                return;
+            }
+            EnableButton(Buttons.Button_Report);
+        }
+
+        //상호작용 오브젝트 감지
+        if (targetObject.CompareTag(GameTags.ConvocationOfTrial))
+        {
+            SetInteractionButtonImageByObject(GameTags.ConvocationOfTrial);
+            EnableButton(Buttons.Button_Interaction);
+        }
+        
+        if(targetObject.CompareTag(GameTags.Vent)){
+
+            SetInteractionButtonImageByObject(GameTags.Vent);
+
+            PlayerJob playerJob = playerModel.GetPlayerJob(); // 현재 역할 확인
+                
+            if(playerJob == PlayerJob.Animal)
+            {
+                // Animal: Interact 버튼 비활성화
+                DisableButton(Buttons.Button_Interaction);
+            }
+            else if(playerJob == PlayerJob.Farmer)
+            {
+                // Farmer: Interact 버튼 활성화
+                EnableButton(Buttons.Button_Interaction);
+            }
+            
+        }
+       
+        if(targetObject.CompareTag(GameTags.MiniGame)){
+           SetInteractionButtonImageByObject(GameTags.MiniGame);
+           EnableButton(Buttons.Button_Interaction);
+        }
+    }
+
+    
+    
+
+    private void HandleObjectExited(GameObject targetObject)
+    {
+        if (targetObject.CompareTag(GameTags.PlayerCorpse))
+        {
+            DisableButton(Buttons.Button_Report);   
+        }
+        
+        //상호작용 오브젝트 종류에서 Trigger Exit되면, 기본 상호작용 버튼 이미지로 변경
+        //vent, rarecardshop, exit, minigame, teleport, convocationoftrial
+        if(targetObject.CompareTag(GameTags.Vent))
+        {
+            SetInteractionButtonDefault();
+            DisableButton(Buttons.Button_Interaction);
+        }
+        
+        if(targetObject.CompareTag(GameTags.MiniGame))
+        {
+            SetInteractionButtonDefault();
+            DisableButton(Buttons.Button_Interaction);
+            
+        }
+        
+        if (targetObject.CompareTag(GameTags.ConvocationOfTrial))
+        {
+            SetInteractionButtonDefault();
+            DisableButton(Buttons.Button_Interaction);
+        }   
+    }
+
+    public void OnCorpseDetected(GameObject corpse)
+    {
+        EnableButton(Buttons.Button_Report);
+    }
+    public void OnCorpseExited(GameObject corpse)
+    {
+        DisableButton(Buttons.Button_Report);
+    }
+    
+    //세팅 함수들
+    public void SetPlayerInteractionUI(PlayerJob role, bool isDetected, bool canInteract){
+    
+        //Debug.Log($"[SetPlayerInteractionUI] role:{role}, isDetected:{isDetected}, canInteract:{canInteract}")
+        //플레이어 감지시, 역할에 맞는 고정 버튼을 활성화
+        //farmer: isDetected상태에 따라 kill버튼 활성화
+        if(role == PlayerJob.Farmer){
+            if (isDetected)
+            {
+                //TODO: 쿨타임따라 enable <- 쿨타임은 Strategy가 체크
+                if (canInteract)
+                {
+                    EnableButton(Buttons.Button_Kill);
+                }
+            }
+            else{
+                DisableButton(Buttons.Button_Kill);
+            }
+            
+        }
+        //animal: 변화 x
+    }
+    /// <summary>
+    /// 유령 UI 표시
+    /// </summary>
+    public void ShowGhostUI()
+    {
+        // 유령 전용 UI 세팅
+        SetUpButtons();
+    }
+    public void SetInteractionButtonImageByObject(string objectTag ){
+        //현재 플레이어 역할을 확인하고 적절한 이미지로 변경
+        //Resources/Sprites/InteractionButtons/ 에서 이미지를 찾아서 변경
+        PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+        string spritePath = GetSpritePathByTag(objectTag);
+        if(spritePath.Contains("Vent")){
+            if(playerJob == PlayerJob.Farmer){
+                spritePath = "Sprites/InteractionButtons/InteractionButtonVent";
+            }
+            else if(playerJob == PlayerJob.Animal){
+                spritePath = "Sprites/InteractionButtons/InteractionButtonDefault";
+            }
+        }
+            
+        if (!string.IsNullOrEmpty(spritePath))
+        {
+            Sprite interactionSprite = Resources.Load<Sprite>(spritePath);
+            DebugUtils.AssertNotNull(interactionSprite, $"interactionSprite for {objectTag}", this);
+
+            Image interactButtonImage = Button_Interaction.GetComponent<Image>();
+            DebugUtils.AssertNotNull(interactButtonImage, "interactButtonImage", this);
+            interactButtonImage.sprite = interactionSprite;
+        }   
+    }
+    // 태그에 따른 스프라이트 경로 반환
+    private string GetSpritePathByTag(string objectTag)
+    {
+        return objectTag switch
+        {
+            GameTags.ConvocationOfTrial => "Sprites/InteractionButtons/InteractionButtonTrialConvocation",
+            GameTags.Vent => "Sprites/InteractionButtons/InteractionButtonVent",
+            GameTags.MiniGame => "Sprites/InteractionButtons/InteractionButtonMinigame",
+            _ => "Sprites/InteractionButtons/InteractionButtonDefault" // 기본 이미지
+        };
+    }
+    
+    private void SetUpButtons()
+    {
+        //로컬플레이어의 역할에 따라 다르게 버튼을 활성화
+        PlayerJob playerJob = PlayerHelperManager.Instance.GetPlayerModelByClientId(NetworkManager.Singleton.LocalClientId).GetPlayerJob();
+    
+        // 모든 버튼 기본 설정
+        SetAllButtonsActiveState(playerJob);
+        SetInteractionButtonDefault();
+    
+        switch(playerJob){
+            case PlayerJob.Farmer:
+                SetupFarmerButtons();
+                break;
+            case PlayerJob.Animal:
+                SetupAnimalButtons();
+                break;
+            default:
+                Debug.Log("유령이어서 Button Setup 안 함");
+                break;
+        }
+    }
+    private void SetAllButtonsActiveState(PlayerJob playerJob)
+    {
+        Button_Kill.interactable = false;
+        Button_Report.interactable = false;
+        Button_Interaction.interactable = false; 
+        if(playerJob == PlayerJob.Farmer)
+        {
+            Button_Savotage.interactable = true; // 항상 활성화
+        }
+        else
+        {
+            Button_Savotage.interactable = false; // Animal은 비활성화
+        }
+    }
+
+    public void SetInteractionButtonDefault()
+    {
+        Sprite defaultSprite = Resources.Load<Sprite>("Sprites/InteractionButtons/InteractionButtonDefault");
+        DebugUtils.AssertNotNull(defaultSprite, "defaultSprite", this);
+        Image interactButtonImage = Button_Interaction.GetComponent<Image>();
+        DebugUtils.AssertNotNull(interactButtonImage, "interactButtonImage", this);
+        interactButtonImage.sprite = defaultSprite;
+    }
+
+    private void SetupFarmerButtons()
+    {
+        Button_Savotage.gameObject.SetActive(true);
+        Button_Kill.gameObject.SetActive(true);
+        Button_Report.gameObject.SetActive(true);
+        Button_Interaction.gameObject.SetActive(true);
+    }
+
+    private void SetupAnimalButtons()
+    {
+        Button_Savotage.gameObject.SetActive(false);
+        Button_Kill.gameObject.SetActive(false);
+        Button_Report.gameObject.SetActive(true);
+        Button_Interaction.gameObject.SetActive(true);
+    }
+    
+    public void EnableButton(Buttons buttonName)
+    {
+        switch(buttonName){
+            case Buttons.Button_Interaction:
+                Button_Interaction.interactable = true;
+                break;
+            case Buttons.Button_Kill:
+                Button_Kill.interactable = true;
+                break;
+            case Buttons.Button_Report:
+                Button_Report.interactable = true;
+                break;
+            case Buttons.Button_Savotage:
+                Button_Savotage.interactable = true;
+                break;
+        }
+    }
+
+    public void DisableButton(Buttons buttonName)
+    {
+        switch(buttonName){
+            case Buttons.Button_Interaction:
+                Button_Interaction.interactable = false;
+                break;
+            case Buttons.Button_Kill:
+                Button_Kill.interactable = false;
+                break;
+            case Buttons.Button_Report:
+                Button_Report.interactable = false;
+                break;
+            case Buttons.Button_Savotage:
+                Button_Savotage.interactable = false;
+                break;
+        }
+    }
+    
+    //버튼입력 이벤트들
+    public void OnKillButton(PointerEventData eventData){
+        ulong targetClinetId = playerView.TargetPlayerCache.GetComponent<PlayerModel>().ClientId;
+        roleController.CurrentStrategy?.Kill(targetClinetId);
+    }
+
+    public void OnSavotageButton(PointerEventData eventData){
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        
+        roleController.CurrentStrategy?.Savotage();
+    }
+    
+    public void OnDynamicInteractionButton(PointerEventData eventData){
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        string targetObjTag= playerView.InteractObjCache.tag;
+        roleController.CurrentStrategy?.Interact(targetObjTag);
+    }
+    
+    public void OnCorpseReportButton(PointerEventData eventData){
+        if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
+        ulong targetCorpseId = playerView.TargetCorpseCache.GetComponent<PlayerCorpse>().ClientId;
+        roleController.CurrentStrategy?.ReportCorpse(targetCorpseId);
+    }
+}

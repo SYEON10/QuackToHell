@@ -31,7 +31,5 @@ public static class GameTags
     public const string Vent = "Vent";                    // 벤트 (농장주 전용)
     public const string MiniGame = "MiniGame";            // 미니게임
     public const string ConvocationOfTrial = "ConvocationOfTrial";  // 재판 소집 (기존과 동일)
-    public const string Teleport = "Teleport";           // 텔레포트
-    public const string RareCardShop = "RareCardShop";   // 희귀카드 상점
-    public const string Exit = "Exit";                   // 출입구
+
 }
