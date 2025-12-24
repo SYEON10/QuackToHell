@@ -42,11 +42,7 @@ public class PlayerModel : NetworkBehaviour
             clientId = value;
         }
     }
-
-    private void Awake()
-    {
-        playerRB = gameObject.GetComponent<Rigidbody2D>();
-    }
+    
 
     private void Start()
     {
@@ -124,7 +120,15 @@ public class PlayerModel : NetworkBehaviour
         {
             curAnimationState.OnStateUpdate();
         }
+
     }
+
+    private void FixedUpdate()
+    {
+        Vector2 moveAmount = direction.Value * _playerStatusData.Value.MoveSpeed*Time.fixedDeltaTime;
+        transform.Translate(moveAmount.x, moveAmount.y, 0);
+    }
+
     /// <summary>
     /// 애니메이션 상태 변경 ServerRpc
     /// </summary>
@@ -137,13 +141,17 @@ public class PlayerModel : NetworkBehaviour
     }
 
     #region 플레이어 움직임
-    private Rigidbody2D playerRB;
-
+    private NetworkVariable<Vector2> direction = new NetworkVariable<Vector2>(
+        Vector2.zero,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+    
     [Rpc(SendTo.Server)]
     public void MovePlayerServerRpc(int inputXDirection, int inputYDirection)
     {
-        Vector2 direction = new Vector2(inputXDirection, inputYDirection).normalized;
-        playerRB.linearVelocity = direction * PlayerStatusData.Value.moveSpeed;
+        direction.Value = new Vector2(inputXDirection, inputYDirection).normalized;
+
         if (inputXDirection != 0 || inputYDirection != 0)
         {
             PlayerStateData newStateData = PlayerStateData.Value;
