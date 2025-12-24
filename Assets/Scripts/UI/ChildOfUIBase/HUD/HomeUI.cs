@@ -248,6 +248,7 @@ public class HomeUI : UIHUD
         
         refreshCooltimeTimer = 0f;
         
+        //여기서 로비개수만큼 리턴되지가 않음.
         List<Lobby> lobbyList =  await LobbyManager.Instance.ListLobbies();
         
         /*if (lobbyList.Count==0)

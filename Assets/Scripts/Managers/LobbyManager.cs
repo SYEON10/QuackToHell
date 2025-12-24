@@ -172,10 +172,9 @@ public class LobbyManager : NetworkBehaviour
         if (hostLobby != null)
         {
             heartbeatTimer+=Time.deltaTime;
-            if (heartbeatTimer < 0f)
+            if (heartbeatTimer >= HEART_BEAT_TIMER_MAX)
             {
-                
-                heartbeatTimer = HEART_BEAT_TIMER_MAX;
+                heartbeatTimer = 0f;
                 //이 로비 아직 살아있습니다
                 await LobbyService.Instance.SendHeartbeatPingAsync(hostLobby.Id);
                 Debug.Log("Sending heartbeat ping to " + hostLobby.Id);
