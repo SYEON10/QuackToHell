@@ -36,6 +36,8 @@ public class PlayerPresenter : NetworkBehaviour
     [SerializeField] 
     private SpriteRenderer playerSpriteRenderer;
     
+    private ChatTestView chatTestView;
+    
 
     // 외부 접근 제한 - 메시지 기반 인터페이스만 사용
     private void Start()
@@ -53,6 +55,7 @@ public class PlayerPresenter : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        OnSceneLoaded();
         if (!IsOwner)
         {
             //내 오너캐릭터만 입력받기
@@ -62,6 +65,12 @@ public class PlayerPresenter : NetworkBehaviour
                 playerInput.enabled = false;
             }
         }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        OnSceneUnLoaded();
     }
 
 
@@ -113,6 +122,7 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void BindEvents()
     {
+        
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         
@@ -143,8 +153,53 @@ public class PlayerPresenter : NetworkBehaviour
         playerModel.PlayerTag.OnValueChanged += HandleTagChanged;
     }
 
+    private void OnSceneLoaded()
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+        chatTestView = FindAnyObjectByType<ChatTestView>();
+        if(chatTestView==null)
+        {
+            StartCoroutine(WaitForSecondsAndBindChatFocusUnFocusEvent(0.5f));
+            return;
+        }
+        chatTestView.OnFocusInputField += OnChatFocused;
+        chatTestView.OnUnFocusInputField += OnChatUnfocused;
+    }
+
+    private IEnumerator WaitForSecondsAndBindChatFocusUnFocusEvent(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        chatTestView = FindAnyObjectByType<ChatTestView>();
+        chatTestView.OnFocusInputField += OnChatFocused;
+        chatTestView.OnUnFocusInputField += OnChatUnfocused;
+    }
+    
+    private void OnSceneUnLoaded()
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+        chatTestView.OnFocusInputField -= OnChatFocused;
+        chatTestView.OnUnFocusInputField -= OnChatUnfocused;
+        chatTestView = null;
+    }
+
+    private void OnChatFocused()
+    {
+        playerView.SetIgnorePlayerMoveInputServerRpc(true);
+    }
+    private void OnChatUnfocused()
+    {
+        playerView.SetIgnorePlayerMoveInputServerRpc(false);
+    }
+
     private void UnbindEvents()
     {
+        
         //note:민수님: 생명주기관련고민 
         //메모장에 써놓고 코딩한다거나 , awake(본인거) start(참조할때) enabled disabled 는 기본적으로알아두고, 나머지는 작성해놓고 보기
         //*awake는 하이어라키 순서 따라도 달라짐.

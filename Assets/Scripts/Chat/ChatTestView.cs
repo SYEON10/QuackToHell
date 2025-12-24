@@ -29,6 +29,10 @@ public class ChatTestView : MonoBehaviour
     public System.Action OnSendButtonClicked;
     public System.Action OnInputFieldSubmit;
 
+    // 뷰 이벤트들 (PlayerPresenter가 구독)
+    public System.Action OnFocusInputField;
+    public System.Action OnUnFocusInputField;
+
     private void Awake()
     {
         Debug.Assert(chatTestMessageItemPrefab != null, $"[ChatTestView][{this.name}]] chatTestMessageItemPrefab is null");
@@ -39,6 +43,8 @@ public class ChatTestView : MonoBehaviour
 
         sendButton.onClick.AddListener(() => OnSendButtonClicked?.Invoke());
         inputField.onSubmit.AddListener((_) => OnInputFieldSubmit?.Invoke());
+        inputField.onSelect.AddListener((_) => OnFocusInputField?.Invoke());
+        inputField.onDeselect.AddListener((_) => OnUnFocusInputField?.Invoke());
     }
 
     private void Start()

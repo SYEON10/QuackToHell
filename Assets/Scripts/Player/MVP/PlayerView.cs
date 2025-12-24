@@ -67,7 +67,6 @@ public class PlayerView : NetworkBehaviour
     [SerializeField] private PlayerInput playerInput;
 
 
-    private Rigidbody2D playerRigidbody2D;
     
     [ClientRpc]
     public void PlaySFXClientRpc(PlayerSFX sfx, ClientRpcParams rpcParams = default )
@@ -155,7 +154,6 @@ public class PlayerView : NetworkBehaviour
         Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
         DebugUtils.AssertNotNull(canvas, "Canvas", this);
         nicknameText = canvas.GetComponentInChildren<TextMeshProUGUI>();
-        playerRigidbody2D = GetComponent<Rigidbody2D>();
         SceneManager.sceneLoaded += OnSceneLoaded;
         if (IsOwner)
         {
@@ -344,28 +342,20 @@ public class PlayerView : NetworkBehaviour
             {
                 player.ignoreMoveInput.Value = value;
             }
-           
-            playerRigidbody2D.linearVelocity = Vector2.zero;
-            
         }
     }
 
     //로컬 플레이어 움직임 제한
-    public IEnumerator SetIgnorePlayerMoveInput(bool  value, float waitTime=0f)
+    [ServerRpc]
+    public void SetIgnorePlayerMoveInputServerRpc(bool  value, ServerRpcParams rpcParams = default)
     {
-        yield return new WaitForSeconds(waitTime);
-        ignoreMoveInput.Value = value;
-        playerRigidbody2D.linearVelocity = Vector2.zero;
-        
-        // ignoreMoveInput이 false가 되었을 때, 현재 입력이 있으면 움직임 재개
-        if (!value && IsOwner && lastMoveInput != Vector2.zero)
-        {
-            int xDirection = Mathf.RoundToInt(lastMoveInput.x);
-            int yDirection = Mathf.RoundToInt(lastMoveInput.y);
-            OnMovementInput?.Invoke(this, new OnMovementInputEventArgs(xDirection, yDirection));
-        }
-
+        //yield return new WaitForSeconds(time);
+        ulong senderClientID=  rpcParams.Receive.SenderClientId;
+        PlayerView playerView =  PlayerHelperManager.Instance.GetPlayerViewlByClientId(senderClientID);
+        playerView.ignoreMoveInput.Value = value;
     }
+
+    
     
     #endregion
 

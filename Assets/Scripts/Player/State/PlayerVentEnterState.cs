@@ -16,7 +16,7 @@ public class PlayerVentEnterState : NetworkStateBase
     public override void OnStateEnter()
     {
         animator.SetBool("IsVent",true);
-        StartCoroutine(myView.SetIgnorePlayerMoveInput(true));
+        //StartCoroutine(myView.SetIgnorePlayerMoveInputServerRpc(true));
         Debug.Log("Trigger Vent");
         
     }
@@ -24,7 +24,7 @@ public class PlayerVentEnterState : NetworkStateBase
     public override void OnStateExit()
     {
         animator.SetBool("IsVent", false);
-        StartCoroutine(myView.SetIgnorePlayerMoveInput(false,ventExitAnimationClip.length+0.2f));
+        //StartCoroutine(myView.SetIgnorePlayerMoveInputServerRpc(false,ventExitAnimationClip.length+0.2f));
     }
 
     public override void OnStateUpdate()
