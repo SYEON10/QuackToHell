@@ -30,38 +30,18 @@ public class SpawnPointsController : NetworkBehaviour
         // 서버만 '씬 로딩 완료' 이벤트를 구독한다.
         if (IsServer)
         {
-            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += HandleSceneLoadComplete;
+            if (SceneManager.GetActiveScene().name == GameScenes.Village){
+                AssignAndRelocatePlayersAfterDelay();
+            }
         }
     }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
-        // 오브젝트가 파괴될 때, 서버는 이벤트 구독을 반드시 해제한다 (메모리 누수 방지).
-        if (IsServer && NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= HandleSceneLoadComplete;
-        }
+        
     }
     #endregion
-
-    /// <summary>
-    /// (서버 전용) 모든 클라이언트가 씬 로딩을 완료했을 때 자동으로 호출될 함수.
-    /// </summary>
-    private void HandleSceneLoadComplete(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
-    {
-        if(!IsHost)
-        {
-            return;
-        }
-
-        // 'VillageScene'이 로딩되었는지 확인한다.
-        if (sceneName == "VillageScene")
-        {
-
-            AssignAndRelocatePlayersAfterDelay();
-        }
-    }
 
 
     private void AssignAndRelocatePlayersAfterDelay()
@@ -100,8 +80,6 @@ public class SpawnPointsController : NetworkBehaviour
     /// </summary>
     private void AssignAllPlayerSpawnPoints()
     {
-       
-
         _assignedSpawnPoints.Clear();
         //현재 연결된 모든 클라이언트의 ID 목록을 복사하여 할당
         List<ulong> clientsToAssign = new List<ulong>(NetworkManager.Singleton.ConnectedClients.Keys);
