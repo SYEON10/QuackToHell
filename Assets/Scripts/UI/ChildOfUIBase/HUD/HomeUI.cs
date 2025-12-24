@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Unity.Services.Core;
 
 
-//TODO: 방제 무한스크롤(자동스크롤)
 public class HomeUI : UIHUD
 {
     [SerializeField] private GameObject RoomSlot;
@@ -86,7 +85,6 @@ public class HomeUI : UIHUD
         FindGame,
         //룸 slot을 담는 content
         Roomlist_Content,
-        //default ui
         Default
     }
 
@@ -109,8 +107,8 @@ public class HomeUI : UIHUD
         CreateGameContents_gameObject = Get<GameObject>((int)GameObjects.CreateGameContents).gameObject;
         EnterCodeContents_gameObject = Get<GameObject>((int)GameObjects.EnterCodeContents).gameObject;
         FindGame_gameObject = Get<GameObject>((int)GameObjects.FindGame).gameObject;
-        Default_gameObject = Get<GameObject>((int)GameObjects.Default).gameObject;
         Roomlist_Content_gameObject = Get<GameObject>((int)GameObjects.Roomlist_Content).gameObject;
+        Default_gameObject = Get<GameObject>((int)GameObjects.Default).gameObject;
         
         Bind<Button>(typeof(Buttons));
         GameObject Button_GameStart_gameObject = Get<Button>((int)Buttons.Button_GameStart).gameObject;
@@ -123,12 +121,14 @@ public class HomeUI : UIHUD
         BindEvent(Button_FindGame_gameObject,OnClicked_FindGame, GameEvents.UIEvent.Click);
         GameObject Button_EnterGame_gameObject = Get<Button>((int)Buttons.Button_EnterGame).gameObject;
         BindEvent(Button_EnterGame_gameObject,OnClicked_EnterCode, GameEvents.UIEvent.Click);
+        
         GameObject Button_Back_CreateGameContents_gameObject = Get<Button>((int)Buttons.Button_Back_CreateGameContents).gameObject;
-        BindEvent(Button_Back_CreateGameContents_gameObject,OnClicked_Button_Back, GameEvents.UIEvent.Click);
+        BindEvent(Button_Back_CreateGameContents_gameObject,OnClicked_Button_Back_CreateGameContents, GameEvents.UIEvent.Click);
         GameObject Button_Back_EnterGameContents_gameObject = Get<Button>((int)Buttons.Button_Back_EnterGameContents).gameObject;
-        BindEvent(Button_Back_EnterGameContents_gameObject,OnClicked_Button_Back, GameEvents.UIEvent.Click);
+        BindEvent(Button_Back_EnterGameContents_gameObject,OnClicked_Button_Back_EnterGameContents, GameEvents.UIEvent.Click);
         GameObject Button_Back_FindGame_gameObject = Get<Button>((int)Buttons.Button_Back_FindGame).gameObject;
-        BindEvent(Button_Back_FindGame_gameObject,OnClicked_Button_Back, GameEvents.UIEvent.Click);
+        BindEvent(Button_Back_FindGame_gameObject,OnClicked_Button_Back_FindGame, GameEvents.UIEvent.Click);
+        
         Button_Lock_gameObject = Get<Button>((int)Buttons.Button_Lock).gameObject;
         buttonLockColor = Button_Lock_gameObject.GetComponent<Image>().color;
         BindEvent(Button_Lock_gameObject, OnClicked_ButtonLock,GameEvents.UIEvent.Click);
@@ -294,6 +294,7 @@ public class HomeUI : UIHUD
         CreateGameContents_gameObject.SetActive(false);
         EnterCodeContents_gameObject.SetActive(false);
         FindGame_gameObject.SetActive(false);
+        Default_gameObject.SetActive(true);
     }
     
     private void OnClicked_Option(PointerEventData data)
@@ -305,6 +306,7 @@ public class HomeUI : UIHUD
         CreateGameContents_gameObject.SetActive(false);
         EnterCodeContents_gameObject.SetActive(false);
         FindGame_gameObject.SetActive(false);
+        Default_gameObject.SetActive(true);
     }
     private void OnClicked_CreateGame(PointerEventData data)
     {
@@ -315,6 +317,7 @@ public class HomeUI : UIHUD
         CreateGameContents_gameObject.SetActive(true);
         EnterCodeContents_gameObject.SetActive(false);
         FindGame_gameObject.SetActive(false);
+        Default_gameObject.SetActive(true);
     }
     private void OnClicked_EnterCode(PointerEventData data)
     {
@@ -325,6 +328,7 @@ public class HomeUI : UIHUD
         CreateGameContents_gameObject.SetActive(false);
         EnterCodeContents_gameObject.SetActive(true);
         FindGame_gameObject.SetActive(false);
+        Default_gameObject.SetActive(true);
     }
     private void OnClicked_FindGame(PointerEventData data)
     {
@@ -342,16 +346,35 @@ public class HomeUI : UIHUD
 
     
 
-    private void OnClicked_Button_Back(PointerEventData data)
+    private void OnClicked_Button_Back_CreateGameContents(PointerEventData data)
     {
         //사운드
         SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
-        //TODO: Stack으로 관리해서 이전 화면이 나타나게 Pop 
-        GameStartContents_gameObject.SetActive(false);
+        GameStartContents_gameObject.SetActive(true);
         SettingContents_gameObject.SetActive(false);
         CreateGameContents_gameObject.SetActive(false);
         EnterCodeContents_gameObject.SetActive(false);
         FindGame_gameObject.SetActive(false);
+    }
+    private void OnClicked_Button_Back_EnterGameContents(PointerEventData data)
+    {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
+        GameStartContents_gameObject.SetActive(true);
+        SettingContents_gameObject.SetActive(false);
+        CreateGameContents_gameObject.SetActive(false);
+        EnterCodeContents_gameObject.SetActive(false);
+        FindGame_gameObject.SetActive(false);
+    }
+    private void OnClicked_Button_Back_FindGame(PointerEventData data)
+    {
+        //사운드
+        SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
         Default_gameObject.SetActive(true);
+        GameStartContents_gameObject.SetActive(true);
+        SettingContents_gameObject.SetActive(false);
+        CreateGameContents_gameObject.SetActive(false);
+        EnterCodeContents_gameObject.SetActive(false);
+        FindGame_gameObject.SetActive(false);
     }
 }
