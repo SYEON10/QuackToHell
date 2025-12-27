@@ -11,6 +11,13 @@ public class TrialManager : NetworkBehaviour
     private GameObject convocationOfTrialPanel;
     private GameObject corpseTextObject;
     private Image reporterImage;
+    private ulong reporterClientId; // 해당 정보는 서버에만 저장됨
+
+    public ulong ReporterClientId
+    {
+        get => reporterClientId;
+    }
+
     //TODO:  하드코딩 개선
 
     private string reporterPlayerText = "Not_Set";
@@ -81,8 +88,9 @@ public class TrialManager : NetworkBehaviour
             Debug.LogWarning($"Server: Trial already in progress, ignoring request from {reporterClientId}");
             return;
         }
-        
-        
+
+        this.reporterClientId = reporterClientId;
+
         // 4. 재판 시작 (서버가 권위적 정보로 처리)
         TrialResultClientRpc(reporterClientId);
     }
