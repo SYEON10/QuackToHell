@@ -3,33 +3,28 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Collider2D))]
 public class MinigameController : MonoBehaviour
 {
-
     [SerializeField] private GameObject existingUiInstance;
 
     [Header("Binding (Designer)")]
-    [Tooltip("클라이언트(로컬) 화면에만 뜨는 UI 프리팹")]
     [SerializeField] private GameObject clientUiPrefab;
-
-    [Tooltip("true: 메인 Canvas 아래로 붙임 / false: 지정한 Transform 또는 월드에 생성")]
     [SerializeField] private bool attachUiToMainCanvas = true;
-
-    [Tooltip("UI 부모를 직접 지정하고 싶을 때 사용 (비우면 자동 탐색)")]
     [SerializeField] private Transform uiRootOverride;
 
     [Header("Interaction")]
-    [Tooltip("상호작용 반경(미터). 1m = 1 Unity 유닛")]
     [Min(0.1f)] public float interactionRadius = 1f;
 
-    [Tooltip("상호작용 키(기본: Space)")]
+    [Tooltip("권장: false. (오브젝트가 스스로 입력/범위감지 하지 않게 함)")]
+    [SerializeField] private bool enableSelfInput = false;
+
+    [Tooltip("legacy self-input key")]
     public KeyCode interactionKey = KeyCode.Space;
 
-    [Header("Mouse Click")]
+    [Header("Mouse Click (legacy self-input)")]
     [SerializeField] private bool allowMouseClick = true;
     [SerializeField] private bool ignoreUIRaycastBlockers = false;
 
@@ -37,34 +32,31 @@ public class MinigameController : MonoBehaviour
     [SerializeField] private int rewardGold = 100;
     [SerializeField] private GameObject rewardUIRoot;
     [SerializeField] private TextMeshProUGUI rewardUITMP;
-    [SerializeField] private float rewardUIDuration = 2f;          // 요구: 2초
+    [SerializeField] private float rewardUIDuration = 2f;
 
     // 쿨다운
     [SerializeField] private float cooldownSeconds = 10f;
 
-    [SerializeField] private GameObject cooldownToastRoot; // 씬의 CooldownToast (비활성)
+    [SerializeField] private GameObject cooldownToastRoot;
     [SerializeField] private TextMeshProUGUI cooldownToastTMP;
 
     [SerializeField] private float toastFadeIn = 0.15f;
     [SerializeField] private float toastHold = 1.2f;
     [SerializeField] private float toastFadeOut = 0.25f;
 
-    [Tooltip("로컬 플레이어 Transform(비우면 자동 탐색: Netcode Local Player → tag==\"Player\" → Camera.main)")]
+    [Tooltip("로컬 플레이어 Transform(비우면 자동 탐색) - self-input일 때만 사용")]
     [SerializeField] private Transform overrideLocalPlayer;
 
     [Header("Highlight (Sprite Outline Clone)")]
-    [Tooltip("테두리로 처리할 대상 Renderer들(비우면 자식에서 자동 수집)")]
     [SerializeField] private List<Renderer> highlightRenderers = new();
-
-    [SerializeField, Min(1.0f)] private float outlineScale = 1.08f;   // 복제본 확대 배율
-    [SerializeField] private int outlineSortingOffset = -500;            // 정렬순서 오프셋
-    [SerializeField] private float outlineAlpha = 1f;                  // 노란색 불투명도(0~1)
+    [SerializeField, Min(1.0f)] private float outlineScale = 1.08f;
+    [SerializeField] private int outlineSortingOffset = -500;
+    [SerializeField] private float outlineAlpha = 1f;
 
     [SerializeField] private Renderer[] dimTargets;
-    [SerializeField] private float dimAmount = 0.35f; // 0(그대로)~1(완전 검은색) 사이, 0.35~0.5 추천
+    [SerializeField] private float dimAmount = 0.35f;
 
     [Header("UX")]
-    [Tooltip("UI가 떠 있는 동안 ESC로 닫기 허용")]
     [SerializeField] private bool closeWithEscape = true;
 
     // state
@@ -79,15 +71,11 @@ public class MinigameController : MonoBehaviour
     private CanvasGroup _rewardUICg;
     private bool _rewardGrantedThisRun;
 
-    // 밝기 복원용 원본 색상 캐시
     private Color[] _originalColors;
     private bool _dimmed;
 
-
-    // Unity
     private void Awake()
     {
-        // 하이라이트 대상 자동 수집(없을 때만)
         if (highlightRenderers == null || highlightRenderers.Count == 0)
         {
             Renderer[] found = GetComponentsInChildren<Renderer>(includeInactive: true);
@@ -96,25 +84,52 @@ public class MinigameController : MonoBehaviour
         DisableHighlight();
     }
 
+    // =========================
+    // Player가 쓰는 public API
+    // =========================
+    public bool CanInteract(Transform player)
+    {
+        if (player == null) return false;
+        return Vector3.Distance(player.position, transform.position) <= interactionRadius;
+    }
+
+    public bool TryOpenFromPlayer(Transform player)
+    {
+        if (!CanInteract(player)) return false;
+
+        if (IsLocalOnCooldown(out var remain))
+        {
+            ShowCooldownPopup(remain);
+            return false;
+        }
+
+        OpenUi();
+        return true;
+    }
+
+    public void TryCloseFromPlayer()
+    {
+        CloseUi();
+    }
+
+    // =========================
+    // (옵션) 기존 self input 유지하고 싶을 때만
+    // =========================
     private void Update()
     {
+        if (!enableSelfInput) return;
+
         UpdateLocalEligibilityAndHighlight();
 
         if (_isLocalEligible && Input.GetKeyDown(interactionKey))
-            if (IsLocalOnCooldown(out var remain))
-            {
-                ShowCooldownPopup(remain);
-            }
-            else
-            {
-                OpenUi();
-            }
+        {
+            if (IsLocalOnCooldown(out var remain)) ShowCooldownPopup(remain);
+            else OpenUi();
+        }
 
         if (allowMouseClick && _isLocalEligible && Input.GetMouseButtonUp(0))
         {
-            // UI가 가리는 경우 막을지 선택
-            if (!ignoreUIRaycastBlockers && IsPointerOverUI())
-                return;
+            if (!ignoreUIRaycastBlockers && IsPointerOverUI()) return;
 
             var cam = Camera.main;
             if (cam != null)
@@ -122,20 +137,16 @@ public class MinigameController : MonoBehaviour
                 Vector3 wp3 = cam.ScreenToWorldPoint(Input.mousePosition);
                 Vector2 wp = new Vector2(wp3.x, wp3.y);
 
-                // 이 포인트에 겹치는 2D 콜라이더 전부 확인
                 var hits = Physics2D.OverlapPointAll(wp);
                 for (int i = 0; i < hits.Length; i++)
                 {
                     var h = hits[i];
                     if (!h) continue;
 
-                    // 이 미니게임 오브젝트 자신(또는 자식)인지 확인
                     if (h.transform == transform || h.transform.IsChildOf(transform))
                     {
-                        if (IsLocalOnCooldown(out var remain))
-                            ShowCooldownPopup(remain);
-                        else
-                            OpenUi();
+                        if (IsLocalOnCooldown(out var remain)) ShowCooldownPopup(remain);
+                        else OpenUi();
                         break;
                     }
                 }
@@ -146,39 +157,34 @@ public class MinigameController : MonoBehaviour
             CloseUi();
     }
 
-    // 2D 클릭
-    private void OnMouseUpAsButton()
+    private void LateUpdate()
     {
-        if (_isLocalEligible && !IsPointerOverUI())
-            OpenUi();
+        if (_localCooldownUntil > 0f && Time.unscaledTime >= _localCooldownUntil)
+        {
+            _localCooldownUntil = 0f;
+            ApplyDim(false);
+        }
     }
 
     private void OnDestroy()
     {
         DisableHighlight();
-        // 생성했던 복제본 정리
         for (int i = 0; i < _outlineClones.Count; i++)
-        {
             if (_outlineClones[i]) Destroy(_outlineClones[i]);
-        }
         _outlineClones.Clear();
 
         if (_spawnedLocalUi)
         {
             if (_spawnedFromPrefab) Destroy(_spawnedLocalUi);
-            else _spawnedLocalUi.SetActive(false); // 씬 원본은 보존
+            else _spawnedLocalUi.SetActive(false);
         }
     }
 
-    // === Eligibility / Highlight ===
+    // === Eligibility / Highlight (self-input일 때만 자동 갱신) ===
     private void UpdateLocalEligibilityAndHighlight()
     {
         var player = ResolveLocalPlayer();
-        if (player == null)
-        {
-            SetEligible(false);
-            return;
-        }
+        if (player == null) { SetEligible(false); return; }
 
         float dist = Vector3.Distance(player.position, transform.position);
         SetEligible(dist <= interactionRadius);
@@ -186,35 +192,21 @@ public class MinigameController : MonoBehaviour
 
     private Transform ResolveLocalPlayer()
     {
-        // 인스펙터에서 직접 지정해 둔 경우 그대로 사용
         if (overrideLocalPlayer) return overrideLocalPlayer;
 
-        // Netcode가 켜져 있을 때만 네트워크 경로로 찾기
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
         {
             var nm = NetworkManager.Singleton;
-
             var localPlayerObj = nm.SpawnManager.GetLocalPlayerObject();
-            if (localPlayerObj != null)
-                return localPlayerObj.transform;
+            if (localPlayerObj != null) return localPlayerObj.transform;
 
             foreach (var netObj in FindObjectsOfType<NetworkObject>())
-            {
-                if (netObj != null &&
-                    netObj.CompareTag("Player") &&
-                    netObj.IsOwner)
-                {
+                if (netObj && netObj.CompareTag("Player") && netObj.IsOwner)
                     return netObj.transform;
-                }
-            }
-
-            Debug.LogWarning("[MinigameController] 로컬 플레이어를 Netcode로 찾지 못했습니다.");
         }
 
-        // 여기까지 왔다는 건 Netcode 안 쓰는 싱글 테스트이거나, 아직 네트워크가 시작 안 된 상태 등
         var tagged = GameObject.FindWithTag("Player");
         if (tagged) return tagged.transform;
-
         return Camera.main ? Camera.main.transform : null;
     }
 
@@ -234,11 +226,7 @@ public class MinigameController : MonoBehaviour
             if (sr == null || sr.sprite == null) continue;
 
             var existing = sr.transform.Find("OutlineClone");
-            if (existing != null)
-            {
-                existing.gameObject.SetActive(true);
-                continue;
-            }
+            if (existing != null) { existing.gameObject.SetActive(true); continue; }
 
             var go = new GameObject("OutlineClone");
             go.transform.SetParent(sr.transform, false);
@@ -254,9 +242,8 @@ public class MinigameController : MonoBehaviour
             sr2.sortingLayerID = sr.sortingLayerID;
             sr2.sortingOrder = sr.sortingOrder + outlineSortingOffset;
 
-            // 머티리얼 코드로 생성
             Material mat = new Material(Shader.Find("Unlit/Color"));
-            mat.color = Color.yellow; // 항상 진한 노란색
+            mat.color = Color.yellow;
             sr2.material = mat;
 
             _outlineClones.Add(go);
@@ -265,25 +252,8 @@ public class MinigameController : MonoBehaviour
 
     private void DisableHighlight()
     {
-        // 복제본만 숨김
         for (int i = 0; i < _outlineClones.Count; i++)
-        {
             if (_outlineClones[i]) _outlineClones[i].SetActive(false);
-        }
-
-        // 혹시 Emission 머티리얼을 함께 쓰는 경우가 있을 수 있어 원복도 시도(무시 가능)
-        foreach (var r in highlightRenderers)
-        {
-            if (!r) continue;
-            var mats = r.materials;
-            for (int i = 0; i < mats.Length; i++)
-            {
-                var m = mats[i];
-                if (!m) continue;
-                if (m.IsKeywordEnabled("_EMISSION"))
-                    m.DisableKeyword("_EMISSION");
-            }
-        }
     }
 
     // 성공 시 호출
@@ -291,56 +261,38 @@ public class MinigameController : MonoBehaviour
     {
         if (_rewardGrantedThisRun) return;
         _rewardGrantedThisRun = true;
-
-        // 서버에 보상(골드) 지급을 요청
         GrantGoldServerRpc(rewardGold);
     }
 
-    // 보상 지급(골드) + 해당 클라에 팝업 알림
-    [Unity.Netcode.ServerRpc(RequireOwnership = false)]
-    private void GrantGoldServerRpc(int amount, Unity.Netcode.ServerRpcParams rpcParams = default)
+    [ServerRpc(RequireOwnership = false)]
+    private void GrantGoldServerRpc(int amount, ServerRpcParams rpcParams = default)
     {
         var senderId = rpcParams.Receive.SenderClientId;
 
-        // PlayerHelperManager 싱글톤 접근
         var model = PlayerHelperManager.Instance.GetPlayerModelByClientId(senderId);
-        if (model == null)
-        {
-            UnityEngine.Debug.LogWarning($"Player model not found for client {senderId}");
-            return;
-        }
+        if (model == null) return;
 
-        // 현재 골드 읽고 누적값 계산
         int current = PlayerHelperManager.Instance.GetPlayerGoldByClientId(senderId);
         int newGold = current + amount;
 
         model.SetGoldServerRpc(newGold);
 
-        // 해당 클라에만 보상 팝업
-        var target = new Unity.Netcode.ClientRpcParams
+        var target = new ClientRpcParams
         {
-            Send = new Unity.Netcode.ClientRpcSendParams
-            {
-                TargetClientIds = new ulong[] { senderId }
-            }
+            Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { senderId } }
         };
         ShowRewardPopupClientRpc(amount, target);
     }
 
-    // 클라이언트에서(해당 클라만) 2초 팝업
-    [Unity.Netcode.ClientRpc]
-    private void ShowRewardPopupClientRpc(int amount, Unity.Netcode.ClientRpcParams target = default)
+    [ClientRpc]
+    private void ShowRewardPopupClientRpc(int amount, ClientRpcParams target = default)
     {
         ShowRewardPopup(amount);
     }
 
     private void ShowRewardPopup(int gold)
     {
-        if (rewardUIRoot == null)
-        {
-            Debug.Log($"[MG] Reward +{gold} (RewardUI not assigned)");
-            return;
-        }
+        if (rewardUIRoot == null) return;
 
         if (_rewardUICg == null)
             _rewardUICg = rewardUIRoot.GetComponent<CanvasGroup>() ?? rewardUIRoot.AddComponent<CanvasGroup>();
@@ -348,14 +300,10 @@ public class MinigameController : MonoBehaviour
         _rewardUICg.interactable = false;
         _rewardUICg.blocksRaycasts = false;
 
-        // 텍스트 자동 탐색
         if (rewardUITMP == null)
-        {
             rewardUITMP = rewardUIRoot.GetComponentInChildren<TextMeshProUGUI>(true);
-        }
 
-        string msg = $"미니게임 클리어! {gold}골드 획득";
-        if (rewardUITMP != null) rewardUITMP.text = msg;
+        if (rewardUITMP != null) rewardUITMP.text = $"미니게임 클리어! {gold}골드 획득";
 
         if (_rewardUICo != null) StopCoroutine(_rewardUICo);
         _rewardUICo = StartCoroutine(CoShowRewardUI());
@@ -389,26 +337,12 @@ public class MinigameController : MonoBehaviour
         ApplyDim(true);
     }
 
-    // 매 프레임 쿨타임 끝났는지 확인해서 자동 복구
-    private void LateUpdate()
-    {
-        if (_localCooldownUntil > 0f && Time.unscaledTime >= _localCooldownUntil)
-        {
-            _localCooldownUntil = 0f;
-            ApplyDim(false);
-        }
-    }
-
-    // 명도 낮추기 / 복원
     private void ApplyDim(bool on)
     {
-        // 대상 없으면 자동 수집(한 번만)
         if (dimTargets == null || dimTargets.Length == 0)
             dimTargets = GetComponentsInChildren<Renderer>(true);
-
         if (dimTargets == null || dimTargets.Length == 0) return;
 
-        // 원본 색상 캐시는 처음 어둡게 만들 때 확보
         if (_originalColors == null || _originalColors.Length != dimTargets.Length)
             _originalColors = new Color[dimTargets.Length];
 
@@ -417,51 +351,37 @@ public class MinigameController : MonoBehaviour
             var r = dimTargets[i];
             if (!r) continue;
 
-            // 개별 머티리얼 인스턴스 사용(공유 머티리얼 색 변조 방지)
             var mat = r.material;
             if (!mat.HasProperty("_Color")) continue;
 
             if (on)
             {
-                // 아직 캐시 안 했으면 저장
-                if (!_dimmed)
-                    _originalColors[i] = mat.color;
+                if (!_dimmed) _originalColors[i] = mat.color;
 
-                float k = Mathf.Clamp01(1f - dimAmount); // 0.35 → 약 65% 밝기
+                float k = Mathf.Clamp01(1f - dimAmount);
                 var c0 = (_dimmed ? _originalColors[i] : mat.color);
                 mat.color = new Color(c0.r * k, c0.g * k, c0.b * k, c0.a);
             }
             else
             {
-                // 복원
-                if (_originalColors != null)
-                    mat.color = _originalColors[i];
+                mat.color = _originalColors[i];
             }
         }
 
         _dimmed = on;
     }
 
-    // 쿨타임 팝업
     private void ShowCooldownPopup(int remainSec)
     {
-        if (cooldownToastRoot == null)
-        {
-            Debug.Log($"[MG] Cooldown: {remainSec}s (toast root not assigned)");
-            return;
-        }
+        if (cooldownToastRoot == null) return;
 
-        // 초기 캐시
-        if (_toastCg == null) _toastCg = cooldownToastRoot.GetComponent<CanvasGroup>();
-        if (_toastCg == null) _toastCg = cooldownToastRoot.AddComponent<CanvasGroup>();
+        if (_toastCg == null) _toastCg = cooldownToastRoot.GetComponent<CanvasGroup>() ?? cooldownToastRoot.AddComponent<CanvasGroup>();
         _toastCg.interactable = false;
         _toastCg.blocksRaycasts = false;
 
-        // 텍스트 세팅
-        string msg = $"미니게임을 플레이 할 수 없습니다.\n미니게임 쿨타임이 {remainSec}초 남았습니다!";
-        if (cooldownToastTMP != null) cooldownToastTMP.text = msg;
+        if (cooldownToastTMP != null)
+            cooldownToastTMP.text = $"미니게임을 플레이 할 수 없습니다.\n미니게임 쿨타임이 {remainSec}초 남았습니다!";
 
-        // 중복 재생 시 이전 코루틴 중단
         if (_toastCo != null) StopCoroutine(_toastCo);
         _toastCo = StartCoroutine(CoShowCooldownToast());
     }
@@ -471,7 +391,6 @@ public class MinigameController : MonoBehaviour
         cooldownToastRoot.SetActive(true);
         _toastCg.alpha = 0f;
 
-        // Fade In
         float t = 0f;
         while (t < toastFadeIn)
         {
@@ -481,10 +400,8 @@ public class MinigameController : MonoBehaviour
         }
         _toastCg.alpha = 1f;
 
-        // Hold
         yield return new WaitForSecondsRealtime(toastHold);
 
-        // Fade Out
         t = 0f;
         while (t < toastFadeOut)
         {
@@ -500,10 +417,8 @@ public class MinigameController : MonoBehaviour
     // === UI Open/Close ===
     public void OpenUi()
     {
-        // 이미 열려 있으면 무시
         if (_spawnedLocalUi && _spawnedLocalUi.activeSelf) return;
 
-        // 1) 씬에 있는 원본 우선 사용
         if (existingUiInstance != null)
         {
             _spawnedLocalUi = existingUiInstance;
@@ -516,33 +431,23 @@ public class MinigameController : MonoBehaviour
             if (playable2 != null) playable2.gameObject.SetActive(true);
 
             var rt2 = _spawnedLocalUi.GetComponent<RectTransform>();
-            if (rt2 != null) rt2.SetAsLastSibling(); // 최상단으로
+            if (rt2 != null) rt2.SetAsLastSibling();
         }
         else
         {
-            // 2) 프리팹 생성
-            if (!clientUiPrefab)
-            {
-                Debug.LogError("[MG] clientUiPrefab is NULL");
-                return;
-            }
+            if (!clientUiPrefab) { Debug.LogError("[MG] clientUiPrefab is NULL"); return; }
 
             Transform parent = uiRootOverride;
             if (parent == null && attachUiToMainCanvas)
             {
                 var canvas = FindMainCanvas();
-                if (canvas == null)
-                {
-                    Debug.LogError("[MG] No Canvas found while attachUiToMainCanvas=ON");
-                    return;
-                }
+                if (canvas == null) { Debug.LogError("[MG] No Canvas found"); return; }
                 parent = canvas.transform;
             }
 
             _spawnedLocalUi = Instantiate(clientUiPrefab, parent);
             _spawnedFromPrefab = true;
 
-            // 캔버스 하위면 전체 스트레치
             var rt = _spawnedLocalUi.GetComponent<RectTransform>();
             if (rt != null && parent != null && parent.GetComponentInParent<Canvas>())
             {
@@ -555,7 +460,6 @@ public class MinigameController : MonoBehaviour
             _spawnedLocalUi.SetActive(true);
         }
 
-        // 3) 자동 닫기 이벤트 연결 (클리어/취소 → CloseUi)
         {
             var g1 = _spawnedLocalUi.GetComponentInChildren<AreaClickGame>(true);
             if (g1 != null)
@@ -571,6 +475,7 @@ public class MinigameController : MonoBehaviour
                 g1.OnCleared.RemoveListener(BeginLocalCooldown);
                 g1.OnCleared.AddListener(BeginLocalCooldown);
             }
+
             var g2 = _spawnedLocalUi.GetComponentInChildren<ClickOncePointsGame>(true);
             if (g2 != null)
             {
@@ -588,26 +493,18 @@ public class MinigameController : MonoBehaviour
 
             _rewardGrantedThisRun = false;
         }
-
-        Debug.Log("UI Opened");
     }
+
     public void CloseUi()
     {
         if (_spawnedLocalUi == null) return;
 
-        if (_spawnedFromPrefab)
-        {
-            Destroy(_spawnedLocalUi);
-        }
-        else
-        {
-            _spawnedLocalUi.SetActive(false); // 씬 원본은 파괴 X
-        }
+        if (_spawnedFromPrefab) Destroy(_spawnedLocalUi);
+        else _spawnedLocalUi.SetActive(false);
 
         _spawnedLocalUi = null;
     }
 
-    // === Helpers ===
     private Canvas FindMainCanvas()
     {
         var tagged = GameObject.FindWithTag("MainCanvas");

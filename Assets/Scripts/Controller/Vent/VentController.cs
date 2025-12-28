@@ -14,7 +14,10 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     [SerializeField] private Animator animator;
 
     [Header("Interaction")]
-    [SerializeField] private bool enableSpacebar = true;
+    [Tooltip("권장: false. (Vent 오브젝트가 입력/클릭으로 스스로 토글하지 않게 함)")]
+    [SerializeField] private bool enableSelfInput = false;
+
+    [SerializeField] private bool enableSpacebar = true; // legacy (self input 켜면만 사용)
     [SerializeField, Range(0.5f, 5f)] private float interactionRadius = 1f;
     [SerializeField, Range(0f, 2f)] private float cooldownSec = 0.5f;
     [SerializeField] private Vector2 exitOffset = new(0f, 0.5f);
@@ -23,16 +26,15 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     [SerializeField] private List<VentController> linkedVents = new();
 
     [Header("Arrow Placement")]
-    [SerializeField, Min(0.1f)] private float arrowDistanceFromSource = 1.1f; // A에서 떨어질 절대 거리
-    [SerializeField, Min(0.1f)] private float keepAwayFromTarget = 0.4f;      // B로부터 최소 이격
+    [SerializeField, Min(0.1f)] private float arrowDistanceFromSource = 1.1f;
+    [SerializeField, Min(0.1f)] private float keepAwayFromTarget = 0.4f;
     [SerializeField, Range(-0.5f, 0.5f)] private float arrowNormalOffset = 0.0f;
 
     [Header("Player Handling While Inside (Optional Local Only)")]
-    [Tooltip("플레이어 이동/입력 스크립트 등 로컬에서만 비활성화하려면 VentInvisibility 대신 여기에 넣어도 됨")]
     [SerializeField] private List<Behaviour> disableWhileInside = new();
     [SerializeField] private bool freezeRigidbody2D = true;
 
-    // 서버 권한 상태 
+    // 서버 권한 상태
     private readonly NetworkVariable<bool> _occupied =
         new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -41,121 +43,112 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
     private double _lastExitServerTime;
 
-    // 로컬 캐시/화살표
     private Transform _tr;
-    [SerializeField] private GameObject arrowPrefab; // 반드시 연결
+    [SerializeField] private GameObject arrowPrefab;
     private readonly List<GameObject> _spawnedArrows = new();
 
-    // 이동 직후 벤트 클릭을 잠깐 무시하기 위한 로컬 억제 타이머
     private static float _localClickSuppressUntil = 0f;
-
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-    }
-
 
     void Awake()
     {
         _tr = transform;
 
-        // 넘버링
         if (string.IsNullOrEmpty(ventId))
             ventId = System.Guid.NewGuid().ToString("N").Substring(0, 6);
         name = $"Vent_{ventId}";
     }
 
+    // =========================
+    // IInteractable (Player가 넘겨주는 player를 사용!)
+    // =========================
     public bool CanInteract(GameObject player)
     {
-        if (_occupied.Value || player == null) return false;
+        if (player == null) return false;
+
+        // 비점유면 누구나 가능, 점유면 "본인 점유자"만 탈출 가능
         float dist = Vector3.Distance(player.transform.position, _tr.position);
-        return dist <= interactionRadius;
+        if (!_occupied.Value) return dist <= interactionRadius;
+
+        // 점유 중이면 "내가 점유자"이고, 반경 내(원하면 반경 체크 제거 가능)
+        var pNo = player.GetComponent<NetworkObject>();
+        if (pNo == null) return false;
+        bool iAmOccupant = (_occupantNetId.Value != 0UL) && (_occupantNetId.Value == pNo.NetworkObjectId);
+        return iAmOccupant && dist <= interactionRadius;
     }
 
     public void Interact(GameObject player)
     {
-        RequestToggleEnterExit();
+        // 이제 player를 무시하지 않음
+        RequestToggleFromPlayer(player);
     }
 
-    // Vent 본체 클릭 → 탑승/탈출 토글 요청 (키 입력 제거)
+    // =========================
+    // Player가 호출하는 Public API
+    // =========================
+    public void RequestToggleFromPlayer(GameObject player)
+    {
+        if (!IsClient || player == null) return;
+        if (!IsSpawned) { Debug.LogWarning($"[Vent/{name}] Not spawned yet"); return; }
+
+        var pNo = player.GetComponent<NetworkObject>();
+        if (pNo == null) { Debug.LogWarning($"[Vent/{name}] player has no NetworkObject"); return; }
+
+        ToggleEnterExitServerRpc(pNo.NetworkObjectId);
+    }
+
+    public void RequestEnterFromPlayer(GameObject player)
+    {
+        if (!IsClient || player == null) return;
+
+        // 이미 점유 중이면 enter 요청 무시
+        if (_occupied.Value) return;
+
+        RequestToggleFromPlayer(player);
+    }
+
+    public void RequestExitFromPlayer(GameObject player)
+    {
+        if (!IsClient || player == null) return;
+
+        var pNo = player.GetComponent<NetworkObject>();
+        if (pNo == null) return;
+
+        bool iAmOccupant = (_occupantNetId.Value != 0UL) && (_occupantNetId.Value == pNo.NetworkObjectId);
+        if (!_occupied.Value || !iAmOccupant) return;
+
+        RequestToggleFromPlayer(player);
+    }
+
+    // =========================
+    // Vent 자체 입력/클릭: 기본 OFF 권장
+    // =========================
     void OnMouseUpAsButton()
     {
+        if (!enableSelfInput) return;
         if (Time.time < _localClickSuppressUntil) return;
 
         var nm = NetworkManager.Singleton;
-
         var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
-        if (localPlayerObj == null)
-        {
-            // Fallback: 내 소유 Player 찾기
-            if (nm != null)
-            {
-                foreach (var no in nm.SpawnManager.SpawnedObjectsList)
-                {
-                    if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
-                    {
-                        localPlayerObj = no;
-                        break;
-                    }
-                }
-            }
-        }
         if (localPlayerObj == null) return;
 
-        bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
-                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
-
-        if (!_occupied.Value)
-        {
-            // 비점유 상태 → 진입 시도
-            RequestToggleEnterExit();
-        }
-        else if (iAmOccupant)
-        {
-            // 점유 상태 & 내가 탄 상태 → 탈출 시도
-            RequestToggleEnterExit();
-        }
+        RequestToggleFromPlayer(localPlayerObj.gameObject);
     }
+
     void Update()
     {
+        if (!enableSelfInput) return;
         if (!IsClient || !enableSpacebar) return;
 
-        // 네트워크 준비 전엔 아무 것도 안 함
-        var nm = Unity.Netcode.NetworkManager.Singleton;
-        if (nm == null || !nm.IsClient) return;
+        var nm = NetworkManager.Singleton;
+        var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
+        if (localPlayerObj == null) return;
 
-        // 로컬 플레이어 오브젝트 안전하게 얻기
-        var localPlayerObj = nm.SpawnManager?.GetLocalPlayerObject();
-        if (localPlayerObj == null)
+        // self-input도 player 기반으로만 동작하게 통일
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            foreach (var no in nm.SpawnManager.SpawnedObjectsList)
-            {
-                if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
-                            {
-                    localPlayerObj = no;
-                                break;
-                            }
-            }
-            if (localPlayerObj == null) return;
-        }
-
-        bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
-                           (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
-
-        if (!_occupied.Value)
-        {
-            float dist = Vector3.Distance(localPlayerObj.transform.position, _tr.position);
-            if (dist <= interactionRadius && Input.GetKeyDown(KeyCode.Space))
-            {
-                RequestToggleEnterExit();
-            }
-        }
-        else
-        {
-            if (iAmOccupant && Input.GetKeyDown(KeyCode.Space))
-            {
-                RequestToggleEnterExit();
-            }
+            // "근처 or 점유자"만 토글
+            if (CanInteract(localPlayerObj.gameObject))
+                RequestToggleFromPlayer(localPlayerObj.gameObject);
         }
     }
 
@@ -165,62 +158,29 @@ public sealed class VentController : NetworkBehaviour, IInteractable
 
         var nm = NetworkManager.Singleton;
         var localPlayerObj = nm?.SpawnManager?.GetLocalPlayerObject();
-        if (localPlayerObj == null)
-        {
-            if (nm != null)
-            {
-                foreach (var no in nm.SpawnManager.SpawnedObjectsList)
-                {
-                    if (no.OwnerClientId == nm.LocalClientId && no.CompareTag("Player"))
-                    {
-                        localPlayerObj = no;
-                        break;
-                    }
-                }
-            }
-        }
         if (localPlayerObj == null) return;
 
         bool iAmOccupant = (_occupantNetId.Value != 0UL) &&
                            (_occupantNetId.Value == localPlayerObj.NetworkObjectId);
 
         if (_occupied.Value && iAmOccupant)
-        {
             localPlayerObj.transform.position = _tr.position;
-        }
     }
 
-    public void RequestToggleEnterExit()
-    {
-        if (!IsClient) return;
-        if (!IsSpawned) { Debug.LogWarning($"[Vent/{name}] Not spawned yet"); return; }
-        ToggleEnterExitServerRpc();
-    }
-
+    // =========================
+    // ServerRpc: "sender의 PlayerObject를 찾는 방식" 제거
+    //     -> Player가 넘긴 playerNetId를 쓰되, sender가 소유자인지 검증
+    // =========================
     [ServerRpc(RequireOwnership = false)]
-    private void ToggleEnterExitServerRpc(ServerRpcParams rpc = default)
+    private void ToggleEnterExitServerRpc(ulong playerNetId, ServerRpcParams rpc = default)
     {
+        var senderClientId = rpc.Receive.SenderClientId;
 
-        Debug.Log($"[Server] ToggleEnterExit from {rpc.Receive.SenderClientId}");
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetId, out var playerObj))
+            return;
 
-        var sender = rpc.Receive.SenderClientId;
-        var playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
-        if (playerObj == null)
-        {
-            foreach (var no in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
-            {
-                if (no != null && no.OwnerClientId == sender && no.gameObject.CompareTag("Player"))
-                            {
-                    playerObj = no;
-                                break;
-                            }
-                    }
-                if (playerObj == null)
-                    {
-                Debug.LogWarning($"[Server] No PlayerObject for client {sender}");
-                        return;
-            }
-        }
+        // 보안: sender가 자기 플레이어만 조작하도록
+        if (playerObj.OwnerClientId != senderClientId) return;
 
         if (!_occupied.Value)
         {
@@ -233,29 +193,25 @@ public sealed class VentController : NetworkBehaviour, IInteractable
             TeleportPlayerServer(playerObj, _tr.position);
             SetPlayerHiddenClientRpc(_occupantNetId.Value, true);
 
-            // 탑승자 본인에게만 화살표 표시
-            SpawnArrowsClientRpc(NetworkObjectId, BuildTargetIds(), TargetClient(sender));
-
+            SpawnArrowsClientRpc(NetworkObjectId, BuildTargetIds(), TargetClient(senderClientId));
             PlayEnterAnimation();
         }
         else
         {
-            // 점유자만 탈출 가능
             if (_occupantNetId.Value != playerObj.NetworkObjectId) return;
 
             _occupied.Value = false;
             _lastExitServerTime = NetworkManager.Singleton.ServerTime.Time;
 
             SetPlayerHiddenClientRpc(_occupantNetId.Value, false);
-            DespawnArrowsClientRpc(TargetClient(sender));
+            DespawnArrowsClientRpc(TargetClient(senderClientId));
 
-            // 탈출 오프셋 위치로
             playerObj.transform.position = _tr.position + (Vector3)exitOffset;
-
             PlayExitAnimation();
         }
     }
 
+    // (기존) 벤트간 이동은 occupant & sender로 검증하므로 유지
     public void RequestMoveTo(VentController target)
     {
         if (!IsClient || target == null) return;
@@ -269,7 +225,6 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     {
         var sender = rpc.Receive.SenderClientId;
 
-        // 1) PlayerObject 확보 (fallback 포함)
         var playerObj = NetworkManager.Singleton.ConnectedClients[sender].PlayerObject;
         if (playerObj == null)
         {
@@ -281,48 +236,31 @@ public sealed class VentController : NetworkBehaviour, IInteractable
                     break;
                 }
             }
-            if (playerObj == null)
-            {
-                Debug.LogWarning($"[Server] MoveTo: No PlayerObject for client {sender}");
-                return;
-            }
+            if (playerObj == null) return;
         }
 
-        // 2) 현재 벤트의 점유자만 이동 가능
-        if (_occupantNetId.Value != playerObj.NetworkObjectId)
-        {
-            Debug.Log($"[Server] MoveTo: not occupant (occ={_occupantNetId.Value}, me={playerObj.NetworkObjectId})");
-            return;
-        }
+        if (_occupantNetId.Value != playerObj.NetworkObjectId) return;
 
-        // 3) 타겟 벤트 조회 (out 변수도 다른 이름 사용)
         if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetVentNetId, out var targetNetObj)) return;
         var targetVent = targetNetObj.GetComponent<VentController>();
         if (targetVent == null) return;
 
-        // 4) 점유 상태 A→B 이전
         _occupied.Value = false;
         targetVent._occupied.Value = true;
         targetVent._occupantNetId.Value = playerObj.NetworkObjectId;
 
-        // 5) 플레이어 위치를 B로 이동
         TeleportPlayerServer(playerObj, targetVent.transform.position);
 
-        // 6) 탑승자 본인에게만: A의 화살표 제거 → B의 화살표 생성
         var onlySender = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } };
         DespawnArrowsClientRpc(onlySender);
         targetVent.SpawnArrowsClientRpc(targetVent.NetworkObjectId, targetVent.BuildTargetIds(), onlySender);
-
-        Debug.Log($"[Server] MoveTo: {name} -> {targetVent.name} by client {sender}");
     }
 
-    // 서버 권위 이동 (NetworkTransform 사용 권장)
     private void TeleportPlayerServer(NetworkObject playerObj, Vector3 pos)
     {
         playerObj.transform.position = pos;
     }
 
-    // 가시성 브로드캐스트
     [ClientRpc]
     private void SetPlayerHiddenClientRpc(ulong playerNetId, bool hidden)
     {
@@ -335,26 +273,11 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         {
             var ownerClientId = networkObject.OwnerClientId;
             var playerView = PlayerHelperManager.Instance?.GetPlayerViewlByClientId(ownerClientId);
-            if (playerView != null)
-            {
-                // hidden = true(벤트 안) → 닉네임 끔(false)
-                // hidden = false(벤트 밖) → 닉네임 켬(true)
-                playerView.SetNicknameVisibility(!hidden);
-            }
-#if UNITY_EDITOR
-            else
-            {
-                Debug.LogWarning($"[Vent] PlayerPresenter not found for client {ownerClientId}");
-            }
-#endif
+            if (playerView != null) playerView.SetNicknameVisibility(!hidden);
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[Vent] OnOffNickname failed: {e.Message}");
-        }
+        catch { }
     }
 
-    // 화살표
     [ClientRpc]
     private void SpawnArrowsClientRpc(ulong ventNetId, ulong[] linkedVentIds, ClientRpcParams target = default)
     {
@@ -425,7 +348,6 @@ public sealed class VentController : NetworkBehaviour, IInteractable
         Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } }
     };
 
-    // 애니메이션
     private void PlayEnterAnimation()
     {
         if (animator && enterAnimation) animator.Play(enterAnimation.name);
@@ -439,21 +361,6 @@ public sealed class VentController : NetworkBehaviour, IInteractable
     void OnValidate()
     {
         if (linkedVents.Count > 4) linkedVents.RemoveRange(4, linkedVents.Count - 4);
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(0f, 1f, 1f, 0.35f);
-        Gizmos.DrawWireSphere(transform.position, interactionRadius);
-
-        UnityEditor.Handles.color = Color.cyan;
-        UnityEditor.Handles.Label(transform.position + Vector3.up * 0.6f, $"Vent_{ventId}");
-        Gizmos.color = new Color(1f, 1f, 0f, 0.8f);
-        foreach (var v in linkedVents)
-        {
-            if (!v) continue;
-            Gizmos.DrawLine(transform.position, v.transform.position);
-        }
     }
 #endif
 }
