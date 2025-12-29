@@ -11,9 +11,10 @@ using UnityEngine.PlayerLoop;
 /// </summary>
 public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
 {
-    // UI용 이벤트
-    public event Action<bool, ulong> OnCanKillUIResultReceived;
     public event Action OnKillSuccess;
+    public event Action OnSavotageSuccess;
+    public event Action OnKillCooldownReady;
+    public event Action OnSavotageCooldownReady;
     
     private PlayerPresenter _playerPresenter;
     private PlayerModel _playerModel;
@@ -23,12 +24,15 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     private InputActionMap _commonActionMap;
     
     
-    [SerializeField] private float killCooltimeMax = 20f;
+    private float killCooltimeMax;
     private float killCooltimer = 0f;
     private bool canKill = false;
     
-
+    private float savotageCooltimeMax; 
+    private float savotageCooltimer = 0f;  
+    private bool canSavotage = false;  
     
+
     public void Initialize(PlayerModel playerModel, PlayerPresenter playerPresenter, PlayerInput playerInput)
     {
         _playerModel = playerModel;
@@ -46,18 +50,38 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
         
         if (_commonActionMap != null) _commonActionMap.Enable();
         if (_farmerActionMap != null) _farmerActionMap.Enable();
+
+        killCooltimeMax = LobbyManager.Instance.LobbyData.killCooltime;
+        killCooltimer = 0f;
+        canKill = false;
+        
+            
+        savotageCooltimeMax = LobbyManager.Instance.LobbyData.savotageCooltime; 
+        savotageCooltimer = 0f; 
+        canSavotage = false;  
     }
    
     
     public void Update()
     {
-        // 농장주 전용 업데이트 로직
-        // 예: 특별한 효과, 타이머 등
-        killCooltimer+= Time.deltaTime;
-        if(killCooltimer >= killCooltimeMax)
+        if (!canKill)
         {
-            killCooltimer = 0f;
-            canKill = true;
+            killCooltimer += Time.deltaTime;
+            if (killCooltimer >= killCooltimeMax)
+            {
+                canKill = true;
+                OnKillCooldownReady?.Invoke();
+            }
+        }
+        
+        if (!canSavotage)
+        {
+            savotageCooltimer += Time.deltaTime;
+            if (savotageCooltimer >= savotageCooltimeMax)
+            {
+                canSavotage = true;
+                OnSavotageCooldownReady?.Invoke();
+            }
         }
     }
     
@@ -69,24 +93,58 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
 
     // 1. Can으로 조건검사: ServerRpc
     [ServerRpc(RequireOwnership = false)]
-    public void CanKillServerRpc(ulong targetNetworkObjectId, bool checkForUI = false, ServerRpcParams rpcParams = default)
+    public void CanKillServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default)
     {
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
         
         PlayerModel targetPlayerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(targetNetworkObjectId);
-    
+        if (targetPlayerModel == null)
+        {
+            Debug.LogWarning($"[Kill 실패] 타겟 플레이어를 찾을 수 없습니다. TargetNetworkObjectId: {targetNetworkObjectId}, RequesterClientId: {requesterClientId}");
+            CanKillResultClientRpc(false, targetNetworkObjectId, new ClientRpcParams 
+            { 
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+            });
+            return;
+        }
+        
+        GameObject requesterPlayerView = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(requesterClientId);
+        if (requesterPlayerView == null)
+        {
+            Debug.LogWarning($"[Kill 실패] 요청자 플레이어를 찾을 수 없습니다. RequesterClientId: {requesterClientId}");
+            CanKillResultClientRpc(false, targetNetworkObjectId, new ClientRpcParams 
+            { 
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+            });
+            return;
+        }
+        
+        FarmerStrategy requesterPlayerFarmerStrategy = requesterPlayerView.GetComponent<FarmerStrategy>();
+        if (requesterPlayerFarmerStrategy == null)
+        {
+            Debug.LogWarning($"[Kill 실패] 요청자가 Farmer가 아닙니다. RequesterClientId: {requesterClientId}");
+            CanKillResultClientRpc(false, targetNetworkObjectId, new ClientRpcParams 
+            { 
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+            });
+            return;
+        }
+        
         bool result = false;
     
-        if (targetPlayerModel.GetPlayerJob() == PlayerJob.Farmer)
+        if (targetPlayerModel.GetPlayerJob() != PlayerJob.Animal)
         {
-            result = false;
-        }
-        else if (canKill==false)
-        {
+            Debug.Log($"[Kill 실패] 타겟이 동물이 아닙니다. TargetJob: {targetPlayerModel.GetPlayerJob()}, TargetNetworkObjectId: {targetNetworkObjectId}, RequesterClientId: {requesterClientId}");
             result = false;
         }
         else if (targetPlayerModel.GetPlayerAliveState() != PlayerLivingState.Alive)
         {
+            Debug.Log($"[Kill 실패] 타겟이 살아있지 않습니다. TargetState: {targetPlayerModel.GetPlayerAliveState()}, TargetNetworkObjectId: {targetNetworkObjectId}, RequesterClientId: {requesterClientId}");
+            result = false;
+        }
+        else if (requesterPlayerFarmerStrategy.canKill == false)
+        {
+            Debug.Log($"[Kill 실패] 킬 쿨타임이 아직 진행 중입니다. RequesterClientId: {requesterClientId}");
             result = false;
         }
         else
@@ -94,7 +152,7 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
             result = true;
         }
     
-        CanKillResultClientRpc(result, targetNetworkObjectId, checkForUI, new ClientRpcParams 
+        CanKillResultClientRpc(result, targetNetworkObjectId, new ClientRpcParams 
         { 
             Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
         });
@@ -104,12 +162,9 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
 
     // 2. 결과를 전송: ClientRpc
     [ClientRpc]
-    public void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, bool checkForUI = false, ClientRpcParams rpcParams = default)
+    public void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, ClientRpcParams rpcParams = default)
     {
-        OnCanKillUIResultReceived?.Invoke(canKill, targetNetworkObjectId);
-    
         if (canKill == false) return;
-        if (checkForUI == true) return;
     
         KillServerRpc(targetNetworkObjectId);
     }
@@ -117,14 +172,17 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
 
     // 3. 실제 작업 수행: ServerRpc
     [ServerRpc(RequireOwnership = false)]
-    public void KillServerRpc(ulong targetNetworkObjectId)
+    public void KillServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default)
     {
         PlayerModel targetPlayerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(targetNetworkObjectId);
         targetPlayerModel.HandlePlayerDeathServerRpc();
         
-        //TODO: SkillButton한테 Kill성공했다고 invoke
-        OnKillSuccess?.Invoke();
-        ConsumeKillCooldownClientRpc();
+        // 킬을 실행한 farmer에게만 KillClientRpc 전송
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        KillClientRpc(targetNetworkObjectId, new ClientRpcParams 
+        { 
+            Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
+        });
     }
     
     
@@ -150,14 +208,31 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     }
    
 
-
   
     [ClientRpc]
-    private void ConsumeKillCooldownClientRpc(){
+    private void KillClientRpc(ulong targetNetworkObjectId,ClientRpcParams rpcParams = default){
+        //쿨타임소모
         killCooltimer = 0f;
         canKill = false;
+        
+        //킬 성공 action invoke
+        OnKillSuccess?.Invoke();
+        
+        //죽인 애를 OverlappingPlayers에서 제거
+        GameObject targetPlayer = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(targetNetworkObjectId);
+        if(targetPlayer == null){
+            return;
+        }
+        _playerView?.RemoveDeadPlayerFromOverlappingPlayers(targetPlayer);
     }
 
+    [ClientRpc]
+    private void SavotageClientRpc(){  
+        savotageCooltimer = 0f;
+        canSavotage = false;
+        OnSavotageSuccess?.Invoke();
+    }
+    
     public void Savotage()
     {
         CanSavotageServerRpc();
@@ -168,6 +243,8 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     public void SavotageServerRpc(ServerRpcParams rpcParams = default)
     {
         Debug.Log("사보타지 아직 미구현");
+        
+        SavotageClientRpc();
     }
 
     public void Interact(string targetTag)
@@ -286,7 +363,18 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     public void CanSavotageServerRpc(ServerRpcParams rpcParams = default)
     {
         //TODO: 사보타지 조건구현
-        //farmer는 사보타지 가능
+        bool result = false;
+    
+        
+        if (canSavotage == false)
+        {
+            result = false;
+        }
+        else
+        {
+            result = true;
+        }
+        
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
         CanSavotageResultClientRpc(true, new ClientRpcParams 
         { 
@@ -301,7 +389,7 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
         {
             return;
         }
-        Debug.Log($"사보타지 가능여부={canSabotage}: Server Rpc호출");
+        
         SavotageServerRpc();
     }
 

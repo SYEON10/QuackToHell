@@ -591,8 +591,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a799ef8a9134a0441ba023e5da4a9eab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiBaseType: 1
-  uiName: HomeUI
+  uiBaseType: 0
+  uiName: LobbySettingPopup
 --- !u!4 &1806956943
 Transform:
   m_ObjectHideFlags: 0

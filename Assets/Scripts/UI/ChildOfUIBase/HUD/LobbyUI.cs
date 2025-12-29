@@ -5,6 +5,7 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LobbyUI : UIHUD
 {
@@ -12,6 +13,8 @@ public class LobbyUI : UIHUD
     
     private TMP_Dropdown colorDropdown;
     private TMP_Text codeText;
+
+    public Action OnClikcedButton_Setting;
 
     enum Dropdowns
     {
@@ -29,7 +32,8 @@ public class LobbyUI : UIHUD
     {
         Button_Back,
         Button_StartGame,
-        Button_CopyCode
+        Button_CopyCode,
+        Button_Setting
     }
 
     private void Start()
@@ -61,6 +65,8 @@ public class LobbyUI : UIHUD
         BindEvent(Button_StartGame_gameObject, OnClick_Button_StartGame, GameEvents.UIEvent.Click);
         GameObject Button_CopyCode_gameObject = Get<Button>((int)Buttons.Button_CopyCode).gameObject;
         BindEvent(Button_CopyCode_gameObject, OnClick_Button_CopyCode, GameEvents.UIEvent.Click);
+        GameObject Button_Setting_gameObject = Get<Button>((int)Buttons.Button_Setting).gameObject;
+        BindEvent(Button_Setting_gameObject, OnClick_Button_Setting, GameEvents.UIEvent.Click);
 
         //플레이어가 생성된 후에 바인드하기.
         PlayerFactoryManager.Instance.onPlayerSpawned += () =>
@@ -112,6 +118,10 @@ public class LobbyUI : UIHUD
         }
     }
 
+    private void OnClick_Button_Setting(PointerEventData data)
+    {
+        OnClikcedButton_Setting?.Invoke();
+    }
 
     private void OnClick_Button_StartGame(PointerEventData data)
     {
@@ -138,6 +148,7 @@ public class LobbyUI : UIHUD
     {
         //사운드
         SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
+        //TODO: 뒤로가기처리
         LobbyManager.Instance.CleanUpLobby();
     }
     private void OnColorDropdownButton(Int32 colorIndex)

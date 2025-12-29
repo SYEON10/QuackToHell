@@ -81,10 +81,25 @@ public class GameManager : NetworkBehaviour
         
         //씬 로드 이벤트 구독
         SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+    }
+
+     private void OnLobbySettingButtonClicked()
+    {
+        // 팝업 띄우기 로직
+        UIManager.Instance.ShowPopupUI<LobbySettingPopup>();
+    }
+    private void OnSceneUnloaded(Scene scene)
+    {
+        if (scene.name == GameScenes.Lobby && UIManager.Instance.HUDList.OfType<LobbyUI>().FirstOrDefault() != null)
+        {
+            UIManager.Instance.HUDList.OfType<LobbyUI>().FirstOrDefault().OnClikcedButton_Setting -= OnLobbySettingButtonClicked;
+        }
     }
     public override void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
         base.OnDestroy();
     }
     
@@ -100,6 +115,12 @@ public class GameManager : NetworkBehaviour
         {
             UIManager.Instance.ShowHUDUI<LobbyUI>("LobbyUI");
             FindLobbyUIElements();
+            //로비 세팅 버튼이벤트 구독하여, popup 띄우기 
+            LobbyUI lobbyUI = UIManager.Instance.HUDList.OfType<LobbyUI>().FirstOrDefault();
+            if (lobbyUI != null)
+            {
+                lobbyUI.OnClikcedButton_Setting += OnLobbySettingButtonClicked;
+            }
         }
         if(scene.name == GameScenes.Village)
         {
@@ -122,18 +143,21 @@ public class GameManager : NetworkBehaviour
             Destroy(playerCorpse);
         }
     }
-    private void FindLobbyUIElements()
+   private void FindLobbyUIElements()
     {
         assignRoleCanvas = GameObject.FindWithTag(GameTags.UI_RoleAssignCanvas);
-        roleAssignUIReferences = assignRoleCanvas.GetComponent<RoleAssignUIReferences>();
         if (assignRoleCanvas != null)
         {
-            intro = roleAssignUIReferences.Intro;
-            showRole = roleAssignUIReferences.ShowRole;
-            showRoleText = roleAssignUIReferences.ShowRoleText;
-            playerSlot = roleAssignUIReferences.PlayerSlot;
+            roleAssignUIReferences = assignRoleCanvas.GetComponent<RoleAssignUIReferences>();
+            if (roleAssignUIReferences != null)
+            {
+                intro = roleAssignUIReferences.Intro;
+                showRole = roleAssignUIReferences.ShowRole;
+                showRoleText = roleAssignUIReferences.ShowRoleText;
+                playerSlot = roleAssignUIReferences.PlayerSlot;
+            }
+            assignRoleCanvas.SetActive(false);
         }
-        assignRoleCanvas.SetActive(false);
     }
 
 

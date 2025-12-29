@@ -40,11 +40,12 @@ public class PlayerView : NetworkBehaviour
     
     private Camera localCamera = null;
 
-    private GameObject targetPlayerCache = null;
+    List<GameObject> OverlappingAliveAnimalPlayers = new List<GameObject>();
+    private GameObject killTargetPlayerCache = null;
 
     public GameObject TargetPlayerCache
     {
-        get { return targetPlayerCache; }
+        get { return GetClosestPlayer(); }
     }
     
     private GameObject targetCorpseCache = null;
@@ -110,7 +111,26 @@ public class PlayerView : NetworkBehaviour
         GameObject detectedObject = collision.gameObject;
         if (collision.CompareTag(GameTags.Player))
         {
-            targetPlayerCache = collision.gameObject;
+            if (detectedObject.Equals(this.gameObject))
+            {
+                return;
+            }
+            
+            // 직업이 Animal이고 Alive인 플레이어만 추가
+            PlayerModel detectedPlayerModel = detectedObject.GetComponent<PlayerModel>();
+            if (detectedPlayerModel == null) return;
+        
+            if (detectedPlayerModel.GetPlayerJob() != PlayerJob.Animal || 
+                detectedPlayerModel.GetPlayerAliveState() != PlayerLivingState.Alive)
+            {
+                return; // Animal이 아니거나 죽은 플레이어는 추가하지 않음
+            }
+
+            if (OverlappingAliveAnimalPlayers.Contains(detectedObject))
+            {
+                return;
+            }
+            OverlappingAliveAnimalPlayers?.Add(detectedObject);
             onPlayerDetected?.Invoke(detectedObject);
         }
         else if (collision.CompareTag(GameTags.PlayerCorpse))
@@ -132,7 +152,16 @@ public class PlayerView : NetworkBehaviour
         GameObject detectedObject = collision.gameObject;
         if (collision.CompareTag(GameTags.Player))
         {
-            targetPlayerCache = null;
+            if (detectedObject.Equals(this.gameObject))
+            {
+                return;
+            }
+
+            if (!(OverlappingAliveAnimalPlayers.Contains(detectedObject)))
+            {
+                return;
+            }
+            OverlappingAliveAnimalPlayers?.Remove(detectedObject);
             onPlayerExited?.Invoke(detectedObject);
         }
         else if (collision.CompareTag(GameTags.PlayerCorpse))
@@ -146,7 +175,65 @@ public class PlayerView : NetworkBehaviour
             OnObjectExited?.Invoke(detectedObject);
         }
     }
-    
+
+    private GameObject GetClosestPlayer()
+    {
+        if (OverlappingAliveAnimalPlayers?.Count == 0)
+        {
+            return null;
+        }
+        
+        GameObject closestPlayer = null;
+        float minDistance = float.MaxValue;
+        
+        foreach(GameObject player in OverlappingAliveAnimalPlayers)
+        {
+            if (player == null) continue;
+        
+            PlayerModel playerModel = player.GetComponent<PlayerModel>();
+            if (playerModel == null) continue;
+        
+            // Animal이고 Alive인 플레이어만 고려
+            if (playerModel.GetPlayerJob() != PlayerJob.Animal || 
+                playerModel.GetPlayerAliveState() != PlayerLivingState.Alive)
+            {
+                continue;
+            }
+            
+            //나와 상대방 간 거리
+            float distance = Vector3.Distance(player.transform.position, transform.position);
+            //최소거리찾기
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestPlayer = player;
+            }
+        }
+        return closestPlayer;
+    }
+
+
+    public void RemoveDeadPlayerFromOverlappingPlayers(GameObject player)
+    {
+        //기록용: 상태체크하여 remove하니 성공(그냥 gameobject바로 넣어서 remove하니 실패했었음)
+        if (OverlappingAliveAnimalPlayers == null) return;
+  
+        for (int i = OverlappingAliveAnimalPlayers.Count - 1; i >= 0; i--)
+        {
+            GameObject p = OverlappingAliveAnimalPlayers[i];
+            if (p == null) continue;
+        
+            PlayerModel model = p.GetComponent<PlayerModel>();
+            if (model == null) continue;
+        
+            if (p == player || 
+                model.GetPlayerAliveState() != PlayerLivingState.Alive ||
+                model.GetPlayerJob() != PlayerJob.Animal)
+            {
+                OverlappingAliveAnimalPlayers.RemoveAt(i);
+            }
+        }
+    }
 
     
     protected void Start()
@@ -162,6 +249,7 @@ public class PlayerView : NetworkBehaviour
         
         SetupInputSystem();
     }
+    
     
     private void SetupInputSystem()
     {

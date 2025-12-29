@@ -36,7 +36,7 @@ public class HomeUI : UIHUD
     private bool buttonLock = false;
     private bool isPrivate = false;
     private Color buttonLockColor;
-    private int maxPlayerNum=6;
+    private int maxPlayerNum=GameConstants.Lobby.Initials.MaxPlayers;
     
     //새로고침 쿨타임
     //쿨타임 근거: https://unity3.tistory.com/14
@@ -238,6 +238,10 @@ public class HomeUI : UIHUD
     {
         //사운드
         SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
+        if (maxPlayerNum <= GameConstants.Lobby.Initials.MaxPlayers)
+        {
+            return;
+        }
         maxPlayerNum--;
         Text_MaxPlayerNum.text = maxPlayerNum.ToString();
     }
@@ -265,6 +269,10 @@ public class HomeUI : UIHUD
     {
         //사운드
         SoundManager.Instance.SFXPlay("UIClickSFX", buttonClickSFX.clip);
+        if (maxPlayerNum == GameConstants.Lobby.Max.MaxPlayers)
+        {
+            return;
+        }
         maxPlayerNum++;
         Text_MaxPlayerNum.text = maxPlayerNum.ToString();
     }

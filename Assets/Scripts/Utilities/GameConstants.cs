@@ -50,7 +50,22 @@ public static class GameConstants
         public const int MinPlayersToStart = 2;
     }
 
-  
+    public static class Lobby
+    {
+        public static class Initials
+        {
+            public const int MaxPlayers = 6;
+            public const int FarmerNum = 1;
+            public const int SavotageCooltime = 20;
+            public const int KillCooltime = 20;
+            public const bool IsShowKillerInfo = true;
+        }
+
+        public static class Max
+        {
+            public const int MaxPlayers = 16;
+        }
+    }
         
     
 }

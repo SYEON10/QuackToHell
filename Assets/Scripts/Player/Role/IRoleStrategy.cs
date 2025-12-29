@@ -34,11 +34,11 @@ public interface IRoleStrategy
     // Ability 메서드들 (모든 역할이 구현해야 함)
     public void Kill(ulong targetNetworkObjectId); 
     [ServerRpc(RequireOwnership = false)]
-    void KillServerRpc(ulong targetNetworkObjectId);
+    void KillServerRpc(ulong targetNetworkObjectId,ServerRpcParams rpcParams = default);
     [ServerRpc(RequireOwnership = false)]
-    void CanKillServerRpc(ulong targetNetworkObjectId, bool checkForUI = false, ServerRpcParams rpcParams = default);  // 서버에서 조건 검사
+    void CanKillServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default);  // 서버에서 조건 검사
     [ClientRpc]
-    void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, bool checkForUI = false, ClientRpcParams rpcParams = default);  // 결과 전송
+    void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, ClientRpcParams rpcParams = default);  // 결과 전송
 
 
     public void ReportCorpse(ulong targetNetworkObjectId);

@@ -280,8 +280,19 @@ public class PlayerPresenter : NetworkBehaviour
     /// </summary>
     private void HandleKillInput()
     {
-        ulong targetClinetId = playerView.TargetPlayerCache.GetComponent<PlayerModel>().ClientId;
-        roleController.CurrentStrategy?.Kill(targetClinetId);
+        if (playerView.TargetPlayerCache == null)
+        {
+            return;
+        }
+        
+        PlayerModel targetModel = playerView.TargetPlayerCache.GetComponent<PlayerModel>();
+        if (targetModel == null)
+        {
+            return;
+        }
+        
+        ulong targetClientId = targetModel.NetworkObject.OwnerClientId;
+        roleController.CurrentStrategy?.Kill(targetClientId);
     }
 
     

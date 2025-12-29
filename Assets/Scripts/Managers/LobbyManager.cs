@@ -12,6 +12,7 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Services.Relay;
 using Unity.Netcode;
 using System.Threading;
+using Data;
 using UnityEngine.SceneManagement;
 
 public class LobbyManager : NetworkBehaviour
@@ -58,7 +59,20 @@ public class LobbyManager : NetworkBehaviour
     private const float HEART_BEAT_TIMER_MAX = 15f;
     private string _hostLobbyCode="";
 
-    
+    //로비데이터
+    private Data.LobbyData _lobbyData = LobbyData.CreateDefault();
+
+  
+    public Data.LobbyData LobbyData
+    {
+    set 
+    {
+        _lobbyData = value;
+        UpdateLobbyOptionAsync(_lobbyData);
+    }
+    get { return _lobbyData; }
+}
+
     public string HostLobbyCode
     {
         get
@@ -87,9 +101,6 @@ public class LobbyManager : NetworkBehaviour
         }
         
     }
-
-    
-
 
     public override async void OnNetworkSpawn()
     {
@@ -246,10 +257,18 @@ public class LobbyManager : NetworkBehaviour
 
             hostLobby = lobby;
             joinedLobby = lobby;
+            
 
             _hostLobbyCode = lobby.LobbyCode; //게임참가코드(ex. E2EE31)
             string gameSessionCode = relayJoinCode;  //게임세션코드(ex.ABC123DEF)
 
+            //로비데이터 set
+            _lobbyData.lobbyCode = lobby.LobbyCode;
+            _lobbyData.maxPlayerNum = maxPlayer;
+            _lobbyData.isPrivateRoom = isPrivate;
+            _lobbyData.lobbyName = lobbyName;
+            LobbyData = _lobbyData;
+            
             Debug.Log($"Lobby Created! {lobby.Name}, {lobby.MaxPlayers}, {lobby.LobbyCode}, RelayCode: {gameSessionCode}");
             PrintPlayers(hostLobby);
         }
@@ -259,6 +278,94 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    private async void UpdateLobbyOptionAsync(Data.LobbyData lobbyData)
+    {
+        try
+        {
+            await UpdateLobbyOption(lobbyData);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to update lobby options: {e.Message}");
+        }
+    }
+
+    public async Task<bool> UpdateLobbyOption(Data.LobbyData lobbyData){
+        if (hostLobby == null)
+        {
+            Debug.LogWarning("Cannot update lobby: Not the lobby host");
+            return false;
+        }
+    
+        try{
+            // 기존 Data 유지 (LobbyCode, RelayJoinCode, IsPrivate 등)
+            var data = new Dictionary<string, DataObject>(hostLobby.Data);
+        
+            // 로비 세팅 값들을 Data에 추가/업데이트
+            data["IsPrivate"] = new DataObject(DataObject.VisibilityOptions.Public, lobbyData.isPrivateRoom.ToString());
+            data["FarmerNum"] = new DataObject(DataObject.VisibilityOptions.Public, lobbyData.FarmerNum.ToString());
+            data["SavotageCooltime"] = new DataObject(DataObject.VisibilityOptions.Public, lobbyData.savotageCooltime.ToString());
+            data["KillCooltime"] = new DataObject(DataObject.VisibilityOptions.Public, lobbyData.killCooltime.ToString());
+            data["IsShowKillerInfo"] = new DataObject(DataObject.VisibilityOptions.Public, lobbyData.isShowKillerInfo.ToString());
+        
+            UpdateLobbyOptions updateLobbyOptions = new UpdateLobbyOptions
+            {
+                Name = lobbyData.lobbyName, 
+                MaxPlayers = lobbyData.maxPlayerNum,
+                Data = data
+            };
+        
+            hostLobby = await LobbyService.Instance.UpdateLobbyAsync(hostLobby.Id, updateLobbyOptions);
+            joinedLobby = hostLobby;
+
+            // 모든 클라이언트에게 LobbyData 브로드캐스트
+            SyncLobbyDataClientRpc(
+                lobbyData.lobbyName,
+                lobbyData.lobbyCode,
+                lobbyData.isPrivateRoom,
+                lobbyData.maxPlayerNum,
+                lobbyData.FarmerNum,
+                lobbyData.savotageCooltime,
+                lobbyData.killCooltime,
+                lobbyData.isShowKillerInfo
+            );
+    
+        
+            return true;
+        }
+        catch(LobbyServiceException e){
+            Debug.LogError($"Failed to update lobby options: {e.Message}");
+            return false;
+        }
+    }
+
+    [ClientRpc]
+private void SyncLobbyDataClientRpc(
+    string lobbyName,
+    string lobbyCode,
+    bool isPrivateRoom,
+    int maxPlayerNum,
+    int farmerNum,
+    int savotageCooltime,
+    int killCooltime,
+    bool isShowKillerInfo)
+{
+    // 호스트는 이미 _lobbyData가 업데이트되어 있으므로, 클라이언트만 업데이트
+    if (IsHost) return;
+    
+    // Unity Lobby Service의 Data를 LobbyData에 동기화
+    _lobbyData.lobbyName = lobbyName;
+    _lobbyData.lobbyCode = lobbyCode;
+    _lobbyData.isPrivateRoom = isPrivateRoom;
+    _lobbyData.maxPlayerNum = maxPlayerNum;
+    _lobbyData.FarmerNum = farmerNum;
+    _lobbyData.savotageCooltime = savotageCooltime;
+    _lobbyData.killCooltime = killCooltime;
+    _lobbyData.isShowKillerInfo = isShowKillerInfo;
+    
+    Debug.Log($"LobbyData synced: KillCooltime={killCooltime}, FarmerNum={farmerNum}");
+}
+    
     [Command]
     public async Task<List<Lobby>> ListLobbies()
     {
@@ -355,6 +462,25 @@ public class LobbyManager : NetworkBehaviour
             
             joinedLobby = _joinedLobby;
             _hostLobbyCode = lobbyCode;
+            
+            // Unity Lobby Service의 Data를 LobbyData에 동기화 (클라이언트)
+            _lobbyData.lobbyCode = _joinedLobby.LobbyCode;
+            _lobbyData.maxPlayerNum = _joinedLobby.MaxPlayers;
+            _lobbyData.lobbyName = _joinedLobby.Name;
+      
+            if (_joinedLobby.Data.ContainsKey("FarmerNum"))
+                _lobbyData.FarmerNum = int.Parse(_joinedLobby.Data["FarmerNum"].Value);
+        
+            if (_joinedLobby.Data.ContainsKey("KillCooltime"))
+                _lobbyData.killCooltime = int.Parse(_joinedLobby.Data["KillCooltime"].Value);
+        
+            if (_joinedLobby.Data.ContainsKey("SavotageCooltime"))
+                _lobbyData.savotageCooltime = int.Parse(_joinedLobby.Data["SavotageCooltime"].Value);
+        
+            if (_joinedLobby.Data.ContainsKey("IsShowKillerInfo"))
+                _lobbyData.isShowKillerInfo = _joinedLobby.Data["IsShowKillerInfo"].Value == "True";
+            
+            
             Debug.Log($"Joined Lobby with code: {lobbyCode}");
             PrintPlayers(joinedLobby);
 
@@ -524,11 +650,15 @@ public class LobbyManager : NetworkBehaviour
     private int GetFarmerCountByPlayerCount(int playerCount){
         return playerCount switch
         {
+            //로비세팅창에서 설정한대로
+            _ => LobbyManager.Instance.LobbyData.FarmerNum
+            /*
             5 or 6 => 1,
             7 or 8 or 9 => 2,
             10 or 11 or 12 => UnityEngine.Random.Range(0, 2) == 0 ? 2 : 3, // 2 or 3 랜덤
             13 or 14 or 15 => 3,
-            _ => 1 // 기본값
+            _ => GameConstants.LobbyInitial.FarmerNum // 기본값
+            */
         };
     }
 

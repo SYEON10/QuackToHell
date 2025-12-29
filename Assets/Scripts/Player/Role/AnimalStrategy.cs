@@ -55,23 +55,23 @@ public class AnimalStrategy : NetworkBehaviour, IRoleStrategy
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void KillServerRpc(ulong targetNetworkObjectId)
+    public void KillServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default)
     {
         // 동물은 킬 불가능
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void CanKillServerRpc(ulong targetNetworkObjectId, bool checkForUI = false,  ServerRpcParams rpcParams = default)
+    public void CanKillServerRpc(ulong targetNetworkObjectId, ServerRpcParams rpcParams = default)
     {
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
-        CanKillResultClientRpc(false, targetNetworkObjectId, checkForUI, new ClientRpcParams 
+        CanKillResultClientRpc(false, targetNetworkObjectId,  new ClientRpcParams 
         { 
             Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
         });
     }
 
     [ClientRpc]
-    public void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, bool checkForUI = false, ClientRpcParams rpcParams = default)
+    public void CanKillResultClientRpc(bool canKill, ulong targetNetworkObjectId, ClientRpcParams rpcParams = default)
     {
         // 동물은 킬 불가능
         if (!canKill)

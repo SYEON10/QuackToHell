@@ -42,8 +42,6 @@ public class SkillButtonUI : UIHUD
         BindEvent(Button_Savotage.gameObject, OnSavotageButton, GameEvents.UIEvent.Click);
         
         playerView = PlayerHelperManager.Instance.GetPlayerViewlByClientId(NetworkManager.Singleton.LocalClientId);
-        playerView.onPlayerDetected += PlayerView_OnPlayerDetected;
-        playerView.onPlayerExited += PlayerView_OnPlayerExited;
         playerView.OnObjectEntered += HandleObjectEntered;
         playerView.OnObjectExited += HandleObjectExited;
         playerView.onCorpseDetected += OnCorpseDetected;
@@ -56,9 +54,10 @@ public class SkillButtonUI : UIHUD
         if (roleStrategy is FarmerStrategy)
         {
             farmerStrategy = roleStrategy as FarmerStrategy;
-            farmerStrategy.OnCanKillUIResultReceived += HandleCanKillUIResult;
             farmerStrategy.OnKillSuccess += OnKillSuccessed;
-             
+            farmerStrategy.OnSavotageSuccess += OnSavotageSuccessed;
+            farmerStrategy.OnKillCooldownReady += HandleKillCooldownReady; 
+            farmerStrategy.OnSavotageCooldownReady += HandleSavotageCooldownReady;
         }
         
         if (roleStrategy is GhostStrategy)
@@ -72,18 +71,25 @@ public class SkillButtonUI : UIHUD
         
         SetUpButtons();
     }
+    
+    private void HandleKillCooldownReady()
+    {
+        EnableButton(Buttons.Button_Kill);
+    }
+    private void HandleSavotageCooldownReady()
+    {
+        EnableButton(Buttons.Button_Savotage);
+    }
 
     private void OnDestroy()
     {
         if (farmerStrategy != null)
         {
-            farmerStrategy.OnCanKillUIResultReceived -= HandleCanKillUIResult;
+            farmerStrategy.OnKillCooldownReady -= HandleKillCooldownReady;
         }
         
         if (playerView != null)
         {
-            playerView.onPlayerDetected -= PlayerView_OnPlayerDetected;
-            playerView.onPlayerExited -= PlayerView_OnPlayerExited;
             playerView.OnObjectEntered -= HandleObjectEntered;
             playerView.OnObjectExited -= HandleObjectExited;
         }
@@ -94,39 +100,14 @@ public class SkillButtonUI : UIHUD
         DisableButton(Buttons.Button_Kill);
     }
 
-    private void PlayerView_OnPlayerDetected(GameObject playerGameObject)
+    
+    private void OnSavotageSuccessed()
     {
-        if (playerJob != PlayerJob.Farmer)
-        {
-            return;
-        }
-        
-        if (farmerStrategy != null)
-        {
-             var targetId = playerView.TargetPlayerCache.gameObject.GetComponent<PlayerModel>().ClientId;
-            farmerStrategy.CanKillServerRpc(targetId, true);
-        }
-        else
-        {
-            SetPlayerInteractionUI(playerJob, true, false);
-        }
+        DisableButton(Buttons.Button_Savotage);
     }
     
-    private void PlayerView_OnPlayerExited(GameObject targetPlayer)
-    {
-        if (playerJob != PlayerJob.Farmer)
-        {
-            return;
-        }
-        
-        SetPlayerInteractionUI(playerJob, false, false);
-    }
-    
-    private void HandleCanKillUIResult(bool canKill, ulong targetNetworkObjectId)
-    {
-        SetPlayerInteractionUI(playerJob, true, canKill);
-    }
-    
+
+  
     private void HandleObjectEntered(GameObject targetObject)
     {
         if (targetObject.CompareTag(GameTags.PlayerCorpse))
@@ -210,28 +191,7 @@ public class SkillButtonUI : UIHUD
         DisableButton(Buttons.Button_Report);
     }
     
-    //세팅 함수들
-    public void SetPlayerInteractionUI(PlayerJob role, bool isDetected, bool canInteract){
-    
-        //Debug.Log($"[SetPlayerInteractionUI] role:{role}, isDetected:{isDetected}, canInteract:{canInteract}")
-        //플레이어 감지시, 역할에 맞는 고정 버튼을 활성화
-        //farmer: isDetected상태에 따라 kill버튼 활성화
-        if(role == PlayerJob.Farmer){
-            if (isDetected)
-            {
-                //TODO: 쿨타임따라 enable <- 쿨타임은 Strategy가 체크
-                if (canInteract)
-                {
-                    EnableButton(Buttons.Button_Kill);
-                }
-            }
-            else{
-                DisableButton(Buttons.Button_Kill);
-            }
-            
-        }
-        //animal: 변화 x
-    }
+
     /// <summary>
     /// 유령 UI 표시
     /// </summary>
@@ -302,14 +262,7 @@ public class SkillButtonUI : UIHUD
         Button_Kill.interactable = false;
         Button_Report.interactable = false;
         Button_Interaction.interactable = false; 
-        if(playerJob == PlayerJob.Farmer)
-        {
-            Button_Savotage.interactable = true; // 항상 활성화
-        }
-        else
-        {
-            Button_Savotage.interactable = false; // Animal은 비활성화
-        }
+        Button_Savotage.interactable = false; 
     }
 
     public void SetInteractionButtonDefault()
@@ -375,8 +328,20 @@ public class SkillButtonUI : UIHUD
     
     //버튼입력 이벤트들
     public void OnKillButton(PointerEventData eventData){
-        ulong targetClinetId = playerView.TargetPlayerCache.GetComponent<PlayerModel>().ClientId;
-        roleController.CurrentStrategy?.Kill(targetClinetId);
+        if (playerView)
+        {
+            if (playerView.TargetPlayerCache)
+            {
+                if (playerView.TargetPlayerCache.GetComponent<PlayerModel>())
+                {
+                    ulong targetClinetId = playerView.TargetPlayerCache.GetComponent<PlayerModel>().ClientId;
+                    if (targetClinetId != null)
+                    {
+                        roleController.CurrentStrategy?.Kill(targetClinetId);
+                    }
+                }
+            }
+        }
     }
 
     public void OnSavotageButton(PointerEventData eventData){
