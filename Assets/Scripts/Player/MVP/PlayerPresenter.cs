@@ -29,6 +29,7 @@ public class PlayerPresenter : NetworkBehaviour
     private PlayerView playerView;
     private RoleController roleController;
     private PlayerInput playerInput;
+    private FarmerStrategy farmerStrategy;
     
     [Header("")]
     [SerializeField]    
@@ -110,6 +111,7 @@ public class PlayerPresenter : NetworkBehaviour
         playerView = GetComponent<PlayerView>();
         roleController = GetComponent<RoleController>();
         playerInput = GetComponent<PlayerInput>();
+        farmerStrategy = GetComponent<FarmerStrategy>();
         
         DebugUtils.AssertComponent(playerModel, "PlayerModel", this);
         DebugUtils.AssertComponent(playerView, "PlayerView", this);
@@ -302,8 +304,27 @@ public class PlayerPresenter : NetworkBehaviour
     private void HandleInteractInput()
     {
         if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
+       
+        //벤트 탈출
+        if (farmerStrategy.enabled)
+        {
+            if (farmerStrategy.IsVentEntered)
+            {
+                if (farmerStrategy.InteratingVentNetworkId != 0)
+                {
+                    farmerStrategy.ExitVent();
+                    return;
+                }
+            }
+        }
+        
         string targetObjTag= playerView.InteractObjCache?.tag;
-        roleController.CurrentStrategy?.Interact(targetObjTag);
+        ulong targetObjectId=0;
+        if (playerView.InteractObjCache.GetComponent<NetworkObject>() != null)
+        {
+            targetObjectId =  playerView.InteractObjCache.GetComponent<NetworkObject>().NetworkObjectId;
+        }
+        roleController.CurrentStrategy?.Interact(targetObjTag,targetObjectId);
     }
 
     

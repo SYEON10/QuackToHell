@@ -62,17 +62,22 @@ public interface IRoleStrategy
     void CanSavotageResultClientRpc(bool canSabotage, ClientRpcParams rpcParams = default);  // 결과 전송
     [ServerRpc(RequireOwnership = false)]
     void SavotageServerRpc(ServerRpcParams rpcParams = default);
-    
-    
-    public void Interact(string targetTag);
 
-    [ServerRpc(RequireOwnership = false)]
-    void CanInteractServerRpc(string targetTag, ServerRpcParams rpcParams = default); // 서버에서 조건 검사
+
     
-    [ClientRpc]
-    void CanInteractResultClientRpc(bool canInteract, string targetTag, ClientRpcParams rpcParams = default);  // 결과 전송
+    /// <param name="targetNetworkObjectId">0: 없음</param>
+    public void Interact(string targetTag,  ulong targetNetworkObjectId = 0);
+
+    /// <param name="targetNetworkObjectId">0: 없음</param>
     [ServerRpc(RequireOwnership = false)]
-    void InteractServerRpc(string targetTag, ServerRpcParams rpcParams = default);
+    void CanInteractServerRpc(string targetTag,  ulong targetNetworkObjectId = 0, ServerRpcParams rpcParams = default); // 서버에서 조건 검사
+    
+    /// <param name="targetNetworkObjectId">0: 없음</param>
+    [ClientRpc]
+    void CanInteractResultClientRpc(bool canInteract, string targetTag, ulong targetNetworkObjectId = 0, ClientRpcParams rpcParams = default);  // 결과 전송
+    /// <param name="targetNetworkObjectId">0: 없음</param>
+    [ServerRpc(RequireOwnership = false)]
+    void InteractServerRpc(string targetTag,  ulong targetNetworkObjectId = 0, ServerRpcParams rpcParams = default);
 
 
 }

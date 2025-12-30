@@ -352,8 +352,13 @@ public class SkillButtonUI : UIHUD
     
     public void OnDynamicInteractionButton(PointerEventData eventData){
         if (playerModel.GetPlayerAliveState() == PlayerLivingState.Dead) return;
-        string targetObjTag= playerView.InteractObjCache.tag;
-        roleController.CurrentStrategy?.Interact(targetObjTag);
+        string targetObjTag= playerView.InteractObjCache?.tag;
+        ulong targetObjectId=0;
+        if (playerView.InteractObjCache.GetComponent<NetworkObject>() != null)
+        {
+            targetObjectId =  playerView.InteractObjCache.GetComponent<NetworkObject>().NetworkObjectId;
+        }
+        roleController.CurrentStrategy?.Interact(targetObjTag,targetObjectId);
     }
     
     public void OnCorpseReportButton(PointerEventData eventData){

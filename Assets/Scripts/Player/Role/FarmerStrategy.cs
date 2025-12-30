@@ -30,7 +30,20 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     
     private float savotageCooltimeMax; 
     private float savotageCooltimer = 0f;  
-    private bool canSavotage = false;  
+    private bool canSavotage = false;
+
+    private bool isVentEntered = false;
+
+    public bool IsVentEntered
+    {
+        get { return isVentEntered; }
+    }
+    private ulong interatingVentNetworkId=0;
+
+    public ulong InteratingVentNetworkId
+    {
+        get { return interatingVentNetworkId; }
+    }
     
 
     public void Initialize(PlayerModel playerModel, PlayerPresenter playerPresenter, PlayerInput playerInput)
@@ -201,12 +214,7 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     }
     
     #region Ability 구현 (다형성)
-
-    public void TryVent()
-    {
-        
-    }
-   
+    
 
   
     [ClientRpc]
@@ -247,13 +255,13 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
         SavotageClientRpc();
     }
 
-    public void Interact(string targetTag)
+    public void Interact(string targetTag ,ulong targetNetworkObjectId = 0)
     {
-        CanInteractServerRpc(targetTag);
+        CanInteractServerRpc(targetTag, targetNetworkObjectId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void CanInteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    public void CanInteractServerRpc(string targetTag,ulong targetNetworkObjectId = 0,ServerRpcParams rpcParams = default)
     {
         bool result = false;
         //인터랙트 가능한 태그가 아니면 fasle
@@ -268,7 +276,7 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
     
         // 해당 클라이언트에게만 결과 전송
-        CanInteractResultClientRpc(result, targetTag, new ClientRpcParams 
+        CanInteractResultClientRpc(result, targetTag, targetNetworkObjectId, new ClientRpcParams 
         { 
             Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
         });
@@ -276,24 +284,45 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     }
 
     [ClientRpc]
-    public void CanInteractResultClientRpc(bool canInteract, string targetTag, ClientRpcParams rpcParams = default)
+    public void CanInteractResultClientRpc(bool canInteract, string targetTag,ulong targetNetworkObjectId = 0,ClientRpcParams rpcParams = default)
     {
         if (!canInteract) return;
     
-        InteractServerRpc(targetTag);
+        InteractServerRpc(targetTag, targetNetworkObjectId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void InteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    public void InteractServerRpc(string targetTag,ulong targetNetworkObjectId = 0,ServerRpcParams rpcParams = default)
     {
         ulong sender = rpcParams.Receive.SenderClientId;
-
+        PlayerView targetView= PlayerHelperManager.Instance.GetPlayerViewlByClientId(sender);
+        
+        
         switch (targetTag)
         {
             //벤트
             case GameTags.Vent:
                 //벤트타기
-                TryVent();
+                if (targetNetworkObjectId!=0)
+                {
+                    NetworkObject interactObj = null;
+                    if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(
+                            targetNetworkObjectId, out NetworkObject obj))
+                    {
+                        interactObj = obj;
+                    }
+                    if (interactObj != null && interactObj.CompareTag(GameTags.Vent))
+                    {
+                        VentController vent = interactObj.GetComponent<VentController>();
+                        GameObject player = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(sender);
+                        vent.RequestToggleFromPlayer(player);
+                        VentClientRpc(targetNetworkObjectId, new ClientRpcParams 
+                        { 
+                            Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } 
+                        });
+                    }
+                }
+                
                 break;
             //미니게임
             case  GameTags.MiniGame:
@@ -307,7 +336,36 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
                 break;
         }
     }
+    
+    [ClientRpc]
+    private void VentClientRpc(ulong targetNetworkObjectId, ClientRpcParams rpcParams = default)
+    {
+        isVentEntered=!isVentEntered;
+        if (isVentEntered)
+        {
+            interatingVentNetworkId = targetNetworkObjectId;
+        }
+        else
+        {
+            interatingVentNetworkId = 0;
+        }
+    }
 
+    public void ExitVent()
+    {
+        NetworkObject interactObj = null;
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(
+                interatingVentNetworkId, out NetworkObject obj))
+        {
+            interactObj = obj;
+        }
+
+        if (interactObj != null && interactObj.CompareTag(GameTags.Vent))
+        {
+            VentController vent = interactObj.GetComponent<VentController>();
+            vent.RequestToggleFromPlayer(this.gameObject);
+        }
+    }
 
     public void ReportCorpse(ulong targetNetworkObjectId)
     {

@@ -142,13 +142,13 @@ public class GhostStrategy : NetworkBehaviour, IRoleStrategy
         Debug.Log("유령은 사보타지 불가");
     }
 
-    public void Interact(string targetTag)
+    public void Interact(string targetTag,ulong targetNetworkObjectId = 0)
     {
-        CanInteractServerRpc(targetTag);
+        CanInteractServerRpc(targetTag,targetNetworkObjectId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void CanInteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    public void CanInteractServerRpc(string targetTag,ulong targetNetworkObjectId = 0, ServerRpcParams rpcParams = default)
     {
         bool result = false;
         //인터랙트 가능한 태그가 아니면 fasle
@@ -163,22 +163,22 @@ public class GhostStrategy : NetworkBehaviour, IRoleStrategy
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
     
         // 해당 클라이언트에게만 결과 전송
-        CanInteractResultClientRpc(result, targetTag, new ClientRpcParams 
+        CanInteractResultClientRpc(result, targetTag,targetNetworkObjectId, new ClientRpcParams 
         { 
             Send = new ClientRpcSendParams { TargetClientIds = new[] { requesterClientId } } 
         });
     }
 
     [ClientRpc]
-    public void CanInteractResultClientRpc(bool canInteract, string targetTag, ClientRpcParams rpcParams = default)
+    public void CanInteractResultClientRpc(bool canInteract, string targetTag,ulong targetNetworkObjectId = 0, ClientRpcParams rpcParams = default)
     {
         if (!canInteract) return;
     
-        InteractServerRpc(targetTag);
+        InteractServerRpc(targetTag,targetNetworkObjectId);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void InteractServerRpc(string targetTag, ServerRpcParams rpcParams = default)
+    public void InteractServerRpc(string targetTag,ulong targetNetworkObjectId = 0, ServerRpcParams rpcParams = default)
     {
         ulong sender = rpcParams.Receive.SenderClientId;
 
