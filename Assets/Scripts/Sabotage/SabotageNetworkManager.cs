@@ -34,6 +34,26 @@ public class SabotageNetworkManager : NetworkBehaviour
         }
     }
 
+    public void TryStartSabotageFromPlayer(GameObject player)
+    {
+        if (player == null) return;
+
+        var no = player.GetComponent<NetworkObject>();
+        if (no == null) return;
+
+        if (IsServer) StartSabotageServer();
+        else RequestSabotageServerRpc(no.NetworkObjectId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void RequestSabotageServerRpc(ulong playerNetId, ServerRpcParams rpcParams = default)
+    {
+        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetId, out var playerObj)) return;
+        if (playerObj.OwnerClientId != rpcParams.Receive.SenderClientId) return;
+
+        StartSabotageServer();
+    }
+
     [ServerRpc(RequireOwnership = false)]
     void RequestSabotageServerRpc(ServerRpcParams rpcParams = default)
     {
