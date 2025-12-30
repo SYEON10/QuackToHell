@@ -11,6 +11,7 @@ public class AnimalStrategy : NetworkBehaviour, IRoleStrategy
 {
     private PlayerPresenter _playerPresenter;
     private PlayerModel _playerModel;
+    private PlayerView _playerView;
     private PlayerInput _playerInput;
     private InputActionMap _commonActionMap;
     
@@ -18,6 +19,7 @@ public class AnimalStrategy : NetworkBehaviour, IRoleStrategy
     {
         _playerPresenter = playerPresenter;
         _playerModel = playerModel;
+        _playerView = playerModel.GetComponent<PlayerView>();
         _playerInput = playerInput;
     }
     
@@ -192,7 +194,10 @@ public class AnimalStrategy : NetworkBehaviour, IRoleStrategy
             //미니게임
             case  GameTags.MiniGame:
                 //미니게임 상호작용
-                
+                MinigameClientRpc(new ClientRpcParams 
+                { 
+                    Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } 
+                });
                 break;
             //재판소집
             case  GameTags.ConvocationOfTrial:
@@ -200,6 +205,13 @@ public class AnimalStrategy : NetworkBehaviour, IRoleStrategy
                 TrialManager.Instance.TryTrialServerRpc(sender);
                 break;
         }
+    }
+    
+    [ClientRpc]
+    private void MinigameClientRpc(ClientRpcParams rpcParams = default)
+    {
+        MinigameController minigameController = _playerView.InteractObjCache.GetComponent<MinigameController>();
+        minigameController.TryOpenFromPlayer(this.transform);
     }
     
     public void ReportCorpse(ulong targetNetworkObjectId)

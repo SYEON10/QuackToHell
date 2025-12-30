@@ -327,7 +327,11 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
             //미니게임
             case  GameTags.MiniGame:
                 //미니게임 상호작용
-                
+                //미니게임 창 키라고 clientrpc호출
+                MinigameClientRpc(new ClientRpcParams 
+                { 
+                    Send = new ClientRpcSendParams { TargetClientIds = new[] { sender } } 
+                });
                 break;
             //재판소집
             case  GameTags.ConvocationOfTrial:
@@ -335,6 +339,13 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
                 TrialManager.Instance.TryTrialServerRpc(sender);
                 break;
         }
+    }
+
+    [ClientRpc]
+    private void MinigameClientRpc(ClientRpcParams rpcParams = default)
+    {
+        MinigameController minigameController = _playerView.InteractObjCache.GetComponent<MinigameController>();
+        minigameController.TryOpenFromPlayer(this.transform);
     }
     
     [ClientRpc]

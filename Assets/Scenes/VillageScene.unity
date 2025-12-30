@@ -4458,7 +4458,7 @@ GameObject:
   - component: {fileID: 666510569}
   m_Layer: 0
   m_Name: MiniGameObject (1)
-  m_TagString: Untagged
+  m_TagString: MiniGame
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4523,6 +4523,7 @@ MonoBehaviour:
   attachUiToMainCanvas: 1
   uiRootOverride: {fileID: 0}
   interactionRadius: 1.5
+  enableSelfInput: 0
   interactionKey: 32
   allowMouseClick: 1
   ignoreUIRaycastBlockers: 0
@@ -8175,6 +8176,7 @@ MonoBehaviour:
   attachUiToMainCanvas: 1
   uiRootOverride: {fileID: 0}
   interactionRadius: 1
+  enableSelfInput: 0
   interactionKey: 32
   allowMouseClick: 1
   ignoreUIRaycastBlockers: 0
@@ -12165,7 +12167,7 @@ GameObject:
   - component: {fileID: 1615653311}
   m_Layer: 0
   m_Name: MiniGameObject
-  m_TagString: Untagged
+  m_TagString: MiniGame
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12257,6 +12259,7 @@ MonoBehaviour:
   attachUiToMainCanvas: 1
   uiRootOverride: {fileID: 0}
   interactionRadius: 1.5
+  enableSelfInput: 0
   interactionKey: 32
   allowMouseClick: 1
   ignoreUIRaycastBlockers: 0
