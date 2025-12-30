@@ -4523,6 +4523,7 @@ MonoBehaviour:
   attachUiToMainCanvas: 1
   uiRootOverride: {fileID: 0}
   interactionRadius: 1.5
+  enableSelfInput: 0
   interactionKey: 32
   allowMouseClick: 1
   ignoreUIRaycastBlockers: 0
@@ -8175,6 +8176,7 @@ MonoBehaviour:
   attachUiToMainCanvas: 1
   uiRootOverride: {fileID: 0}
   interactionRadius: 1
+  enableSelfInput: 0
   interactionKey: 32
   allowMouseClick: 1
   ignoreUIRaycastBlockers: 0
@@ -12257,6 +12259,7 @@ MonoBehaviour:
   attachUiToMainCanvas: 1
   uiRootOverride: {fileID: 0}
   interactionRadius: 1.5
+  enableSelfInput: 0
   interactionKey: 32
   allowMouseClick: 1
   ignoreUIRaycastBlockers: 0
@@ -16824,7 +16827,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -30, y: -200}
+  m_AnchoredPosition: {x: -161, y: 90}
   m_SizeDelta: {x: 1051, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7443672434126122261
@@ -17290,7 +17293,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &8461601383418835728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17349,7 +17352,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &8761078083946071320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17872,7 +17875,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 9042392518239286221}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -17880,15 +17883,13 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 4
-  m_Spacing: 20
-  m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 200, y: 300}
+  m_Spacing: {x: 10, y: 40}
+  m_Constraint: 1
+  m_ConstraintCount: 3
 --- !u!224 &9083464465025981316
 RectTransform:
   m_ObjectHideFlags: 0
