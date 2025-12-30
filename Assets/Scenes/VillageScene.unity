@@ -623,8 +623,8 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 9
+  m_SortingLayerID: 642117603
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!1 &60382377
 GameObject:
@@ -3942,11 +3942,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 792fabc35d0d67c4d8dc9dd56c5b3f1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  darknessImage: {fileID: 1484200523}
-  fadeDuration: 1
-  targetAlpha: 1
-  sabotageDuration: 8
-  isWorking: 0
 --- !u!224 &596492066
 RectTransform:
   m_ObjectHideFlags: 0
