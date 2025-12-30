@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 public class ChatTestPresenter : MonoBehaviour
 {
@@ -65,8 +66,12 @@ public class ChatTestPresenter : MonoBehaviour
 
         foreach (ChatMessageData messageData in existingMessages)
         {
-            ChatTestUIData chatTestUIData = GetChatTestUIData(messageData);
-            chatTestView.AddMessage(chatTestUIData);
+            // 필터링 로직
+            if (ShouldDisplayMessage(messageData))
+            {
+                ChatTestUIData chatTestUIData = GetChatTestUIData(messageData);
+                chatTestView.AddMessage(chatTestUIData);
+            }
         }
     }
 
@@ -120,7 +125,37 @@ public class ChatTestPresenter : MonoBehaviour
     /// </summary>
     protected bool ShouldDisplayMessage(ChatMessageData message)
     {
-        // 기본적으로 모든 메시지 표시
+        // 재판장 씬이 아니면 모든 메시지 표시
+        if (SceneManager.GetActiveScene().name != GameScenes.Court)
+        {
+            return true;
+        }
+        
+        // 로컬 플레이어가 생존자인지 확인
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        PlayerModel localPlayerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(localClientId);
+    
+        if (localPlayerModel == null)
+        {
+            // 플레이어를 찾을 수 없으면 일단 표시 (안전장치)
+            return true;
+        }
+    
+        PlayerLivingState localPlayerState = localPlayerModel.GetPlayerAliveState();
+    
+        // 로컬 플레이어가 죽었으면: 모든 채팅 보임
+        if (localPlayerState == PlayerLivingState.Dead)
+        {
+            return true;
+        }
+    
+        // 로컬 플레이어가 살아있으면: 죽은 플레이어의 채팅은 숨김
+        if (localPlayerState == PlayerLivingState.Alive)
+        {
+            // senderState가 Dead면 표시하지 않음
+            return message.senderState != PlayerChatState.Dead;
+        }
+        
         return true;
     }
 }

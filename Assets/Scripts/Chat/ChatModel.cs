@@ -38,10 +38,21 @@ public class ChatModel : NetworkBehaviour
             return;
         if (!CanSendMessage(message))
             return;
-        // 현재 플레이어 정보 가져오기 (임시)
+        
         ulong playerId = NetworkManager.Singleton.LocalClientId;
-        // TODO 플레이어 이름 가져오기 (Helper 등)
-        string playerName = $"Player_{playerId}";
+        PlayerModel localPlayerModel = PlayerHelperManager.Instance.GetPlayerModelByClientId(playerId);
+        string playerName = "";
+        
+        // 실제 플레이어 상태 가져오기
+        if (localPlayerModel != null)
+        {
+            PlayerLivingState livingState = localPlayerModel.GetPlayerAliveState();
+            playerState = livingState == PlayerLivingState.Dead 
+                ? PlayerChatState.Dead 
+                : PlayerChatState.Alive;
+            playerName = localPlayerModel.GetPlayerNickname();
+        }
+        
         // 하나의 구조체로 서버에 전송
         SendMessageServerRpc(playerId, playerName, message, playerState);
     }
