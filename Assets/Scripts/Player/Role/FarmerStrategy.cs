@@ -250,8 +250,9 @@ public class FarmerStrategy : NetworkBehaviour, IRoleStrategy
     [ServerRpc(RequireOwnership = false)]
     public void SavotageServerRpc(ServerRpcParams rpcParams = default)
     {
-        Debug.Log("사보타지 아직 미구현");
-        
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        GameObject requesterPlayer = PlayerHelperManager.Instance.GetPlayerGameObjectByClientId(requesterClientId);
+        SabotageNetworkManager.Instance.TryStartSabotageFromPlayer(requesterPlayer);
         SavotageClientRpc();
     }
 
