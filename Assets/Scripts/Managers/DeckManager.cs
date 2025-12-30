@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 #region Data Structs (기획서 타입 반영)
 public enum TierEnum { None = 0, Common = 1, Rare = 2, Special = 3 }
-public enum TypeEnum { None = 0, Attack = 1, Defense = 2, Special = 3 }
+public enum TypeEnum { None = 0, Attack = 1, Defense = 2, Special = 3, Number = 4, Operator = 5, Roll = 6}
 public enum CardValue
 {
     Unknown = -1,
@@ -149,6 +149,7 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
     public CardValue Value;
     public bool isUniqueCard;
     public bool isSellableCard;
+    public int buyableClass;
     public int usableClass;      // 3bit
     public int mapRestriction;  // 2bit
     public int basePrice;
@@ -167,6 +168,7 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
         serializer.SerializeValue(ref Value);
         serializer.SerializeValue(ref isUniqueCard);
         serializer.SerializeValue(ref isSellableCard);
+        serializer.SerializeValue(ref buyableClass);
         serializer.SerializeValue(ref usableClass);
         serializer.SerializeValue(ref mapRestriction);
         serializer.SerializeValue(ref basePrice);
@@ -185,7 +187,8 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
                subType == other.subType && 
                Value == other.Value &&
                isUniqueCard == other.isUniqueCard && 
-               isSellableCard == other.isSellableCard && 
+               isSellableCard == other.isSellableCard &&
+               buyableClass == other.buyableClass &&
                usableClass == other.usableClass && 
                mapRestriction == other.mapRestriction && 
                basePrice == other.basePrice && 
@@ -211,6 +214,7 @@ public struct CardDef : INetworkSerializable, IEquatable<CardDef>
         hash.Add(Value);
         hash.Add(isUniqueCard);
         hash.Add(isSellableCard);
+        hash.Add(buyableClass);
         hash.Add(usableClass);
         hash.Add(mapRestriction);
         hash.Add(basePrice);
@@ -1117,7 +1121,7 @@ public class DeckManager : NetworkBehaviour
 
         int iID = Idx("CardID"), iName = Idx("CardNameKey"), iTier = Idx("Tier"), iType = Idx("Type"),
             iSub = (Idx("SubType") >= 0 ? Idx("SubType") : Idx("SubType (사용X)")),
-            iUni = Idx("IsUniqueCard"), iSell = Idx("IsSellableCard"),
+            iUni = Idx("IsUniqueCard"), iSell = Idx("IsSellableCard"), iBuyClass = Idx("BuyableClass"),
             iClass = Idx("UsableClass"), iMap = Idx("Map_Restriction"),
             iPrice = Idx("BasePrice"), // iCost = Idx("BaseCost"),
             iDesc = Idx("DescriptionKey"), iImg = Idx("ImagePathKey"),
@@ -1139,6 +1143,9 @@ public class DeckManager : NetworkBehaviour
                 string valueRaw = TryGetHeaderValue(headers, columns, "Value", out var _v) ? _v : "";
                 CardValue value = ToCardValue(valueRaw);
 
+                int usable = ToInt(S(columns, iClass));
+                int buyable = (iBuyClass >= 0) ? ToInt(S(columns, iBuyClass)) : usable;
+
                 list.Add(new CardDef
                 {
                     cardID = ToInt(S(columns, iID)),
@@ -1149,7 +1156,8 @@ public class DeckManager : NetworkBehaviour
                     Value = value,
                     isUniqueCard = ToBool(S(columns, iUni)),
                     isSellableCard = ToBool(S(columns, iSell)),
-                    usableClass = ToInt(S(columns, iClass)),
+                    buyableClass = buyable,  
+                    usableClass = usable,  
                     mapRestriction = ToInt(S(columns, iMap)),
                     basePrice = ToInt(S(columns, iPrice)),
                     // baseCost = ToInt(S(columns, iCost)),
@@ -1315,8 +1323,9 @@ public class DeckManager : NetworkBehaviour
             "defense" => TypeEnum.Defense,
             "special" => TypeEnum.Special,
 
-            "number" => TypeEnum.Attack,  
-            "operation" => TypeEnum.Special, 
+            "number" => TypeEnum.Number,
+            "operator" => TypeEnum.Operator,
+            "roll" => TypeEnum.Roll,
 
             _ => TypeEnum.None
         };
