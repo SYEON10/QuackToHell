@@ -328,7 +328,11 @@ public class PlayerView : NetworkBehaviour
                 localCamera = null;
                 Debug.Log("[PlayerView] OnSceneLoaded - localCamera is null");
             }
-            SetupLocalCamera();
+            //재판장 씬에서는 해당 방식으로 카메라가 변경되면 안 되기 때문에 막음. 추후 switch문으로 확장할 것.
+            if (!(SceneManager.GetActiveScene().name == "CourtScene"))
+            {
+                SetupLocalCamera();
+            }
         }
     }
     
